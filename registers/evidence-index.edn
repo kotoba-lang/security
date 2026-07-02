@@ -27,4 +27,49 @@
                      :operational-evidence-designed
                      :architecture-review-recorded]
    :evidence/result :baseline
+   :evidence/retention "P7Y"}
+
+  {:evidence/id "EV-0002"
+   :evidence/type :implementation
+   :evidence/created-at "2026-07-02"
+   :evidence/producer "kotoba-lang/kotoba"
+   :evidence/artifacts [{:kind :code :path "kotoba-lang/kotoba:src/kotoba/package_admission.clj"}
+                        {:kind :code :path "kotoba-lang/kotoba:src/kotoba/launcher.clj"}
+                        {:kind :test :path "kotoba-lang/kotoba:test/kotoba/package_admission_test.clj"}
+                        {:kind :fixture :path "kotoba-lang/kotoba:test/fixtures/package/"}]
+   :evidence/claims [:package-admission-gate-enforced
+                     :package-verification-receipt-emitted]
+   :evidence/notes "kotoba#262 (F-001): 'package verify' CLI + 'wasm emit --package-lock' admission; rejects version-only, unsigned, missing-CID/RID, revoked/expired signer, over-capability, local-path deps; receipt on accept and reject."
+   :evidence/result :passing
+   :evidence/retention "P7Y"}
+
+  {:evidence/id "EV-0003"
+   :evidence/type :implementation
+   :evidence/created-at "2026-07-02"
+   :evidence/producer "kotoba-lang/kotoba-lang"
+   :evidence/artifacts [{:kind :code :path "kotoba-lang/kotoba-lang:src/kotoba/lang/capability_values.cljc"}
+                        {:kind :fixture :path "kotoba-lang/kotoba-lang:lang/capability-conformance/"}
+                        {:kind :gate :path "kotoba-lang/kotoba-lang:scripts/check-capability-values.bb"}]
+   :evidence/claims [:capability-values-contract
+                     :grant-policy-intersection-pure
+                     :capability-receipt-shape]
+   :evidence/notes "kotoba#263 (F-003, S4b): capability value shapes, effect-row consistency, requested ∩ CACAO grants ∩ local-policy intersection (fail-closed), concrete-cap receipts. Host-call-time runtime wiring remains follow-up."
+   :evidence/result :passing
+   :evidence/retention "P7Y"}
+
+  {:evidence/id "EV-0004"
+   :evidence/type :implementation
+   :evidence/created-at "2026-07-02"
+   :evidence/producer "kotoba-lang/security"
+   :evidence/artifacts [{:kind :code :path "src/kotoba/security/release_gate.cljc"}
+                        {:kind :code :path "src/kotoba/security/crypto_policy.cljc"}
+                        {:kind :gate :path "scripts/check-safe-release.bb"}
+                        {:kind :gate :path "scripts/check-crypto-inventory.bb"}
+                        {:kind :policy :path "policy/crypto-policy.edn"}
+                        {:kind :doc :path "docs/hybrid-envelope-vectors.md"}]
+   :evidence/claims [:release-evidence-gate-executable
+                     :crypto-policy-modes-enforceable
+                     :crypto-inventory-checked]
+   :evidence/notes "kotoba#264/#265 (F-005/F-007): safe-release gate over evidence-index + exception-register (--release enforces; exceptions need owner+expiry); crypto policy modes :crypto-agile/:hybrid-required/:fips-required with provider-metadata and non-FIPS rejection; hybrid KEM vector contract defined, real vectors pending crypto implementation."
+   :evidence/result :passing
    :evidence/retention "P7Y"}]}
