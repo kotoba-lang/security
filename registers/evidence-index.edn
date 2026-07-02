@@ -1,0 +1,30 @@
+{:register/type :kotoba.security/evidence-index
+ :register/version 1
+ :evidence
+ [{:evidence/id "EV-0001"
+   :evidence/type :design-baseline
+   :evidence/created-at "2026-07-01"
+   :evidence/producer "kotoba-lang/security"
+   :evidence/artifacts [{:kind :doc :path "docs/security-architecture.md"}
+                        {:kind :doc :path "docs/standards-assessment.md"}
+                        {:kind :doc :path "docs/governance.md"}
+                        {:kind :doc :path "docs/incident-response.md"}
+                        {:kind :doc :path "docs/continuous-monitoring.md"}
+                        {:kind :doc :path "docs/risk-management.md"}
+                        {:kind :doc :path "docs/key-lifecycle.md"}
+                        {:kind :doc :path "docs/fips-validation.md"}
+                        {:kind :doc :path "docs/sbom-slsa.md"}
+                        {:kind :doc :path "docs/operational-evidence.md"}
+                        {:kind :doc :path "docs/architecture-review-2026-07-01.md"}
+                        {:kind :register :path "registers/architecture-review-findings.edn"}]
+   :evidence/claims [:governance-designed
+                     :ir-designed
+                     :monitoring-designed
+                     :risk-register-seeded
+                     :key-lifecycle-designed
+                     :fips-non-claim-defined
+                     :sbom-slsa-designed
+                     :operational-evidence-designed
+                     :architecture-review-recorded]
+   :evidence/result :baseline
+   :evidence/retention "P7Y"}]}

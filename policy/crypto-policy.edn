@@ -1,0 +1,38 @@
+{:kotoba.security/crypto-policy-version 1
+
+ ;; Active mode for this repository. Kotoba does not claim FIPS validation
+ ;; today (docs/fips-validation.md); the first PQC milestone is crypto
+ ;; agility (docs/pqc-roadmap.md), so the deployed mode is :crypto-agile.
+ :mode :crypto-agile
+
+ ;; Under :hybrid-required, KEM envelopes with :envelope/epoch >= this floor
+ ;; must be hybrid classical+PQ (X25519 + ML-KEM).
+ :hybrid-epoch-floor 1
+
+ :modes
+ {:crypto-agile
+  {:doc "Every envelope must carry provider and algorithm metadata so it can migrate."
+   :requires [:provider-metadata :algorithm-metadata]}
+
+  :hybrid-required
+  {:doc "KEM envelopes must be hybrid classical+PQ for new epochs (epoch >= :hybrid-epoch-floor)."
+   :requires [:provider-metadata :algorithm-metadata :hybrid-kem-new-epochs]}
+
+  :fips-required
+  {:doc "Providers must have :provider/fips-validated true; inventory entries must not be :not-claimed."
+   :requires [:provider-metadata :algorithm-metadata :fips-validated-provider]}}
+
+ ;; Provider records name the crypto module behind each envelope. None of
+ ;; the current providers is FIPS-validated; :fips-required must therefore
+ ;; not be enabled without a validated module boundary and certificate
+ ;; evidence (docs/fips-validation.md acceptance gate).
+ :allowed-providers
+ [{:provider/id :jdk-ed25519
+   :provider/fips-validated false
+   :provider/algorithms [:ed25519]}
+  {:provider/id :jdk-aes-gcm
+   :provider/fips-validated false
+   :provider/algorithms [:aes-256-gcm]}
+  {:provider/id :jdk-x25519-hpke
+   :provider/fips-validated false
+   :provider/algorithms [:x25519 :hpke]}]}

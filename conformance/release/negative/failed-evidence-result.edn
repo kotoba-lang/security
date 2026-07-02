@@ -1,0 +1,34 @@
+{:case/id "failed-evidence-result"
+ :now "2026-07-02"
+ :evidence-index
+ {:register/type :kotoba.security/evidence-index
+  :register/version 1
+  :evidence
+  [{:evidence/id "EV-2301"
+    :evidence/type :conformance-result
+    :evidence/created-at "2026-07-02"
+    :evidence/producer "ci"
+    :evidence/artifacts [{:kind :log :digest "sha256:1111111111111111"}]
+    :evidence/claims [:conformance-results :package-verification :provenance]
+    :evidence/result :pass
+    :evidence/retention "P7Y"}
+   {:evidence/id "EV-2302"
+    :evidence/type :release-packet
+    :evidence/created-at "2026-07-02"
+    :evidence/producer "ci"
+    :evidence/artifacts [{:kind :sbom :digest "sha256:2222222222222222"}]
+    :evidence/claims [:sbom]
+    :evidence/result :failed
+    :evidence/retention "P7Y"}
+   {:evidence/id "EV-2303"
+    :evidence/type :release-security-note
+    :evidence/created-at "2026-07-02"
+    :evidence/producer "security-owner"
+    :evidence/artifacts [{:kind :register :path "registers/key-register.edn"}]
+    :evidence/claims [:key-status-snapshot :risk-review]
+    :evidence/result :pass
+    :evidence/retention "P7Y"}]}
+ :exception-register
+ {:register/type :kotoba.security/exception-register
+  :register/version 1
+  :exceptions []}}

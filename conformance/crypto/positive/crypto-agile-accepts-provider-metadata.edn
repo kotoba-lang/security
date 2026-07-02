@@ -1,0 +1,10 @@
+{:case/id "crypto-agile-accepts-provider-metadata"
+ :case/check :envelope
+ :policy {:kotoba.security/crypto-policy-version 1
+          :mode :crypto-agile
+          :hybrid-epoch-floor 1}
+ :envelope {:envelope/algorithms [:ed25519]
+            :envelope/provider {:provider/id :jdk-ed25519
+                                :provider/fips-validated false}
+            :envelope/epoch 0
+            :envelope/hybrid? false}}

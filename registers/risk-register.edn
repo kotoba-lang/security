@@ -1,0 +1,113 @@
+{:register/type :kotoba.security/risk-register
+ :register/version 1
+ :risks
+ [{:risk/id "R-001"
+   :risk/title "Package lock enforcement is not complete end-to-end"
+   :risk/category :supply-chain
+   :risk/affected-assets [:safe-build :package-registry :component-execution]
+   :risk/impact 5
+   :risk/likelihood 3
+   :risk/score 15
+   :risk/status :open
+   :risk/owner :package-owner
+   :risk/mitigations ["CID/repo-RID/signature contract exists"
+                      "package conformance fixtures exist"
+                      "safe execution must reject version-only dependencies"]
+   :risk/evidence ["docs/standards-assessment.md" "docs/evidence-gates.md"]
+   :risk/review-by "2026-08-01"}
+  {:risk/id "R-002"
+   :risk/title "Signer revocation and key expiry are incomplete"
+   :risk/category :cryptography
+   :risk/affected-assets [:package-signing :aiueos-manifests :audit-signing]
+   :risk/impact 5
+   :risk/likelihood 3
+   :risk/score 15
+   :risk/status :open
+   :risk/owner :crypto-owner
+   :risk/mitigations ["key lifecycle states defined"
+                      "key register seeded"
+                      "verifiers must reject revoked keys for new artifacts"]
+   :risk/evidence ["docs/key-lifecycle.md"]
+   :risk/review-by "2026-08-01"}
+  {:risk/id "R-003"
+   :risk/title "No FIPS validation claim is supported by deployment evidence"
+   :risk/category :cryptography
+   :risk/affected-assets [:object-encryption :signing :randomness]
+   :risk/impact 4
+   :risk/likelihood 4
+   :risk/score 16
+   :risk/status :open
+   :risk/owner :crypto-owner
+   :risk/mitigations ["explicit non-claim documented"
+                      "FIPS boundary evidence requirements defined"]
+   :risk/evidence ["docs/fips-validation.md"]
+   :risk/review-by "2026-08-01"}
+  {:risk/id "R-004"
+   :risk/title "PQC migration is a design target, not implemented"
+   :risk/category :cryptography
+   :risk/affected-assets [:long-lived-private-data :package-signatures]
+   :risk/impact 4
+   :risk/likelihood 3
+   :risk/score 12
+   :risk/status :open
+   :risk/owner :crypto-owner
+   :risk/mitigations ["PQC roadmap defined"
+                      "algorithm-agile envelope metadata required"]
+   :risk/evidence ["docs/pqc-roadmap.md"]
+   :risk/review-by "2026-08-01"}
+  {:risk/id "R-005"
+   :risk/title "Continuous monitoring and IR drills are incomplete"
+   :risk/category :operations
+   :risk/affected-assets [:runtime :audit :incident-response]
+   :risk/impact 4
+   :risk/likelihood 3
+   :risk/score 12
+   :risk/status :open
+   :risk/owner :operations-owner
+   :risk/mitigations ["monitoring signals and alert rules defined"
+                      "incident playbooks defined"]
+   :risk/evidence ["docs/continuous-monitoring.md" "docs/incident-response.md"]
+   :risk/review-by "2026-08-01"}
+  {:risk/id "R-006"
+   :risk/title "SBOM/SLSA release evidence is not yet enforced"
+   :risk/category :governance
+   :risk/affected-assets [:release :supply-chain]
+   :risk/impact 4
+   :risk/likelihood 3
+   :risk/score 12
+   :risk/status :open
+   :risk/owner :security-owner
+   :risk/mitigations ["SBOM/SLSA artifact requirements defined"
+                      "release packet requires SBOM/provenance"]
+   :risk/evidence ["docs/sbom-slsa.md" "docs/operational-evidence.md"]
+   :risk/review-by "2026-08-01"}
+  {:risk/id "R-007"
+   :risk/title "Dynamic capability values and runtime grant intersection are incomplete"
+   :risk/category :runtime-confinement
+   :risk/affected-assets [:safe-kotoba :runtime :cacao :host-abi]
+   :risk/impact 4
+   :risk/likelihood 3
+   :risk/score 12
+   :risk/status :open
+   :risk/owner :runtime-owner
+   :risk/mitigations ["static per-CID literal checks are implemented"
+                      "capability values are identified as S4b follow-up"
+                      "runtime receipts must record concrete capability objects"]
+   :risk/evidence ["docs/architecture-review-2026-07-01.md"
+                   "../kotoba-lang/docs/adr/ADR-safe-capability-language.md"]
+   :risk/review-by "2026-08-01"}
+  {:risk/id "R-008"
+   :risk/title "TCB and side-channel non-claims are not tied to deployment profiles"
+   :risk/category :architecture
+   :risk/affected-assets [:aiueos :runtime :deployment :release-claims]
+   :risk/impact 3
+   :risk/likelihood 3
+   :risk/score 9
+   :risk/status :open
+   :risk/owner :security-owner
+   :risk/mitigations ["side-channel and formal-verification non-claims are documented"
+                      "architecture review requires deployment profiles"]
+   :risk/evidence ["docs/architecture-review-2026-07-01.md"
+                   "../aiueos/SECURITY.md"
+                   "docs/security-architecture.md"]
+   :risk/review-by "2026-08-01"}]}

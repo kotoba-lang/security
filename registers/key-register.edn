@@ -1,0 +1,30 @@
+{:register/type :kotoba.security/key-register
+ :register/version 1
+ :keys
+ [{:key/id "example-package-signing-2026q3"
+   :key/class :package-signing
+   :key/algorithm :ed25519
+   :key/status :pre-active
+   :key/owner :package-owner
+   :key/created-at "2026-07-01"
+   :key/active-from nil
+   :key/active-until nil
+   :key/verify-until nil
+   :key/storage :placeholder
+   :key/fips-boundary nil
+   :key/pq-status :classical-only
+   :key/notes "Template record; replace before production use."}
+  {:key/id "example-audit-signing-2026h2"
+   :key/class :audit-signing
+   :key/algorithm :ed25519
+   :key/status :pre-active
+   :key/owner :operations-owner
+   :key/created-at "2026-07-01"
+   :key/active-from nil
+   :key/active-until nil
+   :key/verify-until nil
+   :key/storage :placeholder
+   :key/fips-boundary nil
+   :key/pq-status :classical-only
+   :key/notes "Template record; replace before production use."}]}
+

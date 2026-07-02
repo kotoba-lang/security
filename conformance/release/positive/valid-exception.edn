@@ -1,0 +1,31 @@
+{:case/id "valid-exception"
+ :now "2026-07-02"
+ :evidence-index
+ {:register/type :kotoba.security/evidence-index
+  :register/version 1
+  :evidence
+  [{:evidence/id "EV-1101"
+    :evidence/type :conformance-result
+    :evidence/created-at "2026-07-02"
+    :evidence/producer "ci"
+    :evidence/artifacts [{:kind :log :digest "sha256:1111111111111111"}]
+    :evidence/claims [:conformance-results :package-verification :provenance]
+    :evidence/result :pass
+    :evidence/retention "P7Y"}
+   {:evidence/id "EV-1102"
+    :evidence/type :release-security-note
+    :evidence/created-at "2026-07-02"
+    :evidence/producer "security-owner"
+    :evidence/artifacts [{:kind :register :path "registers/key-register.edn"}]
+    :evidence/claims [:key-status-snapshot :risk-review]
+    :evidence/result :pass
+    :evidence/retention "P7Y"}]}
+ :exception-register
+ {:register/type :kotoba.security/exception-register
+  :register/version 1
+  :exceptions
+  [{:exception/id "EX-0001"
+    :exception/claim :sbom
+    :exception/owner "security-owner"
+    :exception/expires "2026-12-31"
+    :exception/reason "SBOM generation pipeline is a tracked gap (docs/evidence-gates.md)."}]}}
