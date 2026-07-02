@@ -72,4 +72,18 @@
                      :crypto-inventory-checked]
    :evidence/notes "kotoba#264/#265 (F-005/F-007): safe-release gate over evidence-index + exception-register (--release enforces; exceptions need owner+expiry); crypto policy modes :crypto-agile/:hybrid-required/:fips-required with provider-metadata and non-FIPS rejection; hybrid KEM vector contract defined, real vectors pending crypto implementation."
    :evidence/result :passing
+   :evidence/retention "P7Y"}
+
+  {:evidence/id "EV-0005"
+   :evidence/type :implementation
+   :evidence/created-at "2026-07-02"
+   :evidence/producer "kotoba-lang/security + kotoba-lang/crypto"
+   :evidence/artifacts [{:kind :vectors :path "conformance/crypto/vectors/hybrid-x25519-mlkem768.edn"}
+                        {:kind :code :path "scripts/gen-hybrid-vectors.clj"}
+                        {:kind :test :path "test-vectors/kotoba/security/hybrid_vectors_test.clj"}
+                        {:kind :code :path "kotoba-lang/crypto:src/kotoba/lang/crypto.cljc"}]
+   :evidence/claims [:hybrid-kem-vectors-real
+                     :envelope-provider-metadata-emitted]
+   :evidence/notes "kotoba#264 completion: 3 deterministic X25519+ML-KEM-768 vectors (KEK = HKDF-SHA256(ss1||ss2, salt kotoba.hybrid.v1, info epoch)); BC 1.81 recomputation in CI vectors job; kotoba.lang.crypto seal path emits :envelope/* provider metadata validated at the aead-provider injection boundary."
+   :evidence/result :passing
    :evidence/retention "P7Y"}]}
