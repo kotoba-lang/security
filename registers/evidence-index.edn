@@ -86,4 +86,18 @@
                      :envelope-provider-metadata-emitted]
    :evidence/notes "kotoba#264 completion: 3 deterministic X25519+ML-KEM-768 vectors (KEK = HKDF-SHA256(ss1||ss2, salt kotoba.hybrid.v1, info epoch)); BC 1.81 recomputation in CI vectors job; kotoba.lang.crypto seal path emits :envelope/* provider metadata validated at the aead-provider injection boundary."
    :evidence/result :passing
+   :evidence/retention "P7Y"}
+
+  {:evidence/id "EV-0006"
+   :evidence/type :implementation
+   :evidence/created-at "2026-07-02"
+   :evidence/producer "kotoba-lang/kotoba-lang + kotoba-lang/kotoba"
+   :evidence/artifacts [{:kind :code :path "kotoba-lang/kotoba-lang:src/kotoba/lang/capability_host.cljc"}
+                        {:kind :code :path "kotoba-lang/kotoba:src/kotoba/host_providers.clj"}
+                        {:kind :code :path "kotoba-lang/kotoba:src/kotoba/runtime.clj"}
+                        {:kind :test :path "kotoba-lang/kotoba:test/kotoba/host_providers_test.clj"}]
+   :evidence/claims [:capability-intersection-at-host-call-time
+                     :host-call-receipts-in-audit-trail]
+   :evidence/notes "kotoba#263 completion: guard-call runs requested ∩ CACAO grants ∩ local-policy per host invocation; denial never invokes the provider; concrete narrowed cap passed to handlers and embedded in ordered receipts, surfaced as :kotoba.host/receipts in launcher run results. 9 :host/* kinds registered."
+   :evidence/result :passing
    :evidence/retention "P7Y"}]}
