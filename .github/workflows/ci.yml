@@ -29,3 +29,22 @@ jobs:
 
       - name: Crypto inventory gate
         run: bb scripts/check-crypto-inventory.bb
+
+  # Recomputes the hybrid X25519 + ML-KEM-768 wrapping vectors with Bouncy
+  # Castle (:vectors alias only; the gates job above stays BC-free).
+  vectors:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: DeLaGuardo/setup-clojure@13.4
+        with:
+          cli: latest
+
+      - name: Hybrid KEM vector recomputation
+        run: clojure -M:vectors:vectors-test

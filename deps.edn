@@ -5,4 +5,15 @@
          :extra-deps {io.github.cognitect-labs/test-runner
                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
          :main-opts ["-m" "cognitect.test-runner"]
-         :exec-fn cognitect.test-runner.api/test}}}
+         :exec-fn cognitect.test-runner.api/test}
+
+  ;; Hybrid KEM test-vector generation/verification (docs/hybrid-envelope-vectors.md).
+  ;; Bouncy Castle is confined to this alias: the default paths and the
+  ;; default :test alias stay BC-free (CI validates vector structure without BC).
+  ;;   generate: clojure -M:vectors scripts/gen-hybrid-vectors.clj
+  ;;   verify:   clojure -M:vectors:vectors-test
+  :vectors {:extra-paths ["test-vectors"]
+            :extra-deps {org.bouncycastle/bcprov-jdk18on {:mvn/version "1.81"}}}
+  :vectors-test {:extra-deps {io.github.cognitect-labs/test-runner
+                              {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+                 :main-opts ["-m" "cognitect.test-runner" "-d" "test-vectors"]}}}

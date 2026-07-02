@@ -7,6 +7,9 @@
 ;; Validates registers/crypto-inventory.edn against policy/crypto-policy.edn:
 ;; structure is always enforced; FIPS strictness (no :crypto/fips-status
 ;; :not-claimed entries) only when the policy mode is :fips-required.
+;; Also structurally validates conformance/crypto/vectors/*.edn hybrid KEM
+;; vector files (fields, kem list, hex shapes) — BC-free; cryptographic
+;; recomputation runs under `clojure -M:vectors:vectors-test`.
 ;; Exit 1 on failure.
 (require '[babashka.classpath :refer [add-classpath]]
          '[clojure.edn :as edn]
@@ -16,7 +19,8 @@
 (def root (.getParentFile script-dir))
 (add-classpath (str (io/file root "src")))
 
-(require '[kotoba.security.crypto-policy :as policy])
+(require '[kotoba.security.crypto-policy :as policy]
+         '[kotoba.security.hybrid-vectors :as hv])
 
 (def args (vec *command-line-args*))
 
@@ -44,3 +48,22 @@
         (println "ok crypto-inventory" (str "mode=" (:mode crypto-policy))))
     (do (println "FAIL" (:message result) (pr-str (:data result)))
         (System/exit 1))))
+
+;; Hybrid KEM vector files (docs/hybrid-envelope-vectors.md): structural gate.
+(let [vectors-dir (io/file root "conformance/crypto/vectors")
+      vector-files (->> (.listFiles vectors-dir)
+                        (filter #(.endsWith (.getName ^java.io.File %) ".edn"))
+                        (sort-by #(.getName ^java.io.File %)))]
+  (when (empty? vector-files)
+    (println "FAIL hybrid vector files required in conformance/crypto/vectors/")
+    (System/exit 1))
+  (doseq [f vector-files]
+    (let [vectors (read-edn f)
+          result (hv/check-vector-file vectors)]
+      (if (:valid? result)
+        (println "ok" (.getName ^java.io.File f)
+                 (str "vectors=" (count vectors))
+                 (str "kem=" (pr-str hv/hybrid-kem)))
+        (do (println "FAIL" (.getName ^java.io.File f)
+                     (:message result) (pr-str (:data result)))
+            (System/exit 1))))))
