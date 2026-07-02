@@ -24,8 +24,11 @@ jobs:
       - name: Run tests
         run: clojure -M:test
 
-      - name: Safe-release evidence gate (fixtures + advisory)
+      - name: Safe-release evidence gate (fixtures)
         run: bb scripts/check-safe-release.bb
+
+      - name: Safe-release evidence gate (strict release enforcement)
+        run: bb scripts/check-safe-release.bb --release
 
       - name: Crypto inventory gate
         run: bb scripts/check-crypto-inventory.bb

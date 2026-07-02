@@ -1,0 +1,12 @@
+#:kotoba.package{:verified? true,
+                 :lock-path "../kotoba-lang/examples/kotoba.lock.edn",
+                 :manifest-path
+                 "../kotoba-lang/examples/package-manifest.edn",
+                 :checked-at "2026-07-02T02:29:02.491401Z",
+                 :problems [],
+                 :entries
+                 [#:package{:id "kotoba-lang/json@0.1.0",
+                            :repo-rid "bafy...repo",
+                            :manifest-cid "bafy...manifest",
+                            :tree-cid "bafy...tree",
+                            :result :accepted}]}

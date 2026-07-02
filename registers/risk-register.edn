@@ -8,13 +8,14 @@
    :risk/impact 5
    :risk/likelihood 3
    :risk/score 15
-   :risk/status :open
+   :risk/status :mitigated
    :risk/owner :package-owner
    :risk/mitigations ["CID/repo-RID/signature contract exists"
                       "package conformance fixtures exist"
-                      "safe execution must reject version-only dependencies"]
+                      "safe execution must reject version-only dependencies"
+                      "2026-07-02 review: mitigated per EV-0002 + EV-0007 (package admission gate enforced; real package-verification receipt in evidence/2026-07-02/)"]
    :risk/evidence ["docs/standards-assessment.md" "docs/evidence-gates.md"]
-   :risk/review-by "2026-08-01"}
+   :risk/review-by "2026-10-01"}
   {:risk/id "R-002"
    :risk/title "Signer revocation and key expiry are incomplete"
    :risk/category :cryptography
@@ -75,12 +76,13 @@
    :risk/impact 4
    :risk/likelihood 3
    :risk/score 12
-   :risk/status :open
+   :risk/status :mitigated
    :risk/owner :security-owner
    :risk/mitigations ["SBOM/SLSA artifact requirements defined"
-                      "release packet requires SBOM/provenance"]
+                      "release packet requires SBOM/provenance"
+                      "2026-07-02 review: mitigated per EV-0004 + EV-0007 (executable safe-release gate now fed by a real packet — SBOMs/provenance/conformance/receipt — and CI runs --release strictly)"]
    :risk/evidence ["docs/sbom-slsa.md" "docs/operational-evidence.md"]
-   :risk/review-by "2026-08-01"}
+   :risk/review-by "2026-10-01"}
   {:risk/id "R-007"
    :risk/title "Dynamic capability values and runtime grant intersection are incomplete"
    :risk/category :runtime-confinement
@@ -88,14 +90,15 @@
    :risk/impact 4
    :risk/likelihood 3
    :risk/score 12
-   :risk/status :open
+   :risk/status :mitigated
    :risk/owner :runtime-owner
    :risk/mitigations ["static per-CID literal checks are implemented"
                       "capability values are identified as S4b follow-up"
-                      "runtime receipts must record concrete capability objects"]
+                      "runtime receipts must record concrete capability objects"
+                      "2026-07-02 review: mitigated per EV-0003 + EV-0006 (capability value contract + host-call-time requested ∩ CACAO ∩ local-policy intersection with ordered receipts)"]
    :risk/evidence ["docs/architecture-review-2026-07-01.md"
                    "../kotoba-lang/docs/adr/ADR-safe-capability-language.md"]
-   :risk/review-by "2026-08-01"}
+   :risk/review-by "2026-10-01"}
   {:risk/id "R-008"
    :risk/title "TCB and side-channel non-claims are not tied to deployment profiles"
    :risk/category :architecture

@@ -100,4 +100,28 @@
                      :host-call-receipts-in-audit-trail]
    :evidence/notes "kotoba#263 completion: guard-call runs requested ∩ CACAO grants ∩ local-policy per host invocation; denial never invokes the provider; concrete narrowed cap passed to handlers and embedded in ordered receipts, surfaced as :kotoba.host/receipts in launcher run results. 9 :host/* kinds registered."
    :evidence/result :passing
+   :evidence/retention "P7Y"}
+
+  {:evidence/id "EV-0007"
+   :evidence/type :release-packet
+   :evidence/created-at "2026-07-02"
+   :evidence/producer "kotoba-lang/security (claude-code session, owner-directed)"
+   :evidence/artifacts [{:kind :conformance :path "evidence/2026-07-02/conformance-results.edn"}
+                        {:kind :receipt :path "evidence/2026-07-02/package-verification-receipt.edn"}
+                        {:kind :sbom :path "evidence/2026-07-02/sbom/kotoba.edn"}
+                        {:kind :sbom :path "evidence/2026-07-02/sbom/kotoba-lang.edn"}
+                        {:kind :sbom :path "evidence/2026-07-02/sbom/security.edn"}
+                        {:kind :sbom :path "evidence/2026-07-02/sbom/crypto.edn"}
+                        {:kind :provenance :path "evidence/2026-07-02/provenance.edn"}
+                        {:kind :snapshot :path "evidence/2026-07-02/key-status-snapshot.edn"}
+                        {:kind :review :path "evidence/2026-07-02/risk-review.edn"}
+                        {:kind :generator :path "scripts/gen-sbom.bb"}]
+   :evidence/claims [:conformance-results
+                     :package-verification
+                     :sbom
+                     :provenance
+                     :key-status-snapshot
+                     :risk-review]
+   :evidence/notes "2026-07-02 operational-evidence release packet: every conformance gate re-run for real across kotoba (b39383f0), kotoba-lang (3c8625a5), security (c9fee104), crypto (2fd5f1ce) — all green; real positive package-verification receipt from 'kotoba-clj package verify' against kotoba-lang examples/kotoba.lock.edn + examples/package-manifest.edn; per-repo CycloneDX-inspired SBOMs generated mechanically by scripts/gen-sbom.bb from each deps.edn; SLSA-inspired provenance pins commit + latest successful main CI run per repo; key snapshot derived from registers/key-register.edn; risk review covers R-001..R-008 (R-001/R-006/R-007 -> mitigated)."
+   :evidence/result :passing
    :evidence/retention "P7Y"}]}
