@@ -5,12 +5,47 @@
             [clojure.test :refer [deftest is testing]]
             [kotoba.security.crypto-policy :as policy]))
 
+;; conformance/crypto/{negative,positive}/*.edn, policy/crypto-policy.edn and
+;; registers/crypto-inventory.edn were datomic/datascript-ized by
+;; edn-datomize.bb (wrap-map-keep-ns): top level is now `[{:db/id -1 ...}]`
+;; tx-data. Already-namespaced keys (:case/id, :register/type,
+;; :kotoba.security/crypto-policy-version, ...) are unchanged; bare keys
+;; (:policy, :envelope, :inventory, :mode, :hybrid-epoch-floor,
+;; :allowed-providers, ...) were promoted to the transform's directory-derived
+;; namespace (e.g. "conformance.crypto.negative", "policy.crypto-policy").
+;; This reconstitutes the original raw map so every existing assertion below
+;; keeps working unchanged.
+(defn- unblob [v]
+  (if (string? v)
+    (try (let [parsed (edn/read-string v)] (if (coll? parsed) parsed v))
+         (catch Exception _ v))
+    v))
+
+(defn- tx-data? [content]
+  (and (vector? content) (seq content) (map? (first content)) (contains? (first content) :db/id)))
+
+(defn- reconstitute-entity [ns-name tx-data]
+  (into {} (map (fn [[k v]]
+                  [(if (= ns-name (namespace k)) (keyword (name k)) k)
+                   (unblob v)]))
+        (dissoc (first tx-data) :db/id)))
+
+(defn read-tx-edn
+  "Reads an EDN file, reconstituting datomic/datascript tx-data back into its
+  original raw map via `ns-name` (falls back to the parsed content unchanged
+  if the file isn't tx-data)."
+  [f ns-name]
+  (let [content (edn/read-string (slurp f))]
+    (if (tx-data? content)
+      (reconstitute-entity ns-name content)
+      content)))
+
 (defn fixture-cases
   [dir]
   (->> (.listFiles (io/file dir))
        (filter #(str/ends-with? (.getName %) ".edn"))
        (sort-by #(.getName %))
-       (map #(edn/read-string (slurp %)))))
+       (map #(read-tx-edn % (str/replace dir "/" ".")))))
 
 (defn run-case
   [tc]
@@ -35,14 +70,16 @@
             (str (:case/id tc) " should be rejected"))))))
 
 (deftest fips-required-rejects-nonfips-provider
-  (let [tc (edn/read-string
-            (slurp "conformance/crypto/negative/fips-required-rejects-nonfips-provider.edn"))
+  (let [tc (read-tx-edn
+            (io/file "conformance/crypto/negative/fips-required-rejects-nonfips-provider.edn")
+            "conformance.crypto.negative")
         result (run-case tc)]
     (is (= "fips-validated provider required" (:message result)))))
 
 (deftest hybrid-required-rejects-classical-kem-new-epoch
-  (let [tc (edn/read-string
-            (slurp "conformance/crypto/negative/hybrid-required-rejects-classical-kem-new-epoch.edn"))
+  (let [tc (read-tx-edn
+            (io/file "conformance/crypto/negative/hybrid-required-rejects-classical-kem-new-epoch.edn")
+            "conformance.crypto.negative")
         result (run-case tc)]
     (is (= "hybrid kem required for new epochs" (:message result)))))
 
@@ -93,15 +130,15 @@
         (is (false? (:valid? result)))))))
 
 (deftest real-inventory-passes-real-policy
-  (let [crypto-policy (edn/read-string (slurp "policy/crypto-policy.edn"))
-        inventory (edn/read-string (slurp "registers/crypto-inventory.edn"))]
+  (let [crypto-policy (read-tx-edn (io/file "policy/crypto-policy.edn") "policy.crypto-policy")
+        inventory (read-tx-edn (io/file "registers/crypto-inventory.edn") "registers.crypto-inventory")]
     (is (= :crypto-agile (:mode crypto-policy)))
     (is (= {:valid? true} (policy/check-inventory crypto-policy inventory)))))
 
 (deftest real-inventory-fails-under-fips-required
-  (let [crypto-policy (assoc (edn/read-string (slurp "policy/crypto-policy.edn"))
+  (let [crypto-policy (assoc (read-tx-edn (io/file "policy/crypto-policy.edn") "policy.crypto-policy")
                              :mode :fips-required)
-        inventory (edn/read-string (slurp "registers/crypto-inventory.edn"))
+        inventory (read-tx-edn (io/file "registers/crypto-inventory.edn") "registers.crypto-inventory")
         result (policy/check-inventory crypto-policy inventory)]
     (is (false? (:valid? result)))
     (is (= "fips status not-claimed forbidden under fips-required"

@@ -34,11 +34,41 @@
     (io/file (second args))
     (io/file root "registers/crypto-inventory.edn")))
 
-(defn read-edn [f]
-  (edn/read-string (slurp f)))
+;; policy/crypto-policy.edn and registers/crypto-inventory.edn were
+;; datomic/datascript-ized by edn-datomize.bb (wrap-map-keep-ns): top level is
+;; now `[{:db/id -1 ...}]` tx-data. Already-namespaced keys (:register/type,
+;; :kotoba.security/crypto-policy-version, ...) are unchanged; bare keys
+;; (:mode, :hybrid-epoch-floor, :modes, :allowed-providers, :inventory) were
+;; promoted to the transform's ns ("policy.crypto-policy" /
+;; "registers.crypto-inventory"). This reconstitutes the original raw map so
+;; every existing call site below keeps working unchanged. conformance/crypto
+;; vectors/*.edn is untouched by the transform (its top level is a vector of
+;; vectors, not a map), so its reads stay plain.
+(defn- unblob [v]
+  (if (string? v)
+    (try (let [parsed (edn/read-string v)] (if (coll? parsed) parsed v))
+         (catch Exception _ v))
+    v))
 
-(let [crypto-policy (read-edn policy-file)
-      inventory (read-edn inventory-file)
+(defn- tx-data? [content]
+  (and (vector? content) (seq content) (map? (first content)) (contains? (first content) :db/id)))
+
+(defn- reconstitute-entity [ns-name tx-data]
+  (into {} (map (fn [[k v]]
+                  [(if (= ns-name (namespace k)) (keyword (name k)) k)
+                   (unblob v)]))
+        (dissoc (first tx-data) :db/id)))
+
+(defn read-edn
+  ([f] (read-edn f nil))
+  ([f ns-name]
+   (let [content (edn/read-string (slurp f))]
+     (if (and ns-name (tx-data? content))
+       (reconstitute-entity ns-name content)
+       content))))
+
+(let [crypto-policy (read-edn policy-file "policy.crypto-policy")
+      inventory (read-edn inventory-file "registers.crypto-inventory")
       result (policy/check-inventory crypto-policy inventory)]
   (if (:valid? result)
     (do (doseq [entry (:inventory inventory)]
