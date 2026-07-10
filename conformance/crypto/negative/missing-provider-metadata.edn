@@ -1,8 +1,1 @@
-{:case/id "missing-provider-metadata"
- :case/check :envelope
- :policy {:kotoba.security/crypto-policy-version 1
-          :mode :crypto-agile
-          :hybrid-epoch-floor 1}
- :envelope {:envelope/algorithms [:ed25519]
-            :envelope/epoch 0
-            :envelope/hybrid? false}}
+[{:db/id -1, :case/id "missing-provider-metadata", :case/check :envelope, :conformance.crypto.negative/policy "{:kotoba.security/crypto-policy-version 1, :mode :crypto-agile, :hybrid-epoch-floor 1}", :conformance.crypto.negative/envelope "#:envelope{:algorithms [:ed25519], :epoch 0, :hybrid? false}"}]

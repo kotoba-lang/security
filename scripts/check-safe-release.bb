@@ -41,8 +41,41 @@
 
 (def today (str (java.time.LocalDate/now)))
 
-(defn read-edn [f]
-  (edn/read-string (slurp f)))
+;; registers/*.edn and conformance/release/{positive,negative}/*.edn were
+;; datomic/datascript-ized by edn-datomize.bb (wrap-map-keep-ns): each file's
+;; top level is now `[{:db/id -1 ...}]` tx-data, where keys that were already
+;; namespaced (:register/type, :case/id, ...) are unchanged and bare keys
+;; (:evidence, :exceptions, :now, :evidence-index, :exception-register, ...)
+;; got promoted to `ns-name` (the transform's directory-derived namespace,
+;; e.g. "registers.evidence-index" or "conformance.release.positive"). This
+;; reconstitutes the original raw map so every existing call site below keeps
+;; working unchanged. Non-scalar values were pr-str'd ("blob") by the
+;; transform; unblob restores them via edn/read-string.
+(defn- unblob [v]
+  (if (string? v)
+    (try (let [parsed (edn/read-string v)] (if (coll? parsed) parsed v))
+         (catch Exception _ v))
+    v))
+
+(defn- tx-data? [content]
+  (and (vector? content) (seq content) (map? (first content)) (contains? (first content) :db/id)))
+
+(defn- reconstitute-entity [ns-name tx-data]
+  (into {} (map (fn [[k v]]
+                  [(if (= ns-name (namespace k)) (keyword (name k)) k)
+                   (unblob v)]))
+        (dissoc (first tx-data) :db/id)))
+
+(defn read-edn
+  "Reads an EDN file. If it's already tx-data (post edn-datomize.bb), the
+  original map is reconstituted using `ns-name`; legacy raw-map files (e.g.
+  a hand-supplied --release override) pass through unchanged."
+  ([f] (read-edn f nil))
+  ([f ns-name]
+   (let [content (edn/read-string (slurp f))]
+     (if (and ns-name (tx-data? content))
+       (reconstitute-entity ns-name content)
+       content))))
 
 (defn fixture-files [dir]
   (->> (.listFiles (io/file root dir))
@@ -59,7 +92,7 @@
    (fn [failures [dir expect-ok?]]
      (reduce
       (fn [failures file]
-        (let [tc (read-edn file)
+        (let [tc (read-edn file (str/replace dir "/" "."))
               result (evaluate-case tc)
               ok? (:kotoba.release/ok? result)]
           (if (= expect-ok? ok?)
@@ -94,8 +127,8 @@
     (doseq [problem (:kotoba.release/problems result)]
       (emit "problem" (pr-str problem)))))
 
-(let [evidence-index (read-edn evidence-file)
-      exception-register (read-edn exception-file)
+(let [evidence-index (read-edn evidence-file "registers.evidence-index")
+      exception-register (read-edn exception-file "registers.exception-register")
       result (gate/evaluate-release {:evidence-index evidence-index
                                      :exception-register exception-register
                                      :now today})]

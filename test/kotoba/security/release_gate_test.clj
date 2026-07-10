@@ -5,12 +5,46 @@
             [clojure.test :refer [deftest is testing]]
             [kotoba.security.release-gate :as gate]))
 
+;; conformance/release/{negative,positive}/*.edn, registers/evidence-index.edn
+;; and registers/exception-register.edn were datomic/datascript-ized by
+;; edn-datomize.bb (wrap-map-keep-ns): top level is now `[{:db/id -1 ...}]`
+;; tx-data. Already-namespaced keys (:case/id, :register/type, ...) are
+;; unchanged; bare keys (:now, :evidence-index, :exception-register,
+;; :evidence, :exceptions) were promoted to the transform's directory-derived
+;; namespace (e.g. "conformance.release.positive", "registers.evidence-index").
+;; This reconstitutes the original raw map so every existing assertion below
+;; keeps working unchanged.
+(defn- unblob [v]
+  (if (string? v)
+    (try (let [parsed (edn/read-string v)] (if (coll? parsed) parsed v))
+         (catch Exception _ v))
+    v))
+
+(defn- tx-data? [content]
+  (and (vector? content) (seq content) (map? (first content)) (contains? (first content) :db/id)))
+
+(defn- reconstitute-entity [ns-name tx-data]
+  (into {} (map (fn [[k v]]
+                  [(if (= ns-name (namespace k)) (keyword (name k)) k)
+                   (unblob v)]))
+        (dissoc (first tx-data) :db/id)))
+
+(defn read-tx-edn
+  "Reads an EDN file, reconstituting datomic/datascript tx-data back into its
+  original raw map via `ns-name` (falls back to the parsed content unchanged
+  if the file isn't tx-data)."
+  [f ns-name]
+  (let [content (edn/read-string (slurp f))]
+    (if (tx-data? content)
+      (reconstitute-entity ns-name content)
+      content)))
+
 (defn fixture-cases
   [dir]
   (->> (.listFiles (io/file dir))
        (filter #(str/ends-with? (.getName %) ".edn"))
        (sort-by #(.getName %))
-       (map #(edn/read-string (slurp %)))))
+       (map #(read-tx-edn % (str/replace dir "/" ".")))))
 
 (defn evaluate-case
   [tc]
@@ -35,33 +69,38 @@
             (str (:case/id tc) " should be rejected"))))))
 
 (deftest complete-packet-has-no-missing-claims
-  (let [tc (edn/read-string (slurp "conformance/release/positive/complete-packet.edn"))
+  (let [tc (read-tx-edn (io/file "conformance/release/positive/complete-packet.edn")
+                        "conformance.release.positive")
         result (evaluate-case tc)]
     (is (= [] (:kotoba.release/missing result)))
     (is (= [] (:kotoba.release/excepted result)))
     (is (= [] (:kotoba.release/problems result)))))
 
 (deftest valid-exception-covers-sbom
-  (let [tc (edn/read-string (slurp "conformance/release/positive/valid-exception.edn"))
+  (let [tc (read-tx-edn (io/file "conformance/release/positive/valid-exception.edn")
+                        "conformance.release.positive")
         result (evaluate-case tc)]
     (is (:kotoba.release/ok? result))
     (is (= [:sbom] (mapv :claim (:kotoba.release/excepted result))))
     (is (= "EX-0001" (:exception/id (first (:kotoba.release/excepted result)))))))
 
 (deftest missing-sbom-is-reported
-  (let [tc (edn/read-string (slurp "conformance/release/negative/missing-sbom.edn"))
+  (let [tc (read-tx-edn (io/file "conformance/release/negative/missing-sbom.edn")
+                        "conformance.release.negative")
         result (evaluate-case tc)]
     (is (= [:sbom] (:kotoba.release/missing result)))))
 
 (deftest expired-exception-does-not-excuse
-  (let [tc (edn/read-string (slurp "conformance/release/negative/expired-exception.edn"))
+  (let [tc (read-tx-edn (io/file "conformance/release/negative/expired-exception.edn")
+                        "conformance.release.negative")
         result (evaluate-case tc)]
     (is (= [:sbom] (:kotoba.release/missing result)))
     (is (= [] (:kotoba.release/excepted result)))))
 
 (deftest malformed-exception-never-excuses
   (testing "exception without owner"
-    (let [tc (edn/read-string (slurp "conformance/release/negative/exception-without-owner.edn"))
+    (let [tc (read-tx-edn (io/file "conformance/release/negative/exception-without-owner.edn")
+                          "conformance.release.negative")
           result (evaluate-case tc)]
       (is (= [:sbom] (:kotoba.release/missing result)))
       (is (= [] (:kotoba.release/excepted result)))
@@ -83,7 +122,8 @@
       (is (= [] (:kotoba.release/excepted result))))))
 
 (deftest failed-evidence-does-not-satisfy-claim
-  (let [tc (edn/read-string (slurp "conformance/release/negative/failed-evidence-result.edn"))
+  (let [tc (read-tx-edn (io/file "conformance/release/negative/failed-evidence-result.edn")
+                        "conformance.release.negative")
         result (evaluate-case tc)]
     (is (= [:sbom] (:kotoba.release/missing result)))))
 
@@ -103,8 +143,8 @@
               (:kotoba.release/problems result)))))
 
 (deftest real-registers-are-structurally-valid
-  (let [evidence-index (edn/read-string (slurp "registers/evidence-index.edn"))
-        exception-register (edn/read-string (slurp "registers/exception-register.edn"))
+  (let [evidence-index (read-tx-edn (io/file "registers/evidence-index.edn") "registers.evidence-index")
+        exception-register (read-tx-edn (io/file "registers/exception-register.edn") "registers.exception-register")
         result (gate/evaluate-release {:evidence-index evidence-index
                                        :exception-register exception-register
                                        :now "2026-07-02"})]

@@ -1,11 +1,1 @@
-{:case/id "hybrid-required-rejects-classical-kem-new-epoch"
- :case/check :envelope
- :policy {:kotoba.security/crypto-policy-version 1
-          :mode :hybrid-required
-          :hybrid-epoch-floor 1}
- :envelope {:envelope/algorithms [:x25519 :hpke :aes-256-gcm]
-            :envelope/provider {:provider/id :jdk-x25519-hpke
-                                :provider/fips-validated false}
-            :envelope/epoch 1
-            :envelope/kem? true
-            :envelope/hybrid? false}}
+[{:db/id -1, :case/id "hybrid-required-rejects-classical-kem-new-epoch", :case/check :envelope, :conformance.crypto.negative/policy "{:kotoba.security/crypto-policy-version 1, :mode :hybrid-required, :hybrid-epoch-floor 1}", :conformance.crypto.negative/envelope "#:envelope{:algorithms [:x25519 :hpke :aes-256-gcm], :provider #:provider{:id :jdk-x25519-hpke, :fips-validated false}, :epoch 1, :kem? true, :hybrid? false}"}]
