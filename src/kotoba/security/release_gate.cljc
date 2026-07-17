@@ -5,7 +5,8 @@
   packet (docs/operational-evidence.md) is either backed by evidence in the
   evidence index or covered by an unexpired, owned entry in the exception
   register."
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [kotoba.security.key-status :as key-status]))
 
 (def required-claims
   [:conformance-results
@@ -14,6 +15,11 @@
    :provenance
    :key-status-snapshot
    :risk-review])
+
+(def recommended-claims
+  "Claims that should appear on regulated/high-assurance releases but are
+  not hard-required for research packets (see docs/deployment-profiles.md)."
+  [:deployment-profile])
 
 (defn non-empty-string?
   [x]
@@ -81,19 +87,32 @@
                    :exception exception})))
         exceptions))
 
+(defn key-register-problems
+  "When a key-register is supplied, require it to evaluate cleanly
+  (R-002: no unknown statuses; if keys exist, at least one :active)."
+  [key-register]
+  (if (nil? key-register)
+    []
+    (mapv (fn [p] (assoc p :register :key-register))
+          (:kotoba.key/problems (key-status/evaluate-key-register key-register)))))
+
 (defn evaluate-release
   "Evaluates the release evidence packet.
 
   Input: {:evidence-index <parsed registers/evidence-index.edn>
           :exception-register <parsed registers/exception-register.edn>
+          :key-register <optional parsed registers/key-register.edn>
           :now \"YYYY-MM-DD\"}
 
   Output: {:kotoba.release/ok? bool
            :kotoba.release/missing [claim ...]
            :kotoba.release/excepted [{:claim .. :exception/id .. :exception/expires ..} ...]
-           :kotoba.release/problems [{:problem ..} ...]}"
-  [{:keys [evidence-index exception-register now]}]
-  (let [problems (-> []
+           :kotoba.release/problems [{:problem ..} ...]
+           :kotoba.release/key-status <optional evaluate-key-register summary>}"
+  [{:keys [evidence-index exception-register key-register now]}]
+  (let [key-eval (when key-register
+                   (key-status/evaluate-key-register key-register))
+        problems (-> []
                      (into (register-problems evidence-index
                                               :kotoba.security/evidence-index
                                               :evidence-index))
@@ -101,7 +120,8 @@
                                               :kotoba.security/exception-register
                                               :exception-register))
                      (into (malformed-exception-problems
-                            (:exceptions exception-register))))
+                            (:exceptions exception-register)))
+                     (into (key-register-problems key-register)))
         evidence (:evidence evidence-index)
         exceptions (:exceptions exception-register)
         verdict (reduce
@@ -116,8 +136,14 @@
                        (update acc :missing conj claim))))
                  {:missing [] :excepted []}
                  required-claims)]
-    {:kotoba.release/ok? (and (empty? (:missing verdict))
-                              (empty? problems))
-     :kotoba.release/missing (:missing verdict)
-     :kotoba.release/excepted (:excepted verdict)
-     :kotoba.release/problems problems}))
+    (let [recommended-missing
+          (into []
+                (remove #(claim-satisfied? evidence %))
+                recommended-claims)]
+      (cond-> {:kotoba.release/ok? (and (empty? (:missing verdict))
+                                        (empty? problems))
+               :kotoba.release/missing (:missing verdict)
+               :kotoba.release/recommended-missing recommended-missing
+               :kotoba.release/excepted (:excepted verdict)
+               :kotoba.release/problems problems}
+        key-eval (assoc :kotoba.release/key-status key-eval)))))
