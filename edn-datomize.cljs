@@ -1,5 +1,27 @@
-#!/usr/bin/env bb
-;; manifest/edn-datomize.bb — EDN → Datomic/Datascript tx-data 変換ツール。
+#!/usr/bin/env nbb
+;; --- nbb shims (auto, ADR-2607173000) ---------------------------------
+(def ^:private __fs (js/require "node:fs"))
+(def ^:private __path (js/require "node:path"))
+(def ^:private __cp (js/require "node:child_process"))
+(def ^:private __os (js/require "node:os"))
+(def ^:private __crypto (js/require "node:crypto"))
+(defn- __sh [& args]
+  (let [opts (when (map? (last args)) (last args))
+        cmd (if opts (butlast args) args)
+        r (.spawnSync __cp (first cmd) (to-array (rest cmd))
+                      (clj->js (merge {:encoding "utf8"} (when opts {:cwd (:dir opts)}))))]
+    {:exit (or (.-status r) 1) :out (or (.-stdout r) "") :err (or (.-stderr r) "")}))
+(defn- __shell [& args]
+  (let [opts (when (map? (first args)) (first args))
+        cmd (if opts (rest args) args)
+        r (.spawnSync __cp (first cmd) (to-array (rest cmd))
+                      (clj->js (merge {:stdio "inherit" :encoding "utf8"}
+                                      (when opts {:cwd (:dir opts)}))))]
+    (when-not (zero? (or (.-status r) 1))
+      (throw (js/Error. (str "shell failed: " (pr-str cmd)))))
+    {:exit (or (.-status r) 0) :out "" :err ""}))
+;; -----------------------------------------------------------------------
+;; manifest/edn-datomize.nbb — EDN → Datomic/Datascript tx-data 変換ツール。
 ;;
 ;; 「datomic/datascript query 可能」の定義: ファイルのトップレベルが
 ;; (d/transact conn (edn/read-string (slurp file))) にそのまま渡せる
@@ -15,29 +37,27 @@
 ;; 両対応、:db.install/_attribute 等の Datomic 固有キーは使わない）。
 ;;
 ;; 使い方:
-;;   bb edn-datomize.bb wrap-map <path> <ns>          — map 1個のファイルを変換
+;;   nbb edn-datomize.nbb wrap-map <path> <ns>          — map 1個のファイルを変換
 ;;                                                       (トップレベル全キーに ns を強制)
-;;   bb edn-datomize.bb wrap-map-keep-ns <path> <ns>  — map 1個のファイルを変換
+;;   nbb edn-datomize.nbb wrap-map-keep-ns <path> <ns>  — map 1個のファイルを変換
 ;;                                                       (既に名前空間付きのキーはそのまま保持し、
 ;;                                                        裸キーだけ ns を付与。kotoba-lang/security の
 ;;                                                        ような :register/type 等の慣用的に
 ;;                                                        名前空間付き map 向け。ADR generic transform と
 ;;                                                        同じ規則)
-;;   bb edn-datomize.bb adr-dir  <dir>                 — ADR frontmatter/body を変換
-;;   bb edn-datomize.bb adr-file <path>                — ADR 1ファイルを変換
+;;   nbb edn-datomize.nbb adr-dir  <dir>                 — ADR frontmatter/body を変換
+;;   nbb edn-datomize.nbb adr-file <path>                — ADR 1ファイルを変換
 ;;
 ;; このコピーは kotoba-lang/security 用に schema-path のみ調整（manifest/ が無いので
 ;; リポジトリルート直下 schema.edn）。他のロジックは
-;; com-junkawasaki/root の manifest/edn-datomize.bb と同一。
+;; com-junkawasaki/root の manifest/edn-datomize.nbb と同一。
 
 (require '[clojure.edn :as edn]
-         '[clojure.java.io :as io]
-         '[clojure.java.shell :as shell]
-         '[clojure.string :as str])
+         '         '         '[clojure.string :as str])
 
 (def root (str/trim (:out (shell/sh "git" "rev-parse" "--show-toplevel"))))
 
-(defn schema-path [] (io/file root "schema.edn"))
+(defn schema-path [] (__path.resolve root "schema.edn"))
 
 (defn slurp-edn [path] (edn/read-string (slurp path)))
 
@@ -113,7 +133,7 @@
     merged))
 
 (defn wrap-map! [rel-path ns-name]
-  (let [f (io/file root rel-path)
+  (let [f (__path.resolve root rel-path)
         content (slurp-edn f)]
     (if (already-tx-data? content)
       (println "skip (already tx-data):" rel-path)
@@ -152,7 +172,7 @@
        :db/cardinality card})))
 
 (defn wrap-map-keep-ns! [rel-path ns-name]
-  (let [f (io/file root rel-path)
+  (let [f (__path.resolve root rel-path)
         content (slurp-edn f)]
     (if (already-tx-data? content)
       (println "skip (already tx-data):" rel-path)
@@ -216,7 +236,7 @@
       (swap! report update :errors conj [(str f) (.getMessage e)]))))
 
 (defn adr-dir! [dir]
-  (let [files (->> (io/file root dir) file-seq (filter #(str/ends-with? (str %) ".edn")) sort)
+  (let [files (->> (__path.resolve root dir) file-seq (filter #(str/ends-with? (str %) ".edn")) sort)
         report (atom {:ok [] :skipped [] :errors [] :attrs []})]
     (doseq [f files] (adr-file! f report))
     (merge-schema! (:attrs @report))
@@ -237,10 +257,10 @@
       "wrap-map-keep-ns" (wrap-map-keep-ns! a b)
       "adr-dir"  (adr-dir! a)
       "adr-file" (let [report (atom {:ok [] :skipped [] :errors [] :attrs []})]
-                   (adr-file! (io/file root a) report)
+                   (adr-file! (__path.resolve root a) report)
                    (merge-schema! (:attrs @report))
                    (println @report))
-      (do (println "usage: bb edn-datomize.bb [wrap-map <path> <ns> | wrap-map-keep-ns <path> <ns> | adr-dir <dir> | adr-file <path>]")
-          (System/exit 1)))))
+      (do (println "usage: nbb edn-datomize.nbb [wrap-map <path> <ns> | wrap-map-keep-ns <path> <ns> | adr-dir <dir> | adr-file <path>]")
+          (.exit js/process 1)))))
 
 (apply -main *command-line-args*)
