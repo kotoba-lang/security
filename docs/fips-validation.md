@@ -60,3 +60,21 @@ A FIPS-enabled deployment must produce:
 - test evidence that non-FIPS provider is rejected;
 - release security note naming the exact boundary.
 
+## Enforceable policy today (honest non-claim)
+
+As of 2026-07-17, this repository enforces **policy readiness**, not validation:
+
+| Control | Status |
+|---|---|
+| `policy/crypto-policy.edn` modes `:crypto-agile` / `:hybrid-required` / `:fips-required` | implemented |
+| Provider metadata required on envelopes | implemented (`crypto_policy.cljc`) |
+| `:fips-required` rejects `:provider/fips-validated false` | implemented + negative fixtures |
+| Inventory `:crypto/fips-status :not-claimed` rejected under `:fips-required` | implemented |
+| Named FIPS 140-3 validated module + certificate | **absent — do not claim** |
+| Deployment `fips-boundary.edn` | **absent** |
+
+Deployed mode remains `:crypto-agile`. Switching `:mode` to `:fips-required`
+without a validated module boundary is a configuration error, not a compliance
+claim. Risk R-003 stays **open** until a named module boundary and certificate
+evidence exist.
+

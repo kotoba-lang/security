@@ -65,3 +65,17 @@ Every encrypted or signed security object should carry:
   tiers.
 - A test fixture proves hybrid key wrapping and epoch rotation.
 
+## Progress (2026-07-17, honest)
+
+| Gate | Status |
+|---|---|
+| Crypto inventory + CI check | done (`scripts/check-crypto-inventory.bb`) |
+| Envelope provider/algorithm metadata policy | done (`:crypto-agile`) |
+| Hybrid KEM vectors X25519+ML-KEM-768 (≥3) | done (`conformance/crypto/vectors/`) |
+| `:hybrid-required` rejects classical KEM new epochs | done (fixtures + tests) |
+| Package multi-algorithm signatures in production | **not deployed** |
+| Hybrid wrapping on production long-retention blobs | **not deployed** |
+
+R-004 is **partially mitigated** by vectors + agile metadata + hybrid policy
+gates. Full production hybrid migration remains open work.
+
