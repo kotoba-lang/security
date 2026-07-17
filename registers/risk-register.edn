@@ -31,10 +31,13 @@
                       "2026-07-17: key_status.cljc evaluate/blocked/active + promote-to-active/revoke-key/status-transition-ok? pure helpers (no private material in-repo)"
                       "2026-07-17: release_gate :profile :regulated hard-requires :deployment-profile + key-register with >=1 :active key"
                       "2026-07-17: scripts/check-key-register.cljs (+ --require-active) and check-safe-release --profile research|regulated"
-                      "downstream: kotoba package admission --key-register merges non-active signers into trust revoked set"]
+                      "downstream: kotoba package admission --key-register merges non-active signers into trust revoked set"
+                      "2026-07-17: research-demo active keys landed (demo-package-signing-2026q3 + demo-audit-signing-2026h2) with real Ed25519 public material only; private keys never in-repo; still not production HSM custody"]
    :risk/evidence ["docs/key-lifecycle.md"
                    "docs/deployment-profiles.md"
-                   "src/kotoba/security/key_status.cljc"]
+                   "src/kotoba/security/key_status.cljc"
+                   "registers/key-register.edn"
+                   "evidence/2026-07-02/key-status-snapshot.edn"]
    :risk/review-by "2026-09-01"}
   {:risk/id "R-003"
    :risk/title "No FIPS validation claim is supported by deployment evidence"
