@@ -26,26 +26,15 @@
    :risk/status :mitigated
    :risk/owner :crypto-owner
    :risk/mitigations ["key lifecycle states defined"
-                      "key register seeded"
+                      "key register seeded with production-intent fleet public keys (kagi custody)"
                       "verifiers must reject revoked keys for new artifacts"
-                      "2026-07-17: key_status.cljc evaluate/blocked/active + promote-to-active/revoke-key/retire-key/rotate-signing-key/status-transition-ok? pure helpers (no private material in-repo)"
-                      "2026-07-17: release_gate :profile :regulated hard-requires :deployment-profile + key-register with >=1 :active key"
-                      "2026-07-17: scripts/check-key-register.cljs (+ --require-active) and check-safe-release --profile research|regulated"
-                      "downstream: kotoba package admission --key-register merges non-active signers into trust revoked set"
-                      "2026-07-17: research-demo active keys landed (demo-package-signing-2026q3 + demo-audit-signing-2026h2) with real Ed25519 public material only; private keys never in-repo"
-                      "2026-07-17: pure key-lifecycle revoke drill (EV-0010) + IR technical drill (EV-0012)"
-                      "2026-07-17: docs/key-ops-production.md production path (kagi/HSM/keychain provision → public-only register → promote/rotate/revoke)"
-                      "RESIDUAL: production HSM/kagi custody optional residual — demo keys are out-of-band-demo storage, not production HSM; regulated path still requires operator promotion of real secrets outside git"]
+                      "executable key-lifecycle signer-trust gate + revoked-signer technical simulation (EV-0009)"
+                      "key-register shape gate forbids private PEM and requires public material for active production keys (EV-0010)"
+                      "residual: package-signing/audit-signing production keys not issued; no production rotation/expiry drill"]
    :risk/evidence ["docs/key-lifecycle.md"
-                   "docs/key-ops-production.md"
-                   "docs/deployment-profiles.md"
-                   "src/kotoba/security/key_status.cljc"
-                   "registers/key-register.edn"
-                   "evidence/2026-07-02/key-status-snapshot.edn"
-                   "evidence/2026-07-17/key-lifecycle-revoke-drill.edn"
-                   "evidence/2026-07-17/ir-technical-key-revoke-drill.edn"
-                   "test/kotoba/security/key_lifecycle_drill_test.clj"
-                   "scripts/check-key-lifecycle-drill.cljs"]
+                   "docs/key-ops-kagi.md"
+                   "evidence/2026-07-17/key-status-snapshot.edn"
+                   "evidence/2026-07-17/revoked-signer-simulation.edn"]
    :risk/review-by "2026-10-01"}
   {:risk/id "R-003"
    :risk/title "No FIPS validation claim is supported by deployment evidence"
@@ -57,44 +46,51 @@
    :risk/status :open
    :risk/owner :crypto-owner
    :risk/mitigations ["explicit non-claim documented"
-                      "FIPS boundary evidence requirements defined"]
-   :risk/evidence ["docs/fips-validation.md"]
-   :risk/review-by "2026-08-01"}
+                      "FIPS boundary evidence requirements defined"
+                      "enforceable :fips-required mode rejects non-validated providers and :not-claimed inventory (EV-0004)"
+                      "residual: no named FIPS 140-3 validated module / certificate — do not claim FIPS validation"]
+   :risk/evidence ["docs/fips-validation.md"
+                   "policy/crypto-policy.edn"
+                   "src/kotoba/security/crypto_policy.cljc"]
+   :risk/review-by "2026-10-01"}
   {:risk/id "R-004"
    :risk/title "PQC migration is a design target, not implemented"
    :risk/category :cryptography
    :risk/affected-assets [:long-lived-private-data :package-signatures]
    :risk/impact 4
-   :risk/likelihood 3
-   :risk/score 12
-   :risk/status :open
+   :risk/likelihood 2
+   :risk/score 8
+   :risk/status :mitigated
    :risk/owner :crypto-owner
    :risk/mitigations ["PQC roadmap defined"
-                      "algorithm-agile envelope metadata required"]
-   :risk/evidence ["docs/pqc-roadmap.md"]
-   :risk/review-by "2026-08-01"}
+                      "algorithm-agile envelope metadata required"
+                      "hybrid X25519+ML-KEM-768 test vectors + gates (EV-0005)"
+                      ":hybrid-required policy rejects classical-only KEM for new epochs"
+                      "residual: hybrid not on production data path; package signatures still classical"]
+   :risk/evidence ["docs/pqc-roadmap.md"
+                   "docs/hybrid-envelope-vectors.md"
+                   "conformance/crypto/vectors/hybrid-x25519-mlkem768.edn"]
+   :risk/review-by "2026-10-01"}
   {:risk/id "R-005"
    :risk/title "Continuous monitoring and IR drills are incomplete"
    :risk/category :operations
    :risk/affected-assets [:runtime :audit :incident-response]
    :risk/impact 4
-   :risk/likelihood 3
-   :risk/score 12
-   :risk/status :open
+   :risk/likelihood 2
+   :risk/score 8
+   :risk/status :mitigated
    :risk/owner :operations-owner
    :risk/mitigations ["monitoring signals and alert rules defined"
                       "incident playbooks defined"
-                      "2026-07-17: IR tabletop compromised-package-signer drill (EV-0011, simulated) — evidence/2026-07-17/ir-tabletop-compromised-signer.edn"
-                      "2026-07-17: IR technical key-revoke pure drill (EV-0012 / EV-0010) — evidence/2026-07-17/ir-technical-key-revoke-drill.edn + check-key-lifecycle-drill"
-                      "PARTIAL: one tabletop + one technical drill landed; continuous monitoring still lacks live deployment evidence; further scheduled drills remain open"]
+                      "2026-07-17 tabletop compromised-signer postmortem (EV-0008)"
+                      "technical revoked-signer simulation + SEV-1/SEV-2 structured alert samples EDN/JSON (EV-0009)"
+                      "residual: no live pager/on-call deployment; host-denial spike is synthetic"]
    :risk/evidence ["docs/continuous-monitoring.md"
                    "docs/incident-response.md"
-                   "docs/key-ops-production.md"
-                   "evidence/2026-07-17/ir-tabletop-compromised-signer.edn"
-                   "evidence/2026-07-17/ir-technical-key-revoke-drill.edn"
-                   "evidence/2026-07-17/key-lifecycle-revoke-drill.edn"
-                   "scripts/check-key-lifecycle-drill.cljs"]
-   :risk/review-by "2026-09-01"}
+                   "evidence/2026-07-17/tabletop-compromised-signer.md"
+                   "evidence/2026-07-17/alert-compromised-signer.edn"
+                   "evidence/2026-07-17/revoked-signer-simulation.edn"]
+   :risk/review-by "2026-10-01"}
   {:risk/id "R-006"
    :risk/title "SBOM/SLSA release evidence is not yet enforced"
    :risk/category :governance
@@ -132,16 +128,11 @@
    :risk/impact 3
    :risk/likelihood 3
    :risk/score 9
-   :risk/status :mitigated
+   :risk/status :open
    :risk/owner :security-owner
    :risk/mitigations ["side-channel and formal-verification non-claims are documented"
-                      "architecture review requires deployment profiles"
-                      "2026-07-17: docs/deployment-profiles.md + release_gate :profile regulated hard-requires :deployment-profile claim"
-                      "2026-07-17: research deployment-profile declaration EV-0008 (honest non-production posture)"
-                      "RESIDUAL: side-channel/formal still non-claim; profile evidence EV-0008 only — no claim of side-channel resistance or formal verification"]
+                      "architecture review requires deployment profiles"]
    :risk/evidence ["docs/architecture-review-2026-07-01.md"
                    "../aiueos/SECURITY.md"
-                   "docs/security-architecture.md"
-                   "docs/deployment-profiles.md"
-                   "evidence/2026-07-17/deployment-profile.edn"]
-   :risk/review-by "2026-10-01"}]}
+                   "docs/security-architecture.md"]
+   :risk/review-by "2026-08-01"}]}
