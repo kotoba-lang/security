@@ -1,27 +1,48 @@
-#!/usr/bin/env bb
+#!/usr/bin/env nbb
+;; --- nbb shims (auto, ADR-2607173000) ---------------------------------
+(def ^:private __fs (js/require "node:fs"))
+(def ^:private __path (js/require "node:path"))
+(def ^:private __cp (js/require "node:child_process"))
+(def ^:private __os (js/require "node:os"))
+(def ^:private __crypto (js/require "node:crypto"))
+(defn- __sh [& args]
+  (let [opts (when (map? (last args)) (last args))
+        cmd (if opts (butlast args) args)
+        r (.spawnSync __cp (first cmd) (to-array (rest cmd))
+                      (clj->js (merge {:encoding "utf8"} (when opts {:cwd (:dir opts)}))))]
+    {:exit (or (.-status r) 1) :out (or (.-stdout r) "") :err (or (.-stderr r) "")}))
+(defn- __shell [& args]
+  (let [opts (when (map? (first args)) (first args))
+        cmd (if opts (rest args) args)
+        r (.spawnSync __cp (first cmd) (to-array (rest cmd))
+                      (clj->js (merge {:stdio "inherit" :encoding "utf8"}
+                                      (when opts {:cwd (:dir opts)}))))]
+    (when-not (zero? (or (.-status r) 1))
+      (throw (js/Error. (str "shell failed: " (pr-str cmd)))))
+    {:exit (or (.-status r) 0) :out "" :err ""}))
+;; -----------------------------------------------------------------------
 ;; Safe-release evidence gate (kotoba-lang/kotoba#265).
 ;;
 ;; Usage (run from the repo root):
-;;   bb scripts/check-safe-release.bb
+;;   nbb scripts/check-safe-release.bb
 ;;       Validate the conformance/release fixture matrix (positive fixtures
 ;;       must pass, negative fixtures must fail), structurally validate the
 ;;       real registers, and report the real release-packet status as
 ;;       :advisory without failing. This is the CI mode.
 ;;
-;;   bb scripts/check-safe-release.bb --release [evidence-index.edn exception-register.edn]
+;;   nbb scripts/check-safe-release.nbb --release [evidence-index.edn exception-register.edn]
 ;;       Enforce the release gate strictly against the real registers.
 ;;       Exit 1 when the release evidence packet is incomplete.
 ;;
 ;; Register paths may be overridden by positional argv (evidence index first,
 ;; exception register second).
-(require '[babashka.classpath :refer [add-classpath]]
+(require ']
          '[clojure.edn :as edn]
-         '[clojure.java.io :as io]
-         '[clojure.string :as str])
+         '         '[clojure.string :as str])
 
-(def script-dir (-> *file* io/file .getAbsoluteFile .getParentFile))
-(def root (.getParentFile script-dir))
-(add-classpath (str (io/file root "src")))
+(def script-dir (-> *file* __path.resolve .getAbsoluteFile .getParentFile))
+(def root (__path.dirname script-dir))
+))
 
 (require '[kotoba.security.release-gate :as gate])
 
@@ -31,18 +52,18 @@
 
 (def evidence-file
   (if (first path-args)
-    (io/file (first path-args))
-    (io/file root "registers/evidence-index.edn")))
+    (__path.resolve (first path-args))
+    (__path.resolve root "registers/evidence-index.edn")))
 
 (def exception-file
   (if (second path-args)
-    (io/file (second path-args))
-    (io/file root "registers/exception-register.edn")))
+    (__path.resolve (second path-args))
+    (__path.resolve root "registers/exception-register.edn")))
 
-(def today (str (java.time.LocalDate/now)))
+(def today (.slice (.toISOString (js/Date.)) 0 10))
 
 ;; registers/*.edn and conformance/release/{positive,negative}/*.edn were
-;; datomic/datascript-ized by edn-datomize.bb (wrap-map-keep-ns): each file's
+;; datomic/datascript-ized by edn-datomize.nbb (wrap-map-keep-ns): each file's
 ;; top level is now `[{:db/id -1 ...}]` tx-data, where keys that were already
 ;; namespaced (:register/type, :case/id, ...) are unchanged and bare keys
 ;; (:evidence, :exceptions, :now, :evidence-index, :exception-register, ...)
@@ -78,7 +99,7 @@
        content))))
 
 (defn fixture-files [dir]
-  (->> (.listFiles (io/file root dir))
+  (->> (mapv #(__path.join (__path.resolve root dir %) (seq (__fs.readdirSync (__path.resolve root dir))))
        (filter #(str/ends-with? (.getName %) ".edn"))
        (sort-by #(.getName %))))
 
@@ -140,7 +161,7 @@
           (do (println "FAIL safe-release packet incomplete"
                        (pr-str {:missing (:kotoba.release/missing result)
                                 :problems (:kotoba.release/problems result)}))
-              (System/exit 1))))
+              (.exit js/process 1))))
     ;; CI mode: fixture matrix + structural check of real registers +
     ;; advisory (non-failing) packet status.
     (let [fixture-failures (run-fixtures!)
@@ -156,5 +177,5 @@
       (when (seq fixture-failures)
         (println "FAIL fixtures" (pr-str fixture-failures)))
       (when (or (seq fixture-failures) (seq register-problems))
-        (System/exit 1))
+        (.exit js/process 1))
       (println "ok safe-release gate (advisory mode; use --release to enforce)"))))

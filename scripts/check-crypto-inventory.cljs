@@ -1,8 +1,30 @@
-#!/usr/bin/env bb
+#!/usr/bin/env nbb
+;; --- nbb shims (auto, ADR-2607173000) ---------------------------------
+(def ^:private __fs (js/require "node:fs"))
+(def ^:private __path (js/require "node:path"))
+(def ^:private __cp (js/require "node:child_process"))
+(def ^:private __os (js/require "node:os"))
+(def ^:private __crypto (js/require "node:crypto"))
+(defn- __sh [& args]
+  (let [opts (when (map? (last args)) (last args))
+        cmd (if opts (butlast args) args)
+        r (.spawnSync __cp (first cmd) (to-array (rest cmd))
+                      (clj->js (merge {:encoding "utf8"} (when opts {:cwd (:dir opts)}))))]
+    {:exit (or (.-status r) 1) :out (or (.-stdout r) "") :err (or (.-stderr r) "")}))
+(defn- __shell [& args]
+  (let [opts (when (map? (first args)) (first args))
+        cmd (if opts (rest args) args)
+        r (.spawnSync __cp (first cmd) (to-array (rest cmd))
+                      (clj->js (merge {:stdio "inherit" :encoding "utf8"}
+                                      (when opts {:cwd (:dir opts)}))))]
+    (when-not (zero? (or (.-status r) 1))
+      (throw (js/Error. (str "shell failed: " (pr-str cmd)))))
+    {:exit (or (.-status r) 0) :out "" :err ""}))
+;; -----------------------------------------------------------------------
 ;; Crypto inventory gate (kotoba-lang/kotoba#264).
 ;;
 ;; Usage (run from the repo root):
-;;   bb scripts/check-crypto-inventory.bb [crypto-policy.edn crypto-inventory.edn]
+;;   nbb scripts/check-crypto-inventory.nbb [crypto-policy.edn crypto-inventory.edn]
 ;;
 ;; Validates registers/crypto-inventory.edn against policy/crypto-policy.edn:
 ;; structure is always enforced; FIPS strictness (no :crypto/fips-status
@@ -11,13 +33,13 @@
 ;; vector files (fields, kem list, hex shapes) — BC-free; cryptographic
 ;; recomputation runs under `clojure -M:vectors:vectors-test`.
 ;; Exit 1 on failure.
-(require '[babashka.classpath :refer [add-classpath]]
+(require ']
          '[clojure.edn :as edn]
-         '[clojure.java.io :as io])
+         ')
 
-(def script-dir (-> *file* io/file .getAbsoluteFile .getParentFile))
-(def root (.getParentFile script-dir))
-(add-classpath (str (io/file root "src")))
+(def script-dir (-> *file* __path.resolve .getAbsoluteFile .getParentFile))
+(def root (__path.dirname script-dir))
+))
 
 (require '[kotoba.security.crypto-policy :as policy]
          '[kotoba.security.hybrid-vectors :as hv])
@@ -26,16 +48,16 @@
 
 (def policy-file
   (if (first args)
-    (io/file (first args))
-    (io/file root "policy/crypto-policy.edn")))
+    (__path.resolve (first args))
+    (__path.resolve root "policy/crypto-policy.edn")))
 
 (def inventory-file
   (if (second args)
-    (io/file (second args))
-    (io/file root "registers/crypto-inventory.edn")))
+    (__path.resolve (second args))
+    (__path.resolve root "registers/crypto-inventory.edn")))
 
 ;; policy/crypto-policy.edn and registers/crypto-inventory.edn were
-;; datomic/datascript-ized by edn-datomize.bb (wrap-map-keep-ns): top level is
+;; datomic/datascript-ized by edn-datomize.nbb (wrap-map-keep-ns): top level is
 ;; now `[{:db/id -1 ...}]` tx-data. Already-namespaced keys (:register/type,
 ;; :kotoba.security/crypto-policy-version, ...) are unchanged; bare keys
 ;; (:mode, :hybrid-epoch-floor, :modes, :allowed-providers, :inventory) were
@@ -77,16 +99,16 @@
                    (str "fips=" (:crypto/fips-status entry))))
         (println "ok crypto-inventory" (str "mode=" (:mode crypto-policy))))
     (do (println "FAIL" (:message result) (pr-str (:data result)))
-        (System/exit 1))))
+        (.exit js/process 1))))
 
 ;; Hybrid KEM vector files (docs/hybrid-envelope-vectors.md): structural gate.
-(let [vectors-dir (io/file root "conformance/crypto/vectors")
-      vector-files (->> (.listFiles vectors-dir)
+(let [vectors-dir (__path.resolve root "conformance/crypto/vectors")
+      vector-files (->> (mapv #(__path.join vectors-dir %) (seq (__fs.readdirSync vectors-dir)))
                         (filter #(.endsWith (.getName ^java.io.File %) ".edn"))
                         (sort-by #(.getName ^java.io.File %)))]
   (when (empty? vector-files)
     (println "FAIL hybrid vector files required in conformance/crypto/vectors/")
-    (System/exit 1))
+    (.exit js/process 1))
   (doseq [f vector-files]
     (let [vectors (read-edn f)
           result (hv/check-vector-file vectors)]
@@ -96,4 +118,4 @@
                  (str "kem=" (pr-str hv/hybrid-kem)))
         (do (println "FAIL" (.getName ^java.io.File f)
                      (:message result) (pr-str (:data result)))
-            (System/exit 1))))))
+            (.exit js/process 1))))))

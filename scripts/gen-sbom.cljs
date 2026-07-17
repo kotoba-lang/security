@@ -1,9 +1,31 @@
-#!/usr/bin/env bb
+#!/usr/bin/env nbb
+;; --- nbb shims (auto, ADR-2607173000) ---------------------------------
+(def ^:private __fs (js/require "node:fs"))
+(def ^:private __path (js/require "node:path"))
+(def ^:private __cp (js/require "node:child_process"))
+(def ^:private __os (js/require "node:os"))
+(def ^:private __crypto (js/require "node:crypto"))
+(defn- __sh [& args]
+  (let [opts (when (map? (last args)) (last args))
+        cmd (if opts (butlast args) args)
+        r (.spawnSync __cp (first cmd) (to-array (rest cmd))
+                      (clj->js (merge {:encoding "utf8"} (when opts {:cwd (:dir opts)}))))]
+    {:exit (or (.-status r) 1) :out (or (.-stdout r) "") :err (or (.-stderr r) "")}))
+(defn- __shell [& args]
+  (let [opts (when (map? (first args)) (first args))
+        cmd (if opts (rest args) args)
+        r (.spawnSync __cp (first cmd) (to-array (rest cmd))
+                      (clj->js (merge {:stdio "inherit" :encoding "utf8"}
+                                      (when opts {:cwd (:dir opts)}))))]
+    (when-not (zero? (or (.-status r) 1))
+      (throw (js/Error. (str "shell failed: " (pr-str cmd)))))
+    {:exit (or (.-status r) 0) :out "" :err ""}))
+;; -----------------------------------------------------------------------
 ;; CycloneDX-inspired EDN SBOM generator for the safe-release evidence packet
 ;; (docs/sbom-slsa.md, docs/operational-evidence.md).
 ;;
 ;; Usage:
-;;   bb scripts/gen-sbom.bb <deps.edn-path> <repo-name> [out-path]
+;;   nbb scripts/gen-sbom.nbb <deps.edn-path> <repo-name> [out-path]
 ;;
 ;; Reads a Clojure deps.edn and emits an EDN SBOM:
 ;;   {:sbom/format :cyclonedx-edn
@@ -17,30 +39,29 @@
 ;; scope). Top-level :deps carry :scope :runtime; every alias's :extra-deps
 ;; are included with :scope = the alias keyword (:test, :vectors, ...).
 (require '[clojure.edn :as edn]
-         '[clojure.java.io :as io]
-         '[clojure.pprint :as pprint]
+         '         '[clojure.pprint :as pprint]
          '[clojure.string :as str]
-         '[babashka.process :refer [shell]])
+         '])
 
 (defn fail! [msg]
   (binding [*out* *err*] (println "gen-sbom:" msg))
-  (System/exit 1))
+  (.exit js/process 1))
 
 (def args (vec *command-line-args*))
 (when (< (count args) 2)
-  (fail! "usage: bb scripts/gen-sbom.bb <deps.edn-path> <repo-name> [out-path]"))
+  (fail! "usage: nbb scripts/gen-sbom.nbb <deps.edn-path> <repo-name> [out-path]"))
 
-(def deps-file (io/file (first args)))
+(def deps-file (__path.resolve (first args)))
 (def repo-name (second args))
 (def out-path (nth args 2 nil))
 
 (when-not (.isFile deps-file)
   (fail! (str "deps.edn not readable: " deps-file)))
 
-(def repo-dir (.getParentFile (.getAbsoluteFile deps-file)))
+(def repo-dir (__path.dirname (__path.resolve deps-file)))
 
 (def commit
-  (-> (shell {:out :string :dir (str repo-dir)} "git" "rev-parse" "HEAD")
+  (-> (__shell {:out :string :dir (str repo-dir)} "git" "rev-parse" "HEAD")
       :out
       str/trim))
 
@@ -95,7 +116,7 @@
 
 (let [rendered (with-out-str (pprint/pprint sbom))]
   (if out-path
-    (do (io/make-parents (io/file out-path))
+    (do (io/make-parents (__path.resolve out-path))
         (spit out-path rendered)
         (println "ok sbom" repo-name "->" out-path
                  (str "(" (count components) " components)")))
