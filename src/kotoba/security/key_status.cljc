@@ -3,7 +3,11 @@
 
   A key may only authorize NEW package artifacts when its `:key/status` is
   `:active`. Historical verification of past receipts can use `:retired`
-  keys elsewhere; admission of new locks must not."
+  keys elsewhere; admission of new locks must not.
+
+  Pure lifecycle helpers (`promote-to-active`, `revoke-key`,
+  `status-transition-ok?`) mutate only the EDN key map. They never invent
+  private key material — secrets are provisioned out-of-band."
   (:require [clojure.string :as str]))
 
 (def allowed-for-new-artifacts
@@ -11,6 +15,26 @@
 
 (def blocked-for-new-artifacts
   #{:revoked :expired :compromised :retired :pre-active})
+
+(def known-statuses
+  "Statuses recognized by the key-register evaluator and lifecycle helpers."
+  (into #{:suspended :destroyed}
+        (concat allowed-for-new-artifacts blocked-for-new-artifacts)))
+
+(def allowed-transitions
+  "Directed graph of legal pure status transitions.
+
+  Not every lifecycle edge is open: private material destruction
+  (`:destroyed`) is terminal; promotion to `:active` only from
+  `:pre-active` or re-activation from `:suspended`."
+  {:pre-active #{:active :revoked :destroyed}
+   :active     #{:retired :revoked :expired :suspended :compromised}
+   :suspended  #{:active :revoked :compromised :retired}
+   :retired    #{:destroyed :revoked}
+   :expired    #{:destroyed :revoked}
+   :compromised #{:destroyed :revoked}
+   :revoked    #{:destroyed}
+   :destroyed  #{}})
 
 (defn non-empty-string?
   [x]
@@ -27,6 +51,92 @@
 (defn active-key?
   [k]
   (contains? allowed-for-new-artifacts (:key/status k)))
+
+(defn status-transition-ok?
+  "True when transitioning FROM -> TO is an allowed lifecycle edge.
+
+  Unknown `from`/`to` statuses are never ok. `from` may be nil only when
+  seeding a brand-new record as `:pre-active`."
+  [from to]
+  (boolean
+   (cond
+     (nil? from) (= to :pre-active)
+     (not (contains? known-statuses to)) false
+     :else (contains? (get allowed-transitions from #{}) to))))
+
+(defn- append-note
+  [existing addition]
+  (let [base (or existing "")]
+    (if (str/blank? base)
+      addition
+      (str base " " addition))))
+
+(defn promote-to-active
+  "Return KEY with `:key/status :active` and `:key/active-from` set to NOW
+  (ISO date string). Optional ACTIVE-UNTIL sets `:key/active-until`.
+
+  Pure function over the EDN key map. Does **not** invent private key
+  material — real secrets must be provisioned out-of-band (HSM, kagi,
+  OS keychain, etc.) and must never be committed to this repository.
+
+  When the current status cannot transition to `:active`, returns the
+  original key unchanged with `:key/transition-error` explaining why."
+  ([key now]
+   (promote-to-active key now nil))
+  ([key now active-until]
+   (let [from (:key/status key)]
+     (if-not (status-transition-ok? from :active)
+       (assoc key
+              :key/transition-error
+              {:problem :illegal-status-transition
+               :from from
+               :to :active})
+       (cond-> (-> key
+                   (dissoc :key/transition-error :key/revoke-reason :key/revoked-at)
+                   (assoc :key/status :active
+                          :key/active-from now
+                          :key/notes
+                          (append-note
+                           (:key/notes key)
+                           (str "Promoted to :active at " now
+                                ". Private material must be provisioned "
+                                "out-of-band (not stored in-repo)."))))
+         (non-empty-string? active-until)
+         (assoc :key/active-until active-until))))))
+
+(defn revoke-key
+  "Return KEY with `:key/status :revoked`. Optional REASON is recorded on
+  `:key/revoke-reason`. NOW (ISO date) is recorded on `:key/revoked-at`
+  when provided.
+
+  Pure function — does not destroy private material (that is an operator
+  step outside this register)."
+  ([key]
+   (revoke-key key nil nil))
+  ([key reason]
+   (revoke-key key reason nil))
+  ([key reason now]
+   (let [from (:key/status key)]
+     (if-not (status-transition-ok? from :revoked)
+       (assoc key
+              :key/transition-error
+              {:problem :illegal-status-transition
+               :from from
+               :to :revoked})
+       (cond-> (-> key
+                   (dissoc :key/transition-error)
+                   (assoc :key/status :revoked
+                          :key/notes
+                          (append-note
+                           (:key/notes key)
+                           (str "Revoked"
+                                (when (non-empty-string? now)
+                                  (str " at " now))
+                                (when (non-empty-string? reason)
+                                  (str ": " reason))
+                                "."))))
+         (non-empty-string? reason) (assoc :key/revoke-reason reason)
+         (non-empty-string? now) (assoc :key/revoked-at now))))))
 
 (defn blocked-signer-ids
   "Set of key/signer ids that must not sign new artifacts."
@@ -65,12 +175,22 @@
                           :actual (:register/type key-register)}))
         unknown (into []
                       (keep (fn [k]
-                              (when-not (or (active-key? k) (blocked-key? k))
+                              (when-not (or (active-key? k) (blocked-key? k)
+                                            (contains? known-statuses
+                                                       (:key/status k)))
                                 {:problem :unknown-key-status
                                  :key/id (key-id k)
                                  :key/status (:key/status k)})))
                       keys)
+        ;; :suspended / :destroyed are known but still blocked for new artifacts
         blocked (vec (blocked-signer-ids key-register))
+        suspended-or-destroyed
+        (into []
+              (keep (fn [k]
+                      (when (#{:suspended :destroyed} (:key/status k))
+                        (key-id k))))
+              keys)
+        blocked (into blocked suspended-or-destroyed)
         active (vec (active-signer-ids key-register))
         problems (into problems unknown)
         problems (cond-> problems

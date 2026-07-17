@@ -74,6 +74,7 @@ Implementation and compliance evidence remain incomplete:
 - [Continuous Monitoring](docs/continuous-monitoring.md)
 - [Risk Management](docs/risk-management.md)
 - [Key Lifecycle](docs/key-lifecycle.md)
+- [Deployment Profiles](docs/deployment-profiles.md)
 - [FIPS Validation Strategy](docs/fips-validation.md)
 - [SBOM and SLSA Provenance](docs/sbom-slsa.md)
 - [Operational Evidence](docs/operational-evidence.md)
@@ -96,17 +97,24 @@ Implementation and compliance evidence remain incomplete:
 Run the tests and gates from the repo root (CI runs the same commands):
 
 ```sh
-clojure -M:test                       # release-gate and crypto-policy tests
-bb scripts/check-safe-release.bb      # fixture matrix + advisory packet status
-bb scripts/check-crypto-inventory.bb  # crypto inventory vs policy/crypto-policy.edn
+clojure -M:test                                              # unit + fixture tests
+nbb --classpath src scripts/check-safe-release.cljs          # fixture matrix + advisory
+nbb --classpath src scripts/check-safe-release.cljs --release --profile research
+nbb --classpath src scripts/check-key-register.cljs          # active/blocked/problems
+nbb --classpath src scripts/check-crypto-inventory.cljs      # crypto inventory vs policy
 ```
 
-`bb scripts/check-safe-release.bb --release` enforces the release evidence
-packet strictly (kotoba-lang/kotoba#265): every required claim —
-`:conformance-results`, `:package-verification`, `:sbom`, `:provenance`,
+`nbb --classpath src scripts/check-safe-release.cljs --release` enforces the
+release evidence packet strictly (kotoba-lang/kotoba#265): every required claim
+— `:conformance-results`, `:package-verification`, `:sbom`, `:provenance`,
 `:key-status-snapshot`, `:risk-review` — must be backed by evidence in
 `registers/evidence-index.edn` or covered by an unexpired, owned entry in
 `registers/exception-register.edn`, otherwise it exits non-zero.
+
+Add `--profile regulated` to also hard-require the `:deployment-profile` claim
+and a key-register with at least one `:active` key (template keys are
+`:pre-active` and will fail until operators promote after out-of-band secret
+provisioning — see [docs/key-lifecycle.md](docs/key-lifecycle.md)).
 
 ## Primary Design Inputs
 
