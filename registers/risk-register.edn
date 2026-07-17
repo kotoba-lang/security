@@ -30,10 +30,12 @@
                       "verifiers must reject revoked keys for new artifacts"
                       "executable key-lifecycle signer-trust gate + revoked-signer technical simulation (EV-0009)"
                       "key-register shape gate forbids private PEM and requires public material for active production keys (EV-0010)"
-                      "residual: package-signing/audit-signing production keys not issued; no production rotation/expiry drill"]
+                      "package-signing + audit-signing production-intent keys minted in kagi and registered public-only (EV-0013, 2026-07-18)"
+                      "residual: kagi OS-Keychain custody not HSM; production rotation/expiry drill not yet on package path"]
    :risk/evidence ["docs/key-lifecycle.md"
                    "docs/key-ops-kagi.md"
                    "evidence/2026-07-17/key-status-snapshot.edn"
+                   "evidence/2026-07-18/key-status-snapshot.edn"
                    "evidence/2026-07-17/revoked-signer-simulation.edn"]
    :risk/review-by "2026-10-01"}
   {:risk/id "R-003"
@@ -84,12 +86,14 @@
                       "incident playbooks defined"
                       "2026-07-17 tabletop compromised-signer postmortem (EV-0008)"
                       "technical revoked-signer simulation + SEV-1/SEV-2 structured alert samples EDN/JSON (EV-0009)"
-                      "residual: no live pager/on-call deployment; host-denial spike is synthetic"]
+                      "pager delivery path: file sink + optional webhook via scripts/emit-alert.cljs (EV-0012)"
+                      "residual: live human on-call roster optional; host-denial spike still synthetic; webhook unset until pager vendor configured"]
    :risk/evidence ["docs/continuous-monitoring.md"
                    "docs/incident-response.md"
                    "evidence/2026-07-17/tabletop-compromised-signer.md"
                    "evidence/2026-07-17/alert-compromised-signer.edn"
-                   "evidence/2026-07-17/revoked-signer-simulation.edn"]
+                   "evidence/2026-07-17/revoked-signer-simulation.edn"
+                   "evidence/2026-07-18/pager-wiring-smoke.edn"]
    :risk/review-by "2026-10-01"}
   {:risk/id "R-006"
    :risk/title "SBOM/SLSA release evidence is not yet enforced"

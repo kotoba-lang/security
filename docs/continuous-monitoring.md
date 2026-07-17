@@ -67,3 +67,31 @@ conformance gate is a security signal, not just an application log.
 - Monitoring must not require plaintext access to protected objects.
 - Monitoring failures are themselves audit events.
 
+## Pager / alert delivery (executable)
+
+Structured alerts use schema `kotoba.security.continuous-monitoring/v1`
+(`kotoba.security.key-lifecycle/emit-alert`). Delivery is pluggable:
+
+| Sink | When | How |
+|---|---|---|
+| `file` | always (default) | write EDN+JSON under `evidence/<date>/alerts/` (or `/tmp/kotoba-security-alerts/`) |
+| `webhook` | when `KOTOBA_SECURITY_ALERT_WEBHOOK` is set | HTTP(S) POST JSON body |
+| `stdout` | `--stdout` | print pretty JSON |
+
+```sh
+# smoke (file sink; webhook skipped if env unset — honest)
+nbb --classpath src scripts/emit-alert.cljs --smoke
+
+# point webhook at PagerDuty Events v2 / Slack incoming webhook / etc.
+export KOTOBA_SECURITY_ALERT_WEBHOOK='https://hooks.slack.com/services/...'
+# or: https://events.pagerduty.com/v2/enqueue  (map fields at the receiver)
+
+nbb --classpath src scripts/emit-alert.cljs --smoke
+
+# revoked-signer drill delivers SEV-1 on the failure path:
+nbb --classpath src scripts/simulate-revoked-signer.cljs --write --deliver
+```
+
+Residual: configuring a live human on-call roster and vendor-specific payload
+shaping remains optional ops work; the routing path itself is executable.
+

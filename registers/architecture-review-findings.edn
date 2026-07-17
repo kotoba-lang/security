@@ -48,7 +48,7 @@
                       "evidence/2026-07-17/tabletop-compromised-signer.md"
                       "evidence/2026-07-17/alert-compromised-signer.edn"]
    :finding/status :mitigated
-   :finding/residual "No live pager/on-call; host-denial alert is synthetic."}
+   :finding/residual "Pager path exists (file + optional webhook via emit-alert.cljs). Live human on-call roster still optional; host-denial alert remains synthetic."}
   {:finding/id "F-005"
    :finding/severity :high
    :finding/title "FIPS/PQC boundaries are non-claimed but not deployable controls"

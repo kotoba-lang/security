@@ -15,7 +15,7 @@
    :key/fips-boundary nil
    :key/pq-status :classical-only
    :key/intent :research-demo
-   :key/notes "Research-demo template only. Not a production signer. Do not promote without kagi custody + public material registration (docs/key-ops-kagi.md)."}
+   :key/notes "Research-demo template only. Not a production signer. Retained for fixture/docs. Prefer security-package-signing-2026-07-18 for production-intent signing."}
   {:key/id "example-audit-signing-2026h2"
    :key/class :audit-signing
    :key/algorithm :ed25519
@@ -29,11 +29,47 @@
    :key/fips-boundary nil
    :key/pq-status :classical-only
    :key/intent :research-demo
-   :key/notes "Research-demo template only. Not a production audit signer."}
+   :key/notes "Research-demo template only. Prefer security-audit-signing-2026-07-18 for production-intent audit signing."}
 
   ;; --- production-intent public keys (custody in kagi; NO private material) -
-  ;; Public material is the same as manifest/fleet-keys.edn (superproject).
-  ;; Private PEMs live only in kagi compartment personal (OS-Keychain unlock).
+  ;; Public material only. Private PEMs live only in kagi compartment personal
+  ;; (OS-Keychain unlock). Residual until HSM: storage is :kagi not :hsm.
+  {:key/id "security-package-signing-2026-07-18"
+   :key/class :package-signing
+   :key/algorithm :ed25519
+   :key/status :active
+   :key/owner :package-owner
+   :key/created-at "2026-07-18"
+   :key/active-from "2026-07-18"
+   :key/active-until nil
+   :key/verify-until nil
+   :key/storage :kagi
+   :key/kagi-name "security-package-signing"
+   :key/kagi-compartment "personal"
+   :key/public "ed25519:1f414dff290d6b4ff3e979a929ed2e7d2638f41536b81dafce6ab76dab4c71a2"
+   :key/did "did:key:z6MkgZGSU4XvcHHbGE12FAdiczSf9mV14XxTqgS6R4orjZTX"
+   :key/fips-boundary nil
+   :key/pq-status :classical-only
+   :key/intent :production
+   :key/notes "Production-intent package-manifest signer. Private PKCS8 PEM in kagi item security-package-signing (compartment personal). Minted 2026-07-18 via node crypto ed25519 + kagi add. Public only in git. Residual: OS-Keychain kagi custody (not HSM); rotation/expiry drill not yet exercised on package path."}
+  {:key/id "security-audit-signing-2026-07-18"
+   :key/class :audit-signing
+   :key/algorithm :ed25519
+   :key/status :active
+   :key/owner :operations-owner
+   :key/created-at "2026-07-18"
+   :key/active-from "2026-07-18"
+   :key/active-until nil
+   :key/verify-until nil
+   :key/storage :kagi
+   :key/kagi-name "security-audit-signing"
+   :key/kagi-compartment "personal"
+   :key/public "ed25519:d4c230fa010bf5839cddb9178872361259e4f59673ab0ce7b8e5a9caacab3b0b"
+   :key/did "did:key:z6MktmnDnL6y1WEfdsW91Fsud2Mcn5XpduYWrTVWtAFqrs9C"
+   :key/fips-boundary nil
+   :key/pq-status :classical-only
+   :key/intent :production
+   :key/notes "Production-intent audit/receipt signer. Private PKCS8 PEM in kagi item security-audit-signing (compartment personal). Minted 2026-07-18. Public only in git. Residual: OS-Keychain kagi custody (not HSM)."}
   {:key/id "fleet-owner-key-2026-07-16"
    :key/class :fleet-pin-signing
    :key/algorithm :ed25519
