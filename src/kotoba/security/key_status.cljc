@@ -5,9 +5,18 @@
   `:active`. Historical verification of past receipts can use `:retired`
   keys elsewhere; admission of new locks must not.
 
-  Pure lifecycle helpers (`promote-to-active`, `revoke-key`,
+  Pure lifecycle helpers (`promote-to-active`, `revoke-key`, `retire-key`,
   `status-transition-ok?`) mutate only the EDN key map. They never invent
-  private key material — secrets are provisioned out-of-band."
+  private key material — secrets are provisioned out-of-band.
+
+  Rotation sequence (operator, pure register updates only — see
+  docs/key-ops-production.md):
+  1. Provision new private material out-of-band (kagi / HSM / keychain).
+  2. Register public material only as `:pre-active`.
+  3. `(promote-to-active new-key now active-until)`.
+  4. `(retire-key old-key now verify-until)` so historical verify still works.
+  5. `check-key-register --require-active` then consumers use
+     `package verify --key-register`."
   (:require [clojure.string :as str]))
 
 (def allowed-for-new-artifacts
@@ -137,6 +146,74 @@
                                 "."))))
          (non-empty-string? reason) (assoc :key/revoke-reason reason)
          (non-empty-string? now) (assoc :key/revoked-at now))))))
+
+(defn retire-key
+  "Return KEY with `:key/status :retired` for planned rotation (not incident
+  revocation). Historical artifacts may still verify until VERIFY-UNTIL
+  (ISO date, optional). NOW records `:key/retired-at` when provided.
+
+  Retired keys are blocked for NEW package artifacts (see
+  `blocked-for-new-artifacts`) but remain distinguishable from `:revoked`
+  (incident) in the register.
+
+  Pure function — does not destroy private material."
+  ([key]
+   (retire-key key nil nil))
+  ([key now]
+   (retire-key key now nil))
+  ([key now verify-until]
+   (let [from (:key/status key)]
+     (if-not (status-transition-ok? from :retired)
+       (assoc key
+              :key/transition-error
+              {:problem :illegal-status-transition
+               :from from
+               :to :retired})
+       (cond-> (-> key
+                   (dissoc :key/transition-error)
+                   (assoc :key/status :retired
+                          :key/notes
+                          (append-note
+                           (:key/notes key)
+                           (str "Retired"
+                                (when (non-empty-string? now)
+                                  (str " at " now))
+                                (when (non-empty-string? verify-until)
+                                  (str "; verify-until " verify-until))
+                                ". Blocked for new artifacts; historical verify may continue until verify-until."))))
+         (non-empty-string? now) (assoc :key/retired-at now)
+         (non-empty-string? verify-until) (assoc :key/verify-until verify-until)
+         (non-empty-string? now) (assoc :key/active-until
+                                        (or (:key/active-until key) now)))))))
+
+(defn rotate-signing-key
+  "Pure rotation helper: promote NEW-KEY to active and retire OLD-KEY with
+  VERIFY-UNTIL for historical verification.
+
+  Returns
+  {:new <promoted key map>
+   :old <retired key map>
+   :ok? bool
+   :problems [..]}
+
+  Does not touch private material. Operator must provision NEW-KEY secrets
+  out-of-band before promote, then persist both maps into the key-register."
+  [old-key new-key now verify-until]
+  (let [promoted (promote-to-active new-key now)
+        retired (retire-key old-key now verify-until)
+        problems (cond-> []
+                   (:key/transition-error promoted)
+                   (conj {:problem :promote-failed
+                          :error (:key/transition-error promoted)
+                          :key/id (key-id new-key)})
+                   (:key/transition-error retired)
+                   (conj {:problem :retire-failed
+                          :error (:key/transition-error retired)
+                          :key/id (key-id old-key)}))]
+    {:new promoted
+     :old retired
+     :ok? (empty? problems)
+     :problems problems}))
 
 (defn blocked-signer-ids
   "Set of key/signer ids that must not sign new artifacts."

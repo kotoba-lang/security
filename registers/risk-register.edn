@@ -23,26 +23,30 @@
    :risk/impact 5
    :risk/likelihood 2
    :risk/score 10
-   :risk/status :open
+   :risk/status :mitigated
    :risk/owner :crypto-owner
    :risk/mitigations ["key lifecycle states defined"
                       "key register seeded"
                       "verifiers must reject revoked keys for new artifacts"
-                      "2026-07-17: key_status.cljc evaluate/blocked/active + promote-to-active/revoke-key/status-transition-ok? pure helpers (no private material in-repo)"
+                      "2026-07-17: key_status.cljc evaluate/blocked/active + promote-to-active/revoke-key/retire-key/rotate-signing-key/status-transition-ok? pure helpers (no private material in-repo)"
                       "2026-07-17: release_gate :profile :regulated hard-requires :deployment-profile + key-register with >=1 :active key"
                       "2026-07-17: scripts/check-key-register.cljs (+ --require-active) and check-safe-release --profile research|regulated"
                       "downstream: kotoba package admission --key-register merges non-active signers into trust revoked set"
-                      "2026-07-17: research-demo active keys landed (demo-package-signing-2026q3 + demo-audit-signing-2026h2) with real Ed25519 public material only; private keys never in-repo; still not production HSM custody"
-                      "2026-07-17: pure key-lifecycle revoke drill (EV-0010) — synthetic two-key register, revoke-key + blocked-signer-ids + evaluate :no-active-signing-key; live demo keys NOT left revoked"]
+                      "2026-07-17: research-demo active keys landed (demo-package-signing-2026q3 + demo-audit-signing-2026h2) with real Ed25519 public material only; private keys never in-repo"
+                      "2026-07-17: pure key-lifecycle revoke drill (EV-0010) + IR technical drill (EV-0012)"
+                      "2026-07-17: docs/key-ops-production.md production path (kagi/HSM/keychain provision → public-only register → promote/rotate/revoke)"
+                      "RESIDUAL: production HSM/kagi custody optional residual — demo keys are out-of-band-demo storage, not production HSM; regulated path still requires operator promotion of real secrets outside git"]
    :risk/evidence ["docs/key-lifecycle.md"
+                   "docs/key-ops-production.md"
                    "docs/deployment-profiles.md"
                    "src/kotoba/security/key_status.cljc"
                    "registers/key-register.edn"
                    "evidence/2026-07-02/key-status-snapshot.edn"
                    "evidence/2026-07-17/key-lifecycle-revoke-drill.edn"
+                   "evidence/2026-07-17/ir-technical-key-revoke-drill.edn"
                    "test/kotoba/security/key_lifecycle_drill_test.clj"
                    "scripts/check-key-lifecycle-drill.cljs"]
-   :risk/review-by "2026-09-01"}
+   :risk/review-by "2026-10-01"}
   {:risk/id "R-003"
    :risk/title "No FIPS validation claim is supported by deployment evidence"
    :risk/category :cryptography
@@ -79,9 +83,18 @@
    :risk/status :open
    :risk/owner :operations-owner
    :risk/mitigations ["monitoring signals and alert rules defined"
-                      "incident playbooks defined"]
-   :risk/evidence ["docs/continuous-monitoring.md" "docs/incident-response.md"]
-   :risk/review-by "2026-08-01"}
+                      "incident playbooks defined"
+                      "2026-07-17: IR tabletop compromised-package-signer drill (EV-0011, simulated) — evidence/2026-07-17/ir-tabletop-compromised-signer.edn"
+                      "2026-07-17: IR technical key-revoke pure drill (EV-0012 / EV-0010) — evidence/2026-07-17/ir-technical-key-revoke-drill.edn + check-key-lifecycle-drill"
+                      "PARTIAL: one tabletop + one technical drill landed; continuous monitoring still lacks live deployment evidence; further scheduled drills remain open"]
+   :risk/evidence ["docs/continuous-monitoring.md"
+                   "docs/incident-response.md"
+                   "docs/key-ops-production.md"
+                   "evidence/2026-07-17/ir-tabletop-compromised-signer.edn"
+                   "evidence/2026-07-17/ir-technical-key-revoke-drill.edn"
+                   "evidence/2026-07-17/key-lifecycle-revoke-drill.edn"
+                   "scripts/check-key-lifecycle-drill.cljs"]
+   :risk/review-by "2026-09-01"}
   {:risk/id "R-006"
    :risk/title "SBOM/SLSA release evidence is not yet enforced"
    :risk/category :governance
@@ -119,13 +132,16 @@
    :risk/impact 3
    :risk/likelihood 3
    :risk/score 9
-   :risk/status :open
+   :risk/status :mitigated
    :risk/owner :security-owner
    :risk/mitigations ["side-channel and formal-verification non-claims are documented"
                       "architecture review requires deployment profiles"
-                      "2026-07-17: docs/deployment-profiles.md + release_gate :profile regulated hard-requires :deployment-profile claim"]
+                      "2026-07-17: docs/deployment-profiles.md + release_gate :profile regulated hard-requires :deployment-profile claim"
+                      "2026-07-17: research deployment-profile declaration EV-0008 (honest non-production posture)"
+                      "RESIDUAL: side-channel/formal still non-claim; profile evidence EV-0008 only — no claim of side-channel resistance or formal verification"]
    :risk/evidence ["docs/architecture-review-2026-07-01.md"
                    "../aiueos/SECURITY.md"
                    "docs/security-architecture.md"
-                   "docs/deployment-profiles.md"]
-   :risk/review-by "2026-08-01"}]}
+                   "docs/deployment-profiles.md"
+                   "evidence/2026-07-17/deployment-profile.edn"]
+   :risk/review-by "2026-10-01"}]}

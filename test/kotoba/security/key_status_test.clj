@@ -70,6 +70,44 @@
     (is (= :illegal-status-transition
            (get-in out [:key/transition-error :problem])))))
 
+(deftest retire-key-sets-verify-until-and-blocks-new-artifacts
+  (let [k {:key/id "old" :key/status :active :key/notes "live"
+           :key/active-from "2026-04-01"}
+        retired (key-status/retire-key k "2026-07-17" "2033-07-17")
+        reg {:keys [retired {:key/id "new" :key/status :active}]}]
+    (is (= :retired (:key/status retired)))
+    (is (= "2026-07-17" (:key/retired-at retired)))
+    (is (= "2033-07-17" (:key/verify-until retired)))
+    (is (re-find #"verify-until" (:key/notes retired)))
+    (is (nil? (:key/transition-error retired)))
+    (is (contains? (key-status/blocked-signer-ids reg) "old"))
+    (is (= #{"new"} (key-status/active-signer-ids reg)))
+    (is (true? (:kotoba.key/ok? (key-status/evaluate-key-register reg))))))
+
+(deftest retire-from-pre-active-is-illegal
+  (let [k {:key/id "not-yet" :key/status :pre-active}
+        out (key-status/retire-key k "2026-07-17")]
+    (is (= :pre-active (:key/status out)))
+    (is (= :illegal-status-transition
+           (get-in out [:key/transition-error :problem])))))
+
+(deftest rotate-signing-key-promotes-new-and-retires-old
+  (let [old {:key/id "pkg-2026q2" :key/status :active :key/class :package-signing}
+        new {:key/id "pkg-2026q3" :key/status :pre-active :key/class :package-signing}
+        result (key-status/rotate-signing-key old new "2026-07-17" "2033-07-17")
+        reg {:register/type :kotoba.security/key-register
+             :register/version 1
+             :keys [(:old result) (:new result)]}]
+    (is (true? (:ok? result)))
+    (is (= :active (:key/status (:new result))))
+    (is (= :retired (:key/status (:old result))))
+    (is (= "2033-07-17" (:key/verify-until (:old result))))
+    (is (= #{"pkg-2026q3"} (key-status/active-signer-ids reg)))
+    (is (contains? (key-status/blocked-signer-ids reg) "pkg-2026q2"))
+    (is (true? (:kotoba.key/ok? (key-status/evaluate-key-register reg))))
+    (is (nil? (:key/private-key (:new result))))
+    (is (nil? (:key/secret (:old result))))))
+
 (deftest snapshot-includes-checked-at
   (let [reg {:register/type :kotoba.security/key-register
              :register/version 1
