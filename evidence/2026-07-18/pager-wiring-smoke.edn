@@ -1,0 +1,28 @@
+{:smoke/id "pager-wiring-smoke-2026-07-18"
+ :smoke/date "2026-07-18"
+ :smoke/kind :pager-delivery
+ :smoke/schema "kotoba.security.continuous-monitoring/v1"
+ :smoke/command "nbb --classpath src scripts/emit-alert.cljs --smoke --date 2026-07-18"
+ :smoke/related
+ ["scripts/emit-alert.cljs"
+  "src/kotoba/security/alert_delivery.cljs"
+  "scripts/simulate-revoked-signer.cljs"
+  "evidence/2026-07-18/alerts/"]
+ :smoke/sinks
+ [{:sink :file
+   :result :success
+   :path "evidence/2026-07-18/alerts/pager-wiring-smoke-pager-smoke-2026-07-18.edn"
+   :notes "Default file sink always on; wrote EDN+JSON+ndjson under evidence/2026-07-18/alerts/."}
+  {:sink :webhook
+   :result :skipped
+   :reason "KOTOBA_SECURITY_ALERT_WEBHOOK unset"
+   :notes "Honest skip — no fabricated webhook success. Set env to POST JSON to Slack/PagerDuty/etc."}
+  {:sink :stdout
+   :result :not-requested}]
+ :smoke/revoked-signer-deliver
+ {:command "nbb --classpath src scripts/simulate-revoked-signer.cljs --write --deliver"
+  :result :success
+  :notes "SEV-1 trusted-signer-verification-failure delivered to file sink on denial path."}
+ :smoke/exit 0
+ :smoke/evidence-id "EV-0012"
+ :smoke/residual "Live human on-call roster and vendor-specific webhook payload shaping remain optional."}

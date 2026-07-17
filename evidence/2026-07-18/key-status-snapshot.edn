@@ -1,0 +1,97 @@
+{:snapshot/date "2026-07-18"
+ :snapshot/source "registers/key-register.edn"
+ :snapshot/keys
+ [{:key/id "example-package-signing-2026q3"
+   :key/purpose :package-signing
+   :key/algorithm :ed25519
+   :key/state :pre-active
+   :key/owner :package-owner
+   :key/intent :research-demo
+   :key/storage :placeholder
+   :key/expiry nil
+   :key/pq-status :classical-only
+   :key/notes "Research-demo template; not production."}
+  {:key/id "example-audit-signing-2026h2"
+   :key/purpose :audit-signing
+   :key/algorithm :ed25519
+   :key/state :pre-active
+   :key/owner :operations-owner
+   :key/intent :research-demo
+   :key/storage :placeholder
+   :key/expiry nil
+   :key/pq-status :classical-only
+   :key/notes "Research-demo template; not production."}
+  {:key/id "security-package-signing-2026-07-18"
+   :key/purpose :package-signing
+   :key/algorithm :ed25519
+   :key/state :active
+   :key/owner :package-owner
+   :key/intent :production
+   :key/storage :kagi
+   :key/kagi-name "security-package-signing"
+   :key/public "ed25519:1f414dff290d6b4ff3e979a929ed2e7d2638f41536b81dafce6ab76dab4c71a2"
+   :key/did "did:key:z6MkgZGSU4XvcHHbGE12FAdiczSf9mV14XxTqgS6R4orjZTX"
+   :key/expiry nil
+   :key/pq-status :classical-only
+   :key/notes "Production-intent package signer; private in kagi only."}
+  {:key/id "security-audit-signing-2026-07-18"
+   :key/purpose :audit-signing
+   :key/algorithm :ed25519
+   :key/state :active
+   :key/owner :operations-owner
+   :key/intent :production
+   :key/storage :kagi
+   :key/kagi-name "security-audit-signing"
+   :key/public "ed25519:d4c230fa010bf5839cddb9178872361259e4f59673ab0ce7b8e5a9caacab3b0b"
+   :key/did "did:key:z6MktmnDnL6y1WEfdsW91Fsud2Mcn5XpduYWrTVWtAFqrs9C"
+   :key/expiry nil
+   :key/pq-status :classical-only
+   :key/notes "Production-intent audit signer; private in kagi only."}
+  {:key/id "fleet-owner-key-2026-07-16"
+   :key/purpose :fleet-pin-signing
+   :key/algorithm :ed25519
+   :key/state :active
+   :key/owner :security-owner
+   :key/intent :production
+   :key/storage :kagi
+   :key/kagi-name "fleet-owner-key"
+   :key/public "ed25519:7414dd47730947339b50c97b85021f22beee825dacc9e5c30b8413973215c5dd"
+   :key/expiry nil
+   :key/pq-status :classical-only
+   :key/notes "Production-intent fleet pin-advance public key; private in kagi."}
+  {:key/id "fleet-owner-root-2026-07-16"
+   :key/purpose :fleet-governance
+   :key/algorithm :ed25519
+   :key/state :active
+   :key/owner :security-owner
+   :key/intent :production
+   :key/storage :kagi
+   :key/kagi-name "fleet-owner-root"
+   :key/did "did:key:z6Mkk13tQrNBXMhpvbJ2GKGYzX43XtyXnycG9VPqWpbiG5dR"
+   :key/expiry nil
+   :key/pq-status :classical-only
+   :key/notes "Production-intent fleet root DID; private in kagi."}
+  {:key/id "fleet-gov1-2026-07-16"
+   :key/purpose :fleet-governance
+   :key/algorithm :ed25519
+   :key/state :active
+   :key/owner :security-owner
+   :key/intent :production
+   :key/storage :kagi
+   :key/kagi-name "fleet-gov1"
+   :key/did "did:key:z6MkqmFdjR71seTNhJYTfrAdPGVcjUbZmiKuH45NLHz2ezJ7"
+   :key/expiry nil
+   :key/pq-status :classical-only}
+  {:key/id "fleet-gov2-2026-07-16"
+   :key/purpose :fleet-governance
+   :key/algorithm :ed25519
+   :key/state :active
+   :key/owner :security-owner
+   :key/intent :production
+   :key/storage :kagi
+   :key/kagi-name "fleet-gov2"
+   :key/did "did:key:z6MkqZimxFUMg1xwFKSZsSecxegSbnKx9f3xY3wcHnxL5qTQ"
+   :key/expiry nil
+   :key/pq-status :classical-only}]
+ :snapshot/revoked []
+ :snapshot/notes "2026-07-18: registered production-intent package-signing and audit-signing public keys (kagi custody security-package-signing / security-audit-signing). Demo templates retained as research-demo. No private material in register. See docs/key-ops-kagi.md, EV-0013, R-002 residual (HSM + rotation drill)."}

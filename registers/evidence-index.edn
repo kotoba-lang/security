@@ -189,4 +189,35 @@
                      :crypto-inventory-checked]
    :evidence/notes "Reaffirmation: :crypto-agile active; :fips-required/:hybrid-required enforceable with negative fixtures; hybrid vectors present. No FIPS 140-3 module claim. Production hybrid data path not deployed."
    :evidence/result :passing
+   :evidence/retention "P7Y"}
+
+  {:evidence/id "EV-0012"
+   :evidence/type :pager-wiring
+   :evidence/created-at "2026-07-18"
+   :evidence/producer "kotoba-lang/security"
+   :evidence/artifacts [{:kind :smoke :path "evidence/2026-07-18/pager-wiring-smoke.edn"}
+                        {:kind :code :path "scripts/emit-alert.cljs"}
+                        {:kind :code :path "src/kotoba/security/alert_delivery.cljs"}
+                        {:kind :gate :path "scripts/simulate-revoked-signer.cljs"}
+                        {:kind :doc :path "docs/continuous-monitoring.md"}]
+   :evidence/claims [:monitoring-alert-schema
+                     :technical-alert-sample]
+   :evidence/notes "Executable pager routing: file sink always works (evidence/<date>/alerts + /tmp fallback); optional webhook when KOTOBA_SECURITY_ALERT_WEBHOOK is set. Smoke 2026-07-18 recorded file success and honest webhook-skipped. Live human on-call still residual."
+   :evidence/result :passing
+   :evidence/retention "P7Y"}
+
+  {:evidence/id "EV-0013"
+   :evidence/type :key-custody
+   :evidence/created-at "2026-07-18"
+   :evidence/producer "kotoba-lang/security"
+   :evidence/artifacts [{:kind :register :path "registers/key-register.edn"}
+                        {:kind :snapshot :path "evidence/2026-07-18/key-status-snapshot.edn"}
+                        {:kind :doc :path "docs/key-ops-kagi.md"}
+                        {:kind :gate :path "scripts/check-key-register.cljs"}
+                        {:kind :gate :path "scripts/check-key-register.bb"}]
+   :evidence/claims [:key-status-snapshot
+                     :production-public-keys-registered
+                     :kagi-custody-documented]
+   :evidence/notes "Minted security-package-signing + security-audit-signing into kagi compartment personal (PKCS8 Ed25519). Public ed25519 hex + did:key only in git. Demo rows retained as research-demo. Residual: not HSM; rotation/expiry drill still open."
+   :evidence/result :passing
    :evidence/retention "P7Y"}]}

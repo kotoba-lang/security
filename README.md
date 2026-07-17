@@ -98,11 +98,26 @@ Run the tests and gates from the repo root (CI runs the same commands):
 
 ```sh
 clojure -M:test                       # release-gate, crypto-policy, key-lifecycle tests
-bb scripts/check-safe-release.bb      # fixture matrix + advisory packet status
-bb scripts/check-crypto-inventory.bb  # crypto inventory vs policy/crypto-policy.edn
-bb scripts/check-key-register.bb      # key-register shape; forbids private PEM
-bb scripts/simulate-revoked-signer.bb --write  # R-005 technical alert samples
+nbb --classpath src scripts/check-safe-release.cljs
+nbb --classpath src scripts/check-crypto-inventory.cljs
+nbb --classpath src scripts/check-key-register.cljs --require-active
+bb scripts/check-key-register.bb      # shape + forbid private PEM (key_lifecycle)
+nbb --classpath src scripts/simulate-revoked-signer.cljs --write --deliver
+nbb --classpath src scripts/emit-alert.cljs --smoke
 ```
+
+### Pager webhook (optional real sink)
+
+File sink always works. To route to Slack / PagerDuty / any HTTP receiver:
+
+```sh
+export KOTOBA_SECURITY_ALERT_WEBHOOK='https://hooks.slack.com/services/XXX/YYY/ZZZ'
+# or a PagerDuty Events API / custom bridge that accepts JSON
+nbb --classpath src scripts/emit-alert.cljs --smoke
+```
+
+Unset webhook → scripts report `webhook skipped` honestly and still exit 0 if
+the file sink succeeds. See [Continuous Monitoring](docs/continuous-monitoring.md).
 
 `bb scripts/check-safe-release.bb --release` enforces the release evidence
 packet strictly (kotoba-lang/kotoba#265): every required claim —
