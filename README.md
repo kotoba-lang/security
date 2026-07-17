@@ -74,6 +74,7 @@ Implementation and compliance evidence remain incomplete:
 - [Continuous Monitoring](docs/continuous-monitoring.md)
 - [Risk Management](docs/risk-management.md)
 - [Key Lifecycle](docs/key-lifecycle.md)
+- [Production Key Ops](docs/key-ops-production.md)
 - [Deployment Profiles](docs/deployment-profiles.md)
 - [FIPS Validation Strategy](docs/fips-validation.md)
 - [SBOM and SLSA Provenance](docs/sbom-slsa.md)
@@ -101,8 +102,15 @@ clojure -M:test                                              # unit + fixture te
 nbb --classpath src scripts/check-safe-release.cljs          # fixture matrix + advisory
 nbb --classpath src scripts/check-safe-release.cljs --release --profile research
 nbb --classpath src scripts/check-key-register.cljs          # active/blocked/problems
+nbb --classpath src scripts/check-key-register.cljs --require-active  # regulated: need :active key
+nbb --classpath src scripts/check-key-lifecycle-drill.cljs   # pure/synthetic revoke drill (R-002/R-005)
 nbb --classpath src scripts/check-crypto-inventory.cljs      # crypto inventory vs policy
 ```
+
+Production key path (public material only; secrets out-of-band): see
+[docs/key-ops-production.md](docs/key-ops-production.md).
+IR drill evidence: `evidence/2026-07-17/ir-tabletop-compromised-signer.edn`,
+`evidence/2026-07-17/ir-technical-key-revoke-drill.edn`.
 
 `nbb --classpath src scripts/check-safe-release.cljs --release` enforces the
 release evidence packet strictly (kotoba-lang/kotoba#265): every required claim
