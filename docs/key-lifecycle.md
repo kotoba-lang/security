@@ -2,6 +2,7 @@
 
 Status: proposed baseline
 Date: 2026-07-01
+Updated: 2026-07-17 (promote / revoke pure helpers + CLI)
 
 ## Purpose
 
@@ -25,16 +26,91 @@ uses must be separated, inventoried, rotated, and revocable.
 ```text
 pre-active -> active -> suspended -> retired -> destroyed
                          -> compromised
+                         -> revoked
+                         -> expired
 ```
 
 State rules:
 
-- `pre-active`: generated but not trusted for verification.
+- `pre-active`: generated but not trusted for verification of **new** artifacts.
 - `active`: may sign, wrap, or verify according to class policy.
-- `suspended`: verify only while incident review is pending.
+- `suspended`: verify only while incident review is pending; not trusted for new artifacts.
 - `retired`: verify historical artifacts only; cannot sign or wrap new data.
 - `destroyed`: private material destroyed; public verification metadata retained.
 - `compromised`: reject new artifacts and assess historical impact.
+- `revoked`: explicit operator revocation; reject new artifacts.
+- `expired`: crypto period ended; reject new artifacts.
+
+Executable evaluation lives in `src/kotoba/security/key_status.cljc`:
+
+- **blocked for new artifacts**: `:revoked` `:expired` `:compromised` `:retired` `:pre-active`
+- **active for new artifacts**: `:active` only
+
+## Pure transitions (`key_status.cljc`)
+
+| Function | Effect | Secret material |
+|---|---|---|
+| `status-transition-ok?` | predicate over allowed edges | none |
+| `promote-to-active` | set `:key/status :active`, `:key/active-from`, optional `:key/active-until` | **never invents** private keys; notes that material must be provisioned out-of-band |
+| `revoke-key` | set `:key/status :revoked`, optional reason + `:key/revoked-at` | does not destroy secrets (operator step) |
+
+Allowed edges (summary):
+
+- `pre-active` → `active` | `revoked` | `destroyed`
+- `active` → `retired` | `revoked` | `expired` | `suspended` | `compromised`
+- `suspended` → `active` | `revoked` | `compromised` | `retired`
+- `retired` / `expired` / `compromised` → `destroyed` | `revoked`
+- `revoked` → `destroyed`
+- `destroyed` → ∅ (terminal)
+
+Illegal transitions return the key map unchanged with
+`:key/transition-error {:problem :illegal-status-transition ...}`.
+
+## CLI semantics
+
+### Inspect the register
+
+```sh
+nbb --classpath src scripts/check-key-register.cljs
+nbb --classpath src scripts/check-key-register.cljs --require-active
+```
+
+- Default: print `active` / `blocked` / `problems`; exit 0 even when only
+  template (`:pre-active`) keys exist (research posture).
+- `--require-active`: exit 1 if no `:active` key or the register has problems.
+  Use this for **regulated** release packaging.
+
+### Promote / revoke (operator workflow)
+
+These are pure library functions today — operators edit
+`registers/key-register.edn` (or an out-of-band register) after calling them
+from a REPL / small nbb one-liner. Example:
+
+```clojure
+(require '[kotoba.security.key-status :as ks])
+
+;; After provisioning the real private key out-of-band (HSM / kagi / OS keychain):
+(ks/promote-to-active pre-active-key "2026-07-17" "2026-10-17")
+
+;; Incident or rotation:
+(ks/revoke-key active-key "compromised signing host" "2026-07-17")
+```
+
+**Never** commit private key material to this repository. Template keys remain
+`:pre-active` with `:key/storage :placeholder` until a real secret exists
+outside git.
+
+### Safe-release gate integration
+
+```sh
+# research / default — deployment-profile is recommended, not hard-required
+nbb --classpath src scripts/check-safe-release.cljs --release --profile research
+
+# regulated — hard-require :deployment-profile claim + active key-register
+nbb --classpath src scripts/check-safe-release.cljs --release --profile regulated
+```
+
+See [deployment-profiles.md](deployment-profiles.md).
 
 ## Crypto Periods
 
@@ -71,9 +147,12 @@ Revocation requires:
 Runtime and package verifiers must treat revoked package-signing keys as invalid
 for new artifacts. Historical artifacts require incident-specific assessment.
 
+Downstream: `kotoba-lang/kotoba` package admission folds non-`:active`
+key-register entries into trust `:revoked-signers` via `--key-register`
+(see that repo's `docs/deployment-profiles.md`).
+
 ## FIPS Boundary
 
 If a deployment claims FIPS compliance, key generation, signing, encryption, and
 randomness must occur inside the validated cryptographic module boundary for the
 claimed control. The default repository design does not claim this.
-

@@ -149,3 +149,108 @@
                                        :exception-register exception-register
                                        :now "2026-07-02"})]
     (is (= [] (:kotoba.release/problems result)))))
+
+(def sample-complete-evidence
+  {:register/type :kotoba.security/evidence-index
+   :register/version 1
+   :evidence
+   [{:evidence/id "EV-T1"
+     :evidence/claims [:conformance-results :package-verification]
+     :evidence/result :pass}
+    {:evidence/id "EV-T2"
+     :evidence/claims [:sbom :provenance]
+     :evidence/result :pass}
+    {:evidence/id "EV-T3"
+     :evidence/claims [:key-status-snapshot :risk-review :deployment-profile]
+     :evidence/result :pass}]})
+
+(def sample-exceptions
+  {:register/type :kotoba.security/exception-register
+   :register/version 1
+   :exceptions []})
+
+(def sample-key-register-active
+  {:register/type :kotoba.security/key-register
+   :register/version 1
+   :keys [{:key/id "reg-active" :key/status :active}
+          {:key/id "reg-pre" :key/status :pre-active}]})
+
+(def sample-key-register-pre-only
+  {:register/type :kotoba.security/key-register
+   :register/version 1
+   :keys [{:key/id "reg-pre" :key/status :pre-active}]})
+
+(deftest research-profile-does-not-hard-require-deployment-profile
+  (let [evidence (update sample-complete-evidence :evidence
+                         (fn [xs]
+                           (mapv (fn [e]
+                                   (update e :evidence/claims
+                                           (fn [cs] (vec (remove #{:deployment-profile} cs)))))
+                                 xs)))
+        result (gate/evaluate-release
+                {:evidence-index evidence
+                 :exception-register sample-exceptions
+                 :now "2026-07-17"
+                 :profile :research})]
+    (is (:kotoba.release/ok? result)
+        (pr-str result))
+    (is (= [:deployment-profile] (:kotoba.release/recommended-missing result)))
+    (is (not (some #{:deployment-profile} (:kotoba.release/missing result))))))
+
+(deftest regulated-profile-requires-deployment-profile-claim
+  (let [evidence (update sample-complete-evidence :evidence
+                         (fn [xs]
+                           (mapv (fn [e]
+                                   (update e :evidence/claims
+                                           (fn [cs] (vec (remove #{:deployment-profile} cs)))))
+                                 xs)))
+        result (gate/evaluate-release
+                {:evidence-index evidence
+                 :exception-register sample-exceptions
+                 :key-register sample-key-register-active
+                 :now "2026-07-17"
+                 :profile :regulated})]
+    (is (not (:kotoba.release/ok? result)))
+    (is (some #{:deployment-profile} (:kotoba.release/missing result)))
+    (is (= :regulated (:kotoba.release/profile result)))))
+
+(deftest regulated-profile-requires-active-key-register
+  (testing "missing key-register"
+    (let [result (gate/evaluate-release
+                  {:evidence-index sample-complete-evidence
+                   :exception-register sample-exceptions
+                   :now "2026-07-17"
+                   :profile "regulated"})]
+      (is (not (:kotoba.release/ok? result)))
+      (is (some #(= :key-register-required (:problem %))
+                (:kotoba.release/problems result)))))
+  (testing "pre-active only key-register"
+    (let [result (gate/evaluate-release
+                  {:evidence-index sample-complete-evidence
+                   :exception-register sample-exceptions
+                   :key-register sample-key-register-pre-only
+                   :now "2026-07-17"
+                   :profile :regulated})]
+      (is (not (:kotoba.release/ok? result)))
+      (is (some #(= :no-active-signing-key (:problem %))
+                (:kotoba.release/problems result)))))
+  (testing "active key + deployment-profile passes"
+    (let [result (gate/evaluate-release
+                  {:evidence-index sample-complete-evidence
+                   :exception-register sample-exceptions
+                   :key-register sample-key-register-active
+                   :now "2026-07-17"
+                   :profile :regulated})]
+      (is (:kotoba.release/ok? result) (pr-str result))
+      (is (= [] (:kotoba.release/missing result)))
+      (is (true? (get-in result [:kotoba.release/key-status :kotoba.key/ok?]))))))
+
+(deftest optional-key-register-without-profile-is-evaluated
+  (let [result (gate/evaluate-release
+                {:evidence-index sample-complete-evidence
+                 :exception-register sample-exceptions
+                 :key-register sample-key-register-pre-only
+                 :now "2026-07-17"})]
+    (is (not (:kotoba.release/ok? result)))
+    (is (some #(= :no-active-signing-key (:problem %))
+              (:kotoba.release/problems result)))))

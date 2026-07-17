@@ -16,10 +16,16 @@ jobs:
           distribution: temurin
           java-version: '21'
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
       - uses: DeLaGuardo/setup-clojure@13.4
         with:
           cli: latest
-          bb: latest
+
+      - name: Install nbb
+        run: npm install -g nbb
 
       - name: Run tests
         run: clojure -M:test
@@ -28,13 +34,16 @@ jobs:
         run: clojure -M:lint
 
       - name: Safe-release evidence gate (fixtures)
-        run: bb scripts/check-safe-release.bb
+        run: nbb --classpath src scripts/check-safe-release.cljs
 
       - name: Safe-release evidence gate (strict release enforcement)
-        run: bb scripts/check-safe-release.bb --release
+        run: nbb --classpath src scripts/check-safe-release.cljs --release --profile research
+
+      - name: Key-register status (advisory)
+        run: nbb --classpath src scripts/check-key-register.cljs
 
       - name: Crypto inventory gate
-        run: bb scripts/check-crypto-inventory.bb
+        run: nbb --classpath src scripts/check-crypto-inventory.cljs
 
   # Recomputes the hybrid X25519 + ML-KEM-768 wrapping vectors with Bouncy
   # Castle (:vectors alias only; the gates job above stays BC-free).
