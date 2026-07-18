@@ -291,4 +291,23 @@
                      :monitoring-heartbeat-stub]
    :evidence/notes "Next residual coverage: Slack Incoming Webhook + PagerDuty Events API v2 + generic payload adapters with KOTOBA_SECURITY_ALERT_SINK/URL auto-select (unit-tested; no secrets); example on-call roster @example.invalid with severity→channel and escalation minutes; CI hybrid-admit over object_encryption_gate + hybrid vectors; monitoring heartbeat collector stub. Residuals: live vendor credentials unset, real human contacts unfilled, production hybrid data path still classical, no live metric collectors, FIPS still non-claim (R-003)."
    :evidence/result :passing
+   :evidence/retention "P7Y"}
+
+  {:evidence/id "EV-0018"
+   :evidence/type :implementation
+   :evidence/created-at "2026-07-18"
+   :evidence/producer "kotoba-lang/security"
+   :evidence/artifacts [{:kind :code :path "src/kotoba/security/host_denial_telemetry.cljc"}
+                        {:kind :gate :path "scripts/aggregate-host-denial.cljs"}
+                        {:kind :gate :path "scripts/metric-collect.cljs"}
+                        {:kind :test :path "test/kotoba/security/host_denial_telemetry_test.clj"}
+                        {:kind :fixture :path "test/fixtures/alerts/"}
+                        {:kind :summary :path "evidence/2026-07-18/host-denial-summary.edn"}
+                        {:kind :summary :path "evidence/2026-07-18/metric-collect.edn"}
+                        {:kind :doc :path "docs/continuous-monitoring.md"}]
+   :evidence/claims [:host-denial-telemetry-aggregate
+                     :metric-collect-file-backed
+                     :monitoring-alert-schema]
+   :evidence/notes "File-backed host-denial telemetry: aggregates structured continuous-monitoring alerts from evidence/*/alerts (or --dir) into summary EDN; counts host-capability-denial-spike patterns and optional threshold emit; metric-collect prints/writes counts by severity/name/signal. Unit tests use fixture alert files. Does not scrape live hosts or invent Slack/PD tokens. Residual: live runtime receipt stream still synthetic/sim only."
+   :evidence/result :passing
    :evidence/retention "P7Y"}]}
