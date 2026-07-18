@@ -1,7 +1,8 @@
 {:register/type :kotoba.security/key-register
  :register/version 1
  :keys
- [{:key/id "example-package-signing-2026q3"
+ [;; --- research / template rows (not production) --------------------------
+  {:key/id "example-package-signing-2026q3"
    :key/class :package-signing
    :key/algorithm :ed25519
    :key/status :pre-active
@@ -13,7 +14,8 @@
    :key/storage :placeholder
    :key/fips-boundary nil
    :key/pq-status :classical-only
-   :key/notes "Template record; replace before production use."}
+   :key/intent :research-demo
+   :key/notes "Research-demo template only. Not a production signer. Do not promote without kagi custody + public material registration (docs/key-ops-kagi.md)."}
   {:key/id "example-audit-signing-2026h2"
    :key/class :audit-signing
    :key/algorithm :ed25519
@@ -26,5 +28,71 @@
    :key/storage :placeholder
    :key/fips-boundary nil
    :key/pq-status :classical-only
-   :key/notes "Template record; replace before production use."}]}
+   :key/intent :research-demo
+   :key/notes "Research-demo template only. Not a production audit signer."}
 
+  ;; --- production-intent public keys (custody in kagi; NO private material) -
+  ;; Public material is the same as manifest/fleet-keys.edn (superproject).
+  ;; Private PEMs live only in kagi compartment personal (OS-Keychain unlock).
+  {:key/id "fleet-owner-key-2026-07-16"
+   :key/class :fleet-pin-signing
+   :key/algorithm :ed25519
+   :key/status :active
+   :key/owner :security-owner
+   :key/created-at "2026-07-16"
+   :key/active-from "2026-07-16"
+   :key/active-until nil
+   :key/verify-until nil
+   :key/storage :kagi
+   :key/kagi-name "fleet-owner-key"
+   :key/kagi-compartment "personal"
+   :key/public "ed25519:7414dd47730947339b50c97b85021f22beee825dacc9e5c30b8413973215c5dd"
+   :key/fips-boundary nil
+   :key/pq-status :classical-only
+   :key/intent :production
+   :key/notes "Production-intent fleet pin-advance signer. Private key in kagi item fleet-owner-key (compartment personal). Public hex matches superproject manifest/fleet-keys.edn :keys entry. Not a package-manifest signer."}
+  {:key/id "fleet-owner-root-2026-07-16"
+   :key/class :fleet-governance
+   :key/algorithm :ed25519
+   :key/status :active
+   :key/owner :security-owner
+   :key/created-at "2026-07-16"
+   :key/active-from "2026-07-16"
+   :key/storage :kagi
+   :key/kagi-name "fleet-owner-root"
+   :key/kagi-compartment "personal"
+   :key/did "did:key:z6Mkk13tQrNBXMhpvbJ2GKGYzX43XtyXnycG9VPqWpbiG5dR"
+   :key/fips-boundary nil
+   :key/pq-status :classical-only
+   :key/intent :production
+   :key/notes "Production-intent fleet trust anchor + canonical quorum member. Private in kagi fleet-owner-root. Public DID listed in manifest/fleet-keys.edn :roots and :canonical :allow."}
+  {:key/id "fleet-gov1-2026-07-16"
+   :key/class :fleet-governance
+   :key/algorithm :ed25519
+   :key/status :active
+   :key/owner :security-owner
+   :key/created-at "2026-07-16"
+   :key/active-from "2026-07-16"
+   :key/storage :kagi
+   :key/kagi-name "fleet-gov1"
+   :key/kagi-compartment "personal"
+   :key/did "did:key:z6MkqmFdjR71seTNhJYTfrAdPGVcjUbZmiKuH45NLHz2ezJ7"
+   :key/fips-boundary nil
+   :key/pq-status :classical-only
+   :key/intent :production
+   :key/notes "Production-intent fleet governor (canonical 2-of-3 quorum). Private in kagi fleet-gov1. Public DID in manifest/fleet-keys.edn :canonical :allow."}
+  {:key/id "fleet-gov2-2026-07-16"
+   :key/class :fleet-governance
+   :key/algorithm :ed25519
+   :key/status :active
+   :key/owner :security-owner
+   :key/created-at "2026-07-16"
+   :key/active-from "2026-07-16"
+   :key/storage :kagi
+   :key/kagi-name "fleet-gov2"
+   :key/kagi-compartment "personal"
+   :key/did "did:key:z6MkqZimxFUMg1xwFKSZsSecxegSbnKx9f3xY3wcHnxL5qTQ"
+   :key/fips-boundary nil
+   :key/pq-status :classical-only
+   :key/intent :production
+   :key/notes "Production-intent fleet governor (canonical 2-of-3 quorum). Private in kagi fleet-gov2. Public DID in manifest/fleet-keys.edn :canonical :allow."}]}

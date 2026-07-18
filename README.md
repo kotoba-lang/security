@@ -74,6 +74,7 @@ Implementation and compliance evidence remain incomplete:
 - [Continuous Monitoring](docs/continuous-monitoring.md)
 - [Risk Management](docs/risk-management.md)
 - [Key Lifecycle](docs/key-lifecycle.md)
+- [Key Operations (kagi)](docs/key-ops-kagi.md)
 - [FIPS Validation Strategy](docs/fips-validation.md)
 - [SBOM and SLSA Provenance](docs/sbom-slsa.md)
 - [Operational Evidence](docs/operational-evidence.md)
@@ -96,9 +97,11 @@ Implementation and compliance evidence remain incomplete:
 Run the tests and gates from the repo root (CI runs the same commands):
 
 ```sh
-clojure -M:test                       # release-gate and crypto-policy tests
+clojure -M:test                       # release-gate, crypto-policy, key-lifecycle tests
 bb scripts/check-safe-release.bb      # fixture matrix + advisory packet status
 bb scripts/check-crypto-inventory.bb  # crypto inventory vs policy/crypto-policy.edn
+bb scripts/check-key-register.bb      # key-register shape; forbids private PEM
+bb scripts/simulate-revoked-signer.bb --write  # R-005 technical alert samples
 ```
 
 `bb scripts/check-safe-release.bb --release` enforces the release evidence

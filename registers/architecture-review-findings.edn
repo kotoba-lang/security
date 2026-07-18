@@ -22,8 +22,11 @@
    :finding/linked-risks ["R-002"]
    :finding/evidence ["docs/architecture-review-2026-07-01.md"
                       "docs/key-lifecycle.md"
-                      "../aiueos/SECURITY.md"]
-   :finding/status :open}
+                      "docs/key-ops-kagi.md"
+                      "src/kotoba/security/key_lifecycle.cljc"
+                      "evidence/2026-07-17/key-status-snapshot.edn"]
+   :finding/status :mitigated
+   :finding/residual "Package-signing production key not issued; rotation/expiry not drilled on package path."}
   {:finding/id "F-003"
    :finding/severity :high
    :finding/title "Capability values and dynamic CACAO intersection remain incomplete"
@@ -41,8 +44,11 @@
    :finding/linked-risks ["R-005"]
    :finding/evidence ["docs/architecture-review-2026-07-01.md"
                       "docs/continuous-monitoring.md"
-                      "docs/incident-response.md"]
-   :finding/status :open}
+                      "docs/incident-response.md"
+                      "evidence/2026-07-17/tabletop-compromised-signer.md"
+                      "evidence/2026-07-17/alert-compromised-signer.edn"]
+   :finding/status :mitigated
+   :finding/residual "No live pager/on-call; host-denial alert is synthetic."}
   {:finding/id "F-005"
    :finding/severity :high
    :finding/title "FIPS/PQC boundaries are non-claimed but not deployable controls"
@@ -51,8 +57,11 @@
    :finding/linked-risks ["R-003" "R-004"]
    :finding/evidence ["docs/architecture-review-2026-07-01.md"
                       "docs/fips-validation.md"
-                      "docs/pqc-roadmap.md"]
-   :finding/status :open}
+                      "docs/pqc-roadmap.md"
+                      "policy/crypto-policy.edn"
+                      "conformance/crypto/vectors/hybrid-x25519-mlkem768.edn"]
+   :finding/status :partial
+   :finding/residual "R-003 open (no FIPS module). R-004 partially mitigated (vectors+policy); production hybrid path not deployed."}
   {:finding/id "F-006"
    :finding/severity :medium
    :finding/title "TCB and side-channel risks need deployment profiles"

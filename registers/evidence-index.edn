@@ -124,4 +124,69 @@
                      :risk-review]
    :evidence/notes "2026-07-02 operational-evidence release packet: every conformance gate re-run for real across kotoba (b39383f0), kotoba-lang (3c8625a5), security (c9fee104), crypto (2fd5f1ce) — all green; real positive package-verification receipt from 'kotoba-clj package verify' against kotoba-lang examples/kotoba.lock.edn + examples/package-manifest.edn; per-repo CycloneDX-inspired SBOMs generated mechanically by scripts/gen-sbom.bb from each deps.edn; SLSA-inspired provenance pins commit + latest successful main CI run per repo; key snapshot derived from registers/key-register.edn; risk review covers R-001..R-008 (R-001/R-006/R-007 -> mitigated)."
    :evidence/result :passing
+   :evidence/retention "P7Y"}
+
+  {:evidence/id "EV-0008"
+   :evidence/type :ir-tabletop
+   :evidence/created-at "2026-07-17"
+   :evidence/producer "kotoba-lang/security"
+   :evidence/artifacts [{:kind :postmortem :path "evidence/2026-07-17/tabletop-compromised-signer.md"}
+                        {:kind :review :path "evidence/2026-07-17/risk-review.edn"}]
+   :evidence/claims [:ir-tabletop-compromised-signer
+                     :monitoring-designed]
+   :evidence/notes "Tabletop drill for compromised package signer (SEV-1 playbook). Linked to technical simulation EV-0009. Residual: no live pager."
+   :evidence/result :passing
+   :evidence/retention "P7Y"}
+
+  {:evidence/id "EV-0009"
+   :evidence/type :technical-simulation
+   :evidence/created-at "2026-07-17"
+   :evidence/producer "kotoba-lang/security"
+   :evidence/artifacts [{:kind :simulation :path "evidence/2026-07-17/revoked-signer-simulation.edn"}
+                        {:kind :alert :path "evidence/2026-07-17/alert-compromised-signer.edn"}
+                        {:kind :alert :path "evidence/2026-07-17/alert-compromised-signer.json"}
+                        {:kind :alert :path "evidence/2026-07-17/alert-host-denial-spike.edn"}
+                        {:kind :alert :path "evidence/2026-07-17/alert-host-denial-spike.json"}
+                        {:kind :code :path "src/kotoba/security/key_lifecycle.cljc"}
+                        {:kind :gate :path "scripts/simulate-revoked-signer.bb"}
+                        {:kind :test :path "test/kotoba/security/key_lifecycle_test.clj"}]
+   :evidence/claims [:technical-alert-sample
+                     :revoked-signer-denied
+                     :monitoring-alert-schema]
+   :evidence/notes "Executable revoked-signer new-artifact denial + structured continuous-monitoring alert samples (SEV-1 signer failure, SEV-2 host-denial spike). Synthetic but schema-faithful; not live production telemetry."
+   :evidence/result :passing
+   :evidence/retention "P7Y"}
+
+  {:evidence/id "EV-0010"
+   :evidence/type :key-custody
+   :evidence/created-at "2026-07-17"
+   :evidence/producer "kotoba-lang/security"
+   :evidence/artifacts [{:kind :register :path "registers/key-register.edn"}
+                        {:kind :snapshot :path "evidence/2026-07-17/key-status-snapshot.edn"}
+                        {:kind :doc :path "docs/key-ops-kagi.md"}
+                        {:kind :gate :path "scripts/check-key-register.bb"}]
+   :evidence/claims [:key-status-snapshot
+                     :production-public-keys-registered
+                     :kagi-custody-documented]
+   :evidence/notes "kagi compartment personal holds private fleet-owner-key/root/gov1/gov2. Public material only in git (matches superproject manifest/fleet-keys.edn). Package-signing production key still absent. Gate rejects private PEM in register."
+   :evidence/result :passing
+   :evidence/retention "P7Y"}
+
+  {:evidence/id "EV-0011"
+   :evidence/type :policy-enforcement
+   :evidence/created-at "2026-07-17"
+   :evidence/producer "kotoba-lang/security"
+   :evidence/artifacts [{:kind :policy :path "policy/crypto-policy.edn"}
+                        {:kind :code :path "src/kotoba/security/crypto_policy.cljc"}
+                        {:kind :gate :path "scripts/check-crypto-inventory.bb"}
+                        {:kind :vectors :path "conformance/crypto/vectors/hybrid-x25519-mlkem768.edn"}
+                        {:kind :doc :path "docs/fips-validation.md"}
+                        {:kind :doc :path "docs/pqc-roadmap.md"}
+                        {:kind :fixture :path "conformance/crypto/"}]
+   :evidence/claims [:crypto-policy-modes-enforceable
+                     :fips-non-claim-defined
+                     :hybrid-kem-vectors-real
+                     :crypto-inventory-checked]
+   :evidence/notes "Reaffirmation: :crypto-agile active; :fips-required/:hybrid-required enforceable with negative fixtures; hybrid vectors present. No FIPS 140-3 module claim. Production hybrid data path not deployed."
+   :evidence/result :passing
    :evidence/retention "P7Y"}]}
