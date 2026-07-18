@@ -76,7 +76,9 @@ conformance gate is a security signal, not just an application log.
 | Delivery sinks | `alert_delivery.cljs` (file + optional webhook + stdout) | done |
 | On-call roster (example) | `registers/on-call-roster.edn` | example-only contacts |
 | Heartbeat collector stub | `scripts/monitoring-heartbeat.cljs` | stub (no live scrape) |
-| Live host metric collectors | — | **not implemented** |
+| Host-denial telemetry aggregate | `host_denial_telemetry.cljc`, `aggregate-host-denial.cljs` | file-backed (EV-0018) |
+| Metric collector mini | `scripts/metric-collect.cljs` | counts by severity/type over alert EDN |
+| Live host runtime scrapers | — | **not implemented** (alerts/receipts only) |
 | Production Slack/PD credentials | env / kagi only | **unset** (no secret in git) |
 
 ## Pager / alert delivery (executable)
