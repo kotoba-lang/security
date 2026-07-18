@@ -9,6 +9,7 @@
 ;;   nbb --classpath src scripts/simulate-revoked-signer.cljs
 ;;   nbb --classpath src scripts/simulate-revoked-signer.cljs --write
 ;;   nbb --classpath src scripts/simulate-revoked-signer.cljs --write --deliver
+;;   nbb --classpath src scripts/simulate-revoked-signer.cljs --deliver --dir evidence/2026-07-18
 ;;   nbb --classpath src scripts/simulate-revoked-signer.cljs --write evidence/2026-07-18
 (ns kotoba.security.scripts.simulate-revoked-signer
   (:require ["node:fs" :as fs]
@@ -28,11 +29,25 @@
 
 (def write? (boolean (some #{"--write"} cli-args)))
 (def deliver? (boolean (some #{"--deliver"} cli-args)))
-(def rest-args (vec (remove #{"--write" "--deliver"} cli-args)))
+(defn- flag-val [name]
+  (let [i (.indexOf cli-args name)]
+    (when (and (>= i 0) (< (inc i) (count cli-args)))
+      (nth cli-args (inc i)))))
+(def dir-flag (flag-val "--dir"))
+(def rest-args
+  (loop [args cli-args
+         positional []]
+    (if (empty? args)
+      positional
+      (let [[arg _value & more] args]
+        (cond
+          (#{"--write" "--deliver"} arg) (recur (rest args) positional)
+          (= "--dir" arg) (recur more positional)
+          :else (recur (rest args) (conj positional arg)))))))
 (def date "2026-07-18")
 (def out-dir
-  (if (first rest-args)
-    (path/resolve (first rest-args))
+  (if (or dir-flag (first rest-args))
+    (path/resolve (or dir-flag (first rest-args)))
     (path/resolve root "evidence" date)))
 
 (def run-id "sim-revoked-signer-2026-07-18")

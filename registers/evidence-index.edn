@@ -202,7 +202,7 @@
                         {:kind :doc :path "docs/continuous-monitoring.md"}]
    :evidence/claims [:monitoring-alert-schema
                      :technical-alert-sample]
-   :evidence/notes "Executable pager routing: file sink always works (evidence/<date>/alerts + /tmp fallback); optional webhook when KOTOBA_SECURITY_ALERT_WEBHOOK is set. Smoke 2026-07-18 recorded file success and honest webhook-skipped. Live human on-call still residual."
+   :evidence/notes "Executable pager routing: file sink always works (evidence/<date>/alerts + /tmp fallback); optional webhook when KOTOBA_SECURITY_ALERT_WEBHOOK is set. Smoke 2026-07-18 recorded HTTP 200 from a local mock sink for both the pager smoke and revoked-signer SEV-1 delivery paths. Production Slack/PagerDuty URL and live human on-call remain residual."
    :evidence/result :passing
    :evidence/retention "P7Y"}
 

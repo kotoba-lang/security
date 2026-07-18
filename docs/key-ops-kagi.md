@@ -121,6 +121,14 @@ Expected shape invariants are enforced by
 `src/kotoba/security/key_lifecycle.cljc` and
 `src/kotoba/security/key_status.cljc`.
 
+## One-time identity migration
+
+If `kagi get` fails with `plaintext identity requires migration`, run
+`kagi identity-migrate` once to move the identity into the OS Keychain. After
+migration, the public key for `fleet-owner-key` matches the `7414dd47…` entry in
+`manifest/fleet-keys.edn`, and signing the fleet head succeeds. Never print or
+record the private key while checking this.
+
 ## Residual (R-002)
 
 - Package-signing and audit-signing **production-intent** keys are issued in

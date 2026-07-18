@@ -116,6 +116,10 @@ export KOTOBA_SECURITY_ALERT_WEBHOOK='https://hooks.slack.com/services/XXX/YYY/Z
 nbb --classpath src scripts/emit-alert.cljs --smoke
 ```
 
+The generic webhook delivery path has been smoke-tested successfully against a
+local HTTP sink. Real Slack/PagerDuty delivery still requires setting
+`KOTOBA_SECURITY_ALERT_WEBHOOK` to the production receiver URL.
+
 Unset webhook → scripts report `webhook skipped` honestly and still exit 0 if
 the file sink succeeds. See [Continuous Monitoring](docs/continuous-monitoring.md).
 
