@@ -48,7 +48,7 @@
                       "evidence/2026-07-17/tabletop-compromised-signer.md"
                       "evidence/2026-07-17/alert-compromised-signer.edn"]
    :finding/status :mitigated
-   :finding/residual "Pager path exists (file + optional webhook via emit-alert.cljs). Live human on-call roster still optional; host-denial alert remains synthetic."}
+   :finding/residual "Vendor adapters + example roster + heartbeat stub landed (EV-0017). Live human contacts and production Slack/PD credentials still unset; host-denial alert synthetic; no live metric collectors."}
   {:finding/id "F-005"
    :finding/severity :high
    :finding/title "FIPS/PQC boundaries are non-claimed but not deployable controls"
@@ -59,9 +59,11 @@
                       "docs/fips-validation.md"
                       "docs/pqc-roadmap.md"
                       "policy/crypto-policy.edn"
-                      "conformance/crypto/vectors/hybrid-x25519-mlkem768.edn"]
+                      "conformance/crypto/vectors/hybrid-x25519-mlkem768.edn"
+                      "src/kotoba/security/object_encryption_gate.cljc"
+                      "scripts/check-hybrid-admit.cljs"]
    :finding/status :partial
-   :finding/residual "R-003 open (no FIPS module). R-004 partially mitigated (vectors+policy); production hybrid path not deployed."}
+   :finding/residual "R-003 open (no FIPS module). R-004 mitigated at gate/CI admit boundary; production long-retention hybrid re-encrypt not deployed."}
   {:finding/id "F-006"
    :finding/severity :medium
    :finding/title "TCB and side-channel risks need deployment profiles"

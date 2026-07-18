@@ -99,30 +99,40 @@ Implementation and compliance evidence remain incomplete:
 Run the tests and gates from the repo root (CI runs the same commands):
 
 ```sh
-clojure -M:test                       # release-gate, crypto-policy, key-lifecycle, hybrid gate
+clojure -M:test                       # release-gate, crypto-policy, key-lifecycle, hybrid gate, adapters
 nbb --classpath src scripts/check-safe-release.cljs
 nbb --classpath src scripts/check-crypto-inventory.cljs
+nbb --classpath src scripts/check-hybrid-admit.cljs
 nbb --classpath src scripts/check-key-register.cljs --require-active
 bb scripts/check-key-register.bb      # shape + forbid private PEM (key_lifecycle)
 nbb --classpath src scripts/check-key-lifecycle-drill.cljs
 nbb --classpath src scripts/check-key-rotation-drill.cljs --write
 nbb --classpath src scripts/simulate-revoked-signer.cljs --write --deliver
 nbb --classpath src scripts/emit-alert.cljs --smoke
+nbb --classpath src scripts/monitoring-heartbeat.cljs
 ```
 
 ### Pager webhook (optional real sink)
 
-File sink always works. See **[On-call / Pager](docs/on-call-pager.md)** for
-roster template, severity routing, and local mock fixture.
+File sink always works (canonical alert map). Webhook POSTs vendor-adapted
+bodies (Slack Incoming Webhook / PagerDuty Events API v2 / generic) selected by
+`KOTOBA_SECURITY_ALERT_SINK` or URL heuristics. See
+**[On-call / Pager](docs/on-call-pager.md)** and
+[`registers/on-call-roster.edn`](registers/on-call-roster.edn).
 
 ```sh
 # Local mock (no secrets)
 nbb --classpath src scripts/mock-webhook-sink.cljs --port 9876
 export KOTOBA_SECURITY_ALERT_WEBHOOK='http://127.0.0.1:9876/alert'
+# optional: force Slack shape against mock
+export KOTOBA_SECURITY_ALERT_SINK=slack
 nbb --classpath src scripts/emit-alert.cljs --smoke
 
 # Production vendor (only if URL exists in kagi/Keychain — never invent)
 export KOTOBA_SECURITY_ALERT_WEBHOOK='https://hooks.slack.com/services/...'
+# or PagerDuty:
+# export KOTOBA_SECURITY_ALERT_WEBHOOK='https://events.pagerduty.com/v2/enqueue'
+# export KOTOBA_SECURITY_PAGERDUTY_ROUTING_KEY='…'
 nbb --classpath src scripts/emit-alert.cljs --smoke
 ```
 

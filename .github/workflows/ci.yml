@@ -45,6 +45,12 @@ jobs:
       - name: Crypto inventory gate
         run: nbb --classpath src scripts/check-crypto-inventory.cljs
 
+      - name: Hybrid object-encryption admit gate
+        run: nbb --classpath src scripts/check-hybrid-admit.cljs
+
+      - name: Monitoring heartbeat (collector stub, file only)
+        run: nbb --classpath src scripts/monitoring-heartbeat.cljs
+
   # Recomputes the hybrid X25519 + ML-KEM-768 wrapping vectors with Bouncy
   # Castle (:vectors alias only; the gates job above stays BC-free).
   vectors:

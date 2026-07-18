@@ -67,6 +67,18 @@ conformance gate is a security signal, not just an application log.
 - Monitoring must not require plaintext access to protected objects.
 - Monitoring failures are themselves audit events.
 
+## Executable paths (2026-07-18)
+
+| Path | Script / module | Status |
+|---|---|---|
+| Alert schema + samples | `key-lifecycle/emit-alert`, `emit-alert.cljs` | done |
+| Vendor payload adapters | `alert_adapters.cljc` (Slack / PagerDuty / generic) | done |
+| Delivery sinks | `alert_delivery.cljs` (file + optional webhook + stdout) | done |
+| On-call roster (example) | `registers/on-call-roster.edn` | example-only contacts |
+| Heartbeat collector stub | `scripts/monitoring-heartbeat.cljs` | stub (no live scrape) |
+| Live host metric collectors | — | **not implemented** |
+| Production Slack/PD credentials | env / kagi only | **unset** (no secret in git) |
+
 ## Pager / alert delivery (executable)
 
 Structured alerts use schema `kotoba.security.continuous-monitoring/v1`

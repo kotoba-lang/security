@@ -1,117 +1,146 @@
 # On-call / Pager Runbook
 
-Status: operational baseline (local sinks proven; live Slack/PD optional)  
+Status: operational baseline (local sinks proven; vendor adapters unit-tested; live Slack/PD optional)  
 Date: 2026-07-18
 
 ## Purpose
 
 Wire continuous-monitoring alerts (`kotoba.security.continuous-monitoring/v1`)
 to human responders without inventing secrets or claiming a live roster when
-none is configured.
+none is provisioned.
 
-Executable delivery lives in:
+Executable delivery:
 
+- `src/kotoba/security/alert_adapters.cljc` — Slack / PagerDuty / generic payload shapes
 - `src/kotoba/security/alert_delivery.cljs` — file / webhook / stdout sinks
 - `scripts/emit-alert.cljs` — CLI smoke + EDN replay
+- `scripts/monitoring-heartbeat.cljs` — collector-stub heartbeat sample
 - `scripts/simulate-revoked-signer.cljs --write --deliver` — SEV-1 technical path
+- `scripts/mock-webhook-sink.cljs` — local HTTP 200 fixture
 
-Evidence: `EV-0012` (`evidence/2026-07-18/pager-wiring-smoke.edn`).
+Machine-readable roster (example contacts only):
+[`registers/on-call-roster.edn`](../registers/on-call-roster.edn).
 
-## Severity → response
+Evidence: `EV-0012` (pager wiring), `EV-0017` (heartbeat stub + vendor adapters).
 
-| Severity | Definition (IR) | Initial response | Pager expectation |
-|---|---|---|---|
-| SEV-1 | active compromise / private data exposure | freeze releases, rotate/revoke keys, preserve evidence | page immediately (if webhook configured) |
-| SEV-2 | exploitable boundary failure | disable path, draft advisory | page within 15m (if configured) |
-| SEV-3 | control degradation with workaround | track remediation | notify channel (business hours) |
-| SEV-4 | doc/evidence gap | normal cadence | no page |
+## Severity → channel / escalation
+
+| Severity | Channel (example) | Page? | Ack | Escalate |
+|---|---|---|---|---|
+| SEV-1 | `#security-oncall-example` | yes | 5m | 15m → secondary → security-owner |
+| SEV-2 | `#security-oncall-example` | yes | 15m | 30m |
+| SEV-3 | `#security-notify-example` | no | 4h | 24h |
+| SEV-4 | `#security-notify-example` | no | 7d | — |
 
 See [Incident Response](incident-response.md) for full playbooks.
 
+## Roster (example only — not live humans)
+
+Contacts use RFC 2606 `@example.invalid`. **Do not** treat as real coverage.
+
+| Role | Contact | Timezone | Escalation path |
+|---|---|---|---|
+| Primary | `security-primary@example.invalid` | UTC | secondary |
+| Secondary | `security-secondary@example.invalid` | UTC | security-owner |
+| Security owner | `security-owner@example.invalid` | UTC | (terminal) |
+| Package owner | `package-owner@example.invalid` | UTC | — |
+| Crypto owner | `crypto-owner@example.invalid` | UTC | — |
+| Operations owner | `operations-owner@example.invalid` | UTC | — |
+
+Escalation minutes (from roster):
+
+- primary unack → 15m
+- secondary unack → 30m
+- security-owner unack → 45m
+- SEV-1 → freeze releases per IR playbook
+
 ## Environment template
 
-Copy `.env.pager.example` (repo root) to a **gitignored** local file or export
-in the shell. Never commit real webhook URLs.
+Copy [`.env.pager.example`](../.env.pager.example) to a **gitignored** local file
+or export in the shell. Never commit real webhook URLs or routing keys.
 
 ```sh
-# Required for live webhook delivery (optional; file sink always works)
+# Optional live webhook (file sink always works without this)
 export KOTOBA_SECURITY_ALERT_WEBHOOK='https://hooks.slack.com/services/XXX/YYY/ZZZ'
-# or PagerDuty Events API v2 / custom bridge accepting JSON POST
+# or PagerDuty Events API v2 enqueue URL:
+# export KOTOBA_SECURITY_ALERT_WEBHOOK='https://events.pagerduty.com/v2/enqueue'
+# export KOTOBA_SECURITY_PAGERDUTY_ROUTING_KEY='…from kagi/Keychain only…'
 
-# Optional overrides (future; currently unused by emit-alert)
+# Force vendor shape (optional; else URL heuristics)
+export KOTOBA_SECURITY_ALERT_SINK=slack   # slack | pagerduty | generic
+
+# Documentation / future routing
 # export KOTOBA_SECURITY_ALERT_CHANNEL='#security-oncall'
-# export KOTOBA_SECURITY_PAGER_VENDOR=slack   # slack | pagerduty | custom
 ```
 
-Honest behavior when unset:
+### Vendor selection
+
+| Source | Result |
+|---|---|
+| `KOTOBA_SECURITY_ALERT_SINK=slack\|pagerduty\|generic` | forced |
+| URL host `hooks.slack.com` | Slack Incoming Webhook body (`text` + `blocks`) |
+| URL host `events.pagerduty.com` | PagerDuty Events API v2 (`event_action` + `payload`) |
+| else | generic continuous-monitoring v1 JSON |
+
+File sink is **always** the canonical alert map (not vendor-shaped).
+
+Honest behavior when webhook unset:
 
 ```text
 webhook skipped (KOTOBA_SECURITY_ALERT_WEBHOOK unset)
 ```
 
-File sink still succeeds under `evidence/<date>/alerts/` (or `/tmp/kotoba-security-alerts/`).
-
 ## Local webhook fixture (mock HTTP 200)
-
-No secrets required. Prove the webhook transport against a local sink:
 
 ```sh
 # Terminal A — mock receiver
 nbb --classpath src scripts/mock-webhook-sink.cljs --port 9876
 
-# Terminal B — point smoke at mock
+# Terminal B — smoke (generic body to mock)
 export KOTOBA_SECURITY_ALERT_WEBHOOK='http://127.0.0.1:9876/alert'
 nbb --classpath src scripts/emit-alert.cljs --smoke --dir /tmp/kotoba-security-pager-smoke
+
+# Force Slack shape against mock (still no secrets)
+export KOTOBA_SECURITY_ALERT_SINK=slack
+nbb --classpath src scripts/emit-alert.cljs --smoke
 ```
 
-Expected: smoke exits 0; mock logs a JSON body; sink result includes
-`:sink :webhook` with HTTP 200.
+## Heartbeat / collector stub
+
+```sh
+nbb --classpath src scripts/monitoring-heartbeat.cljs
+nbb --classpath src scripts/monitoring-heartbeat.cljs --deliver
+```
+
+Writes `evidence/<date>/monitoring-heartbeat.edn` + `collector-stub-note.md`.
+Does **not** scrape live hosts — residual until real collectors exist.
 
 ## Live Slack / PagerDuty (credentials required)
 
-1. Create an **incoming webhook** (Slack) or Events API integration (PagerDuty)
-   in the vendor console. Store the URL only in kagi / OS Keychain / 1Password —
-   **not** in git.
-2. Export as `KOTOBA_SECURITY_ALERT_WEBHOOK` for the session (or inject via
-   secrets-location-map workflow).
-3. Run smoke:
-
-   ```sh
-   nbb --classpath src scripts/emit-alert.cljs --smoke
-   ```
-
-4. Confirm the channel/incident received the JSON payload (schema fields
-   `alert/name`, `alert/severity`, `alert/reason`, …).
-5. Record evidence under `evidence/<date>/pager-wiring-smoke.edn` (do **not**
-   paste the webhook URL into evidence).
+1. Create vendor webhook / Events API integration; store URL (+ PD routing key)
+   only in kagi / OS Keychain / 1Password — **not** in git.
+2. Export env vars for the session.
+3. Run smoke / heartbeat with `--deliver`.
+4. Confirm channel/incident; record evidence without pasting secrets.
 
 As of 2026-07-18: secrets-location-map has **no** Slack/PagerDuty webhook item
 for this repo. Live vendor delivery remains residual until an owner provisions
-the URL into kagi/Keychain.
+credentials.
 
-## Roster template (human)
-
-Fill when a real on-call rotation exists. Empty fields = no claim of coverage.
-
-| Role | Primary | Backup | Timezone | Contact path |
-|---|---|---|---|---|
-| Security owner | _TBD_ | _TBD_ | _TBD_ | Slack DM / phone (out-of-band) |
-| Package owner | _TBD_ | _TBD_ | _TBD_ | |
-| Crypto owner | _TBD_ | _TBD_ | _TBD_ | |
-| Operations owner | _TBD_ | _TBD_ | _TBD_ | |
-
-Escalation: SEV-1 → Security owner → freeze releases per IR playbook.
-
-## Routing rules (policy)
+## Alert routing (policy)
 
 | Alert name | Severity | Route |
 |---|---|---|
-| `trusted-signer-verification-failure` | SEV-1 | page security + package owners |
-| `host-capability-denial-spike` | SEV-2 | page runtime/ops |
+| `trusted-signer-verification-failure` | SEV-1 | primary + package + security-owner |
+| `host-capability-denial-spike` | SEV-2 | primary + operations |
+| `monitoring-heartbeat` | SEV-4 | ops notify only (stub) |
 | `pager-wiring-smoke` | SEV-3 | channel only (test) |
 
 ## Residual (R-005)
 
 - File sink + local mock webhook: **proven** (EV-0012).
-- Production Slack/PagerDuty URL: **unset** until vendor configured.
-- Live human roster: **template only** until filled.
+- Vendor payload adapters (Slack/PD/generic) + unit tests: **landed** (EV-0017).
+- Example on-call roster (`@example.invalid`): **landed** (not live humans).
+- Heartbeat collector stub: **landed** (not live metrics).
+- Production Slack/PagerDuty credentials: **unset**.
+- Live human rotation with real contacts: **not filled**.
