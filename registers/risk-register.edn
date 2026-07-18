@@ -87,7 +87,8 @@
                       "2026-07-17 tabletop compromised-signer postmortem (EV-0008)"
                       "technical revoked-signer simulation + SEV-1/SEV-2 structured alert samples EDN/JSON (EV-0009)"
                       "pager delivery path: file sink + optional webhook via scripts/emit-alert.cljs (EV-0012)"
-                      "residual: live human on-call roster optional; host-denial spike still synthetic; webhook unset until pager vendor configured"]
+                      "local mock webhook transport returned HTTP 200 for pager smoke and revoked-signer SEV-1 delivery (EV-0012)"
+                      "residual: live human on-call roster optional; host-denial spike still synthetic; production Slack/PagerDuty webhook unset until pager vendor configured"]
    :risk/evidence ["docs/continuous-monitoring.md"
                    "docs/incident-response.md"
                    "evidence/2026-07-17/tabletop-compromised-signer.md"

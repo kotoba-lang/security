@@ -2,7 +2,7 @@
  :smoke/date "2026-07-18"
  :smoke/kind :pager-delivery
  :smoke/schema "kotoba.security.continuous-monitoring/v1"
- :smoke/command "nbb --classpath src scripts/emit-alert.cljs --smoke --date 2026-07-18"
+ :smoke/command "KOTOBA_SECURITY_ALERT_WEBHOOK=http://127.0.0.1:18766/security-alert nbb --classpath src scripts/emit-alert.cljs --smoke --dir evidence/2026-07-18"
  :smoke/related
  ["scripts/emit-alert.cljs"
   "src/kotoba/security/alert_delivery.cljs"
@@ -10,19 +10,23 @@
   "evidence/2026-07-18/alerts/"]
  :smoke/sinks
  [{:sink :file
-   :result :success
+   :result :succeeded
    :path "evidence/2026-07-18/alerts/pager-wiring-smoke-pager-smoke-2026-07-18.edn"
    :notes "Default file sink always on; wrote EDN+JSON+ndjson under evidence/2026-07-18/alerts/."}
   {:sink :webhook
-   :result :skipped
-   :reason "KOTOBA_SECURITY_ALERT_WEBHOOK unset"
-   :notes "Honest skip — no fabricated webhook success. Set env to POST JSON to Slack/PagerDuty/etc."}
+   :result :success
+   :status 200
+   :receiver "local mock HTTP sink"
+   :path "/security-alert"
+   :records 2
+   :notes "Local transport proof captured POSTs for pager-wiring-smoke and trusted-signer-verification-failure; no request bodies or secrets retained in this evidence."}
   {:sink :stdout
    :result :not-requested}]
  :smoke/revoked-signer-deliver
- {:command "nbb --classpath src scripts/simulate-revoked-signer.cljs --write --deliver"
-  :result :success
-  :notes "SEV-1 trusted-signer-verification-failure delivered to file sink on denial path."}
+ {:command "KOTOBA_SECURITY_ALERT_WEBHOOK=http://127.0.0.1:18766/security-alert nbb --classpath src scripts/simulate-revoked-signer.cljs --deliver --dir evidence/2026-07-18"
+  :result :succeeded
+  :webhook-status 200
+  :notes "SEV-1 trusted-signer-verification-failure delivered to file and local mock webhook sinks on denial path."}
  :smoke/exit 0
  :smoke/evidence-id "EV-0012"
- :smoke/residual "Live human on-call roster and vendor-specific webhook payload shaping remain optional."}
+ :smoke/residual "Local generic webhook transport succeeded. A production Slack/PagerDuty URL, live human on-call roster, and vendor-specific payload shaping remain operational residuals."}
