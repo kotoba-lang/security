@@ -78,3 +78,10 @@ without a validated module boundary is a configuration error, not a compliance
 claim. Risk R-003 stays **open** until a named module boundary and certificate
 evidence exist.
 
+## Product-facing non-claim (2026-07-18)
+
+See **[fips-non-claim.md](fips-non-claim.md)** for the one-line product
+statement, allowed/forbidden marketing language, and optional module-boundary
+checklist. README links the non-claim box so release notes cannot imply
+validation without evidence.
+

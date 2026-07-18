@@ -218,6 +218,54 @@
    :evidence/claims [:key-status-snapshot
                      :production-public-keys-registered
                      :kagi-custody-documented]
-   :evidence/notes "Minted security-package-signing + security-audit-signing into kagi compartment personal (PKCS8 Ed25519). Public ed25519 hex + did:key only in git. Demo rows retained as research-demo. Residual: not HSM; rotation/expiry drill still open."
+   :evidence/notes "Minted security-package-signing + security-audit-signing into kagi compartment personal (PKCS8 Ed25519). Public ed25519 hex + did:key only in git. Demo rows retained as research-demo. Residual: not HSM; live production private rotation still operator-gated."
+   :evidence/result :passing
+   :evidence/retention "P7Y"}
+
+  {:evidence/id "EV-0014"
+   :evidence/type :technical-simulation
+   :evidence/created-at "2026-07-18"
+   :evidence/producer "kotoba-lang/security"
+   :evidence/artifacts [{:kind :simulation :path "evidence/2026-07-18/key-lifecycle-rotation-drill.edn"}
+                        {:kind :code :path "src/kotoba/security/key_status.cljc"}
+                        {:kind :gate :path "scripts/check-key-rotation-drill.cljs"}
+                        {:kind :test :path "test/kotoba/security/key_lifecycle_rotation_drill_test.clj"}
+                        {:kind :doc :path "docs/key-ops-production.md"}]
+   :evidence/claims [:key-lifecycle-rotation-drill
+                     :package-signing-rotation-pure]
+   :evidence/notes "Pure package-signing rotation: pre-active new + active old → rotate-signing-key → new active, old retired with verify-until; blocked-signer-ids + signer trust flip (synthetic). ALSO live public-only register update: kagi item security-package-signing-2026-07-18-rot minted (PKCS8 Ed25519 private in kagi personal only); old security-package-signing-2026-07-18 status :retired verify-until 2033-07-18; new key active with public ed25519:a8cfa6… + did:key. --require-active still green."
+   :evidence/result :passing
+   :evidence/retention "P7Y"}
+
+  {:evidence/id "EV-0015"
+   :evidence/type :policy-enforcement
+   :evidence/created-at "2026-07-18"
+   :evidence/producer "kotoba-lang/security"
+   :evidence/artifacts [{:kind :code :path "src/kotoba/security/object_encryption_gate.cljc"}
+                        {:kind :test :path "test/kotoba/security/object_encryption_gate_test.clj"}
+                        {:kind :policy :path "policy/crypto-policy.edn"}
+                        {:kind :code :path "src/kotoba/security/crypto_policy.cljc"}
+                        {:kind :doc :path "docs/hybrid-envelope-vectors.md"}
+                        {:kind :doc :path "docs/pqc-roadmap.md"}
+                        {:kind :smoke :path "evidence/2026-07-18/object-encryption-hybrid-gate.edn"}]
+   :evidence/claims [:hybrid-required-object-encryption-consumer
+                     :crypto-policy-modes-enforceable]
+   :evidence/notes "Documented consumer path for hybrid-required: object-encryption gate admits kotoba.lang.crypto/seal-shaped envelopes; classical KEM new-epoch denied fail-closed without calling write-fn. Does not implement ML-KEM; enforces hybrid-required flag at security boundary. Production long-retention re-encrypt still residual."
+   :evidence/result :passing
+   :evidence/retention "P7Y"}
+
+  {:evidence/id "EV-0016"
+   :evidence/type :documentation
+   :evidence/created-at "2026-07-18"
+   :evidence/producer "kotoba-lang/security"
+   :evidence/artifacts [{:kind :doc :path "docs/fips-non-claim.md"}
+                        {:kind :doc :path "docs/fips-validation.md"}
+                        {:kind :doc :path "docs/on-call-pager.md"}
+                        {:kind :fixture :path ".env.pager.example"}
+                        {:kind :gate :path "scripts/mock-webhook-sink.cljs"}]
+   :evidence/claims [:fips-non-claim-defined
+                     :on-call-runbook
+                     :pager-local-fixture]
+   :evidence/notes "Product-facing FIPS non-claim + module-boundary checklist (R-003 stays open). On-call runbook with roster template, severity routing, env template, local mock webhook fixture. No Slack secret invented; secrets-location-map had no pager webhook item."
    :evidence/result :passing
    :evidence/retention "P7Y"}]}

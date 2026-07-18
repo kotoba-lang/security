@@ -17,7 +17,8 @@ material and custody metadata only. Private PEMs must never be committed.
 | `fleet-owner-root` | yes | `did:key:z6Mkk13t…` |
 | `fleet-gov1` | yes | `did:key:z6MkqmFd…` |
 | `fleet-gov2` | yes | `did:key:z6MkqZim…` |
-| `security-package-signing` | **yes** (minted 2026-07-18) | `ed25519:1f414dff…` + `did:key:z6MkgZGSU…` (`security-package-signing-2026-07-18`) |
+| `security-package-signing` | yes (retired public row) | `ed25519:1f414dff…` (`security-package-signing-2026-07-18`, **:retired**, verify-until 2033-07-18) |
+| `security-package-signing-2026-07-18-rot` | **yes** (minted + active 2026-07-18 rotation) | `ed25519:a8cfa6c1…` + `did:key:z6MkqpEBn…` (`security-package-signing-2026-07-18-rot`) |
 | `security-audit-signing` | **yes** (minted 2026-07-18) | `ed25519:d4c230fa…` + `did:key:z6MktmnDn…` (`security-audit-signing-2026-07-18`) |
 
 Public fleet material is also the superproject SSOT
@@ -129,10 +130,23 @@ migration, the public key for `fleet-owner-key` matches the `7414dd47…` entry 
 `manifest/fleet-keys.edn`, and signing the fleet head succeeds. Never print or
 record the private key while checking this.
 
+## Rotation (2026-07-18 package-signing)
+
+Planned rotation (not incident):
+
+1. Mint new private material → kagi item `security-package-signing-2026-07-18-rot`.
+2. Register public only; promote new to `:active`.
+3. Retire old `security-package-signing-2026-07-18` with `:key/verify-until "2033-07-18"`.
+4. Pure drill: `nbb --classpath src scripts/check-key-rotation-drill.cljs --write`.
+5. `nbb --classpath src scripts/check-key-register.cljs --require-active`.
+
+Evidence: EV-0014, `evidence/2026-07-18/key-lifecycle-rotation-drill.edn`.
+
 ## Residual (R-002)
 
 - Package-signing and audit-signing **production-intent** keys are issued in
   kagi and registered with public material (2026-07-18).
-- Remaining residual: OS-Keychain kagi custody (not HSM); production
-  rotation/expiry drill not yet exercised on the package admission path;
-  fleet pin/governance keys must not sign package manifests.
+- Package-signing **rotation** exercised (pure drill + live public register
+  update + kagi mint of `-rot` key, 2026-07-18).
+- Remaining residual: OS-Keychain kagi custody (not HSM); fleet pin/governance
+  keys must not sign package manifests.
