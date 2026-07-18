@@ -11,6 +11,17 @@ X25519/HPKE to hybrid X25519 + ML-KEM. This document specifies the wrapping
 scheme, the vector file contract, and how the vectors are generated and
 verified.
 
+## Security consumer path (object encryption)
+
+Independent of ML-KEM host availability, sealed envelopes that carry
+`:envelope/*` metadata (as emitted by `kotoba.lang.crypto/seal`) are admitted
+to long-retention object storage only through:
+
+`kotoba.security.object-encryption-gate/admit-object-store-write!`
+
+Under default `:hybrid-required` policy (epoch floor 1), classical-only KEM
+envelopes are **denied** and the write function is never invoked (EV-0015).
+
 ## Wrapping Scheme (kotoba.hybrid.v1)
 
 The recipient holds two keypairs: an X25519 keypair and an ML-KEM-768

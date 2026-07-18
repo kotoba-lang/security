@@ -76,6 +76,8 @@ Implementation and compliance evidence remain incomplete:
 - [Key Lifecycle](docs/key-lifecycle.md)
 - [Key Operations (kagi)](docs/key-ops-kagi.md)
 - [FIPS Validation Strategy](docs/fips-validation.md)
+- [FIPS Product Non-Claim](docs/fips-non-claim.md) (**no FIPS validation claim**)
+- [On-call / Pager](docs/on-call-pager.md)
 - [SBOM and SLSA Provenance](docs/sbom-slsa.md)
 - [Operational Evidence](docs/operational-evidence.md)
 - [PQC Roadmap](docs/pqc-roadmap.md)
@@ -97,31 +99,42 @@ Implementation and compliance evidence remain incomplete:
 Run the tests and gates from the repo root (CI runs the same commands):
 
 ```sh
-clojure -M:test                       # release-gate, crypto-policy, key-lifecycle tests
+clojure -M:test                       # release-gate, crypto-policy, key-lifecycle, hybrid gate
 nbb --classpath src scripts/check-safe-release.cljs
 nbb --classpath src scripts/check-crypto-inventory.cljs
 nbb --classpath src scripts/check-key-register.cljs --require-active
 bb scripts/check-key-register.bb      # shape + forbid private PEM (key_lifecycle)
+nbb --classpath src scripts/check-key-lifecycle-drill.cljs
+nbb --classpath src scripts/check-key-rotation-drill.cljs --write
 nbb --classpath src scripts/simulate-revoked-signer.cljs --write --deliver
 nbb --classpath src scripts/emit-alert.cljs --smoke
 ```
 
 ### Pager webhook (optional real sink)
 
-File sink always works. To route to Slack / PagerDuty / any HTTP receiver:
+File sink always works. See **[On-call / Pager](docs/on-call-pager.md)** for
+roster template, severity routing, and local mock fixture.
 
 ```sh
-export KOTOBA_SECURITY_ALERT_WEBHOOK='https://hooks.slack.com/services/XXX/YYY/ZZZ'
-# or a PagerDuty Events API / custom bridge that accepts JSON
+# Local mock (no secrets)
+nbb --classpath src scripts/mock-webhook-sink.cljs --port 9876
+export KOTOBA_SECURITY_ALERT_WEBHOOK='http://127.0.0.1:9876/alert'
+nbb --classpath src scripts/emit-alert.cljs --smoke
+
+# Production vendor (only if URL exists in kagi/Keychain — never invent)
+export KOTOBA_SECURITY_ALERT_WEBHOOK='https://hooks.slack.com/services/...'
 nbb --classpath src scripts/emit-alert.cljs --smoke
 ```
 
-The generic webhook delivery path has been smoke-tested successfully against a
-local HTTP sink. Real Slack/PagerDuty delivery still requires setting
-`KOTOBA_SECURITY_ALERT_WEBHOOK` to the production receiver URL.
+Env template (empty values only): [`.env.pager.example`](.env.pager.example).
 
 Unset webhook → scripts report `webhook skipped` honestly and still exit 0 if
 the file sink succeeds. See [Continuous Monitoring](docs/continuous-monitoring.md).
+
+### FIPS non-claim
+
+**This repository does not claim FIPS 140 validation.** Product-facing
+statement and module-boundary checklist: [docs/fips-non-claim.md](docs/fips-non-claim.md).
 
 `bb scripts/check-safe-release.bb --release` enforces the release evidence
 packet strictly (kotoba-lang/kotoba#265): every required claim —

@@ -75,7 +75,22 @@ Every encrypted or signed security object should carry:
 | `:hybrid-required` rejects classical KEM new epochs | done (fixtures + tests) |
 | Package multi-algorithm signatures in production | **not deployed** |
 | Hybrid wrapping on production long-retention blobs | **not deployed** |
+| Object-encryption consumer gate (`object_encryption_gate`) under `:hybrid-required` | done (security-repo admit path; EV-0015) |
+
+### Object-encryption consumer path (2026-07-18)
+
+Documented consumer: sealed object envelopes shaped like
+`kotoba.lang.crypto/seal` (`:envelope/*` metadata). Security admits writes via:
+
+```clojure
+(require '[kotoba.security.object-encryption-gate :as oeg])
+(oeg/admit-object-store-write! envelope write-fn)
+;; under default :hybrid-required policy — classical KEM epoch>=1 never calls write-fn
+```
+
+This **enforces** hybrid-required fail-closed at the security boundary; it does
+not implement ML-KEM. Production re-encrypt of long-retention blobs remains open.
 
 R-004 is **partially mitigated** by vectors + agile metadata + hybrid policy
-gates. Full production hybrid migration remains open work.
+gates + object-encryption consumer. Full production hybrid migration remains open work.
 
