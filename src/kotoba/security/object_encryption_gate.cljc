@@ -75,3 +75,14 @@
        (cond-> admission
          (ifn? write-fn)
          (assoc :write-result (write-fn envelope)))))))
+
+(defn prefer-hybrid-for-new-epoch
+  "Production-path helper: when hybrid is required for new epochs, prefer a
+  hybrid KEM envelope and reject classical-only candidates.
+
+  Returns admission under `default-hybrid-policy` (or supplied policy). This
+  is the security-repo side of the hybrid migration; it does not mint ML-KEM
+  keys — callers must supply hybrid metadata from the crypto host."
+  ([envelope] (prefer-hybrid-for-new-epoch default-hybrid-policy envelope))
+  ([crypto-policy envelope]
+   (admit-object-envelope crypto-policy envelope)))

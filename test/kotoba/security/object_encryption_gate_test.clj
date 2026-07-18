@@ -83,3 +83,9 @@
     (is (nil? (:ciphertext env)))
     (is (= [:x25519 :ml-kem-768 :aes-256-gcm] (:envelope/algorithms env)))
     (is (= {:valid? true} (policy/check-envelope oeg/default-hybrid-policy env)))))
+
+(deftest prefer-hybrid-for-new-epoch-rejects-classical
+  (let [deny (oeg/prefer-hybrid-for-new-epoch classical-kem-new-epoch)
+        admit (oeg/prefer-hybrid-for-new-epoch hybrid-kem-new-epoch)]
+    (is (= :deny (:decision deny)))
+    (is (= :admit (:decision admit)))))

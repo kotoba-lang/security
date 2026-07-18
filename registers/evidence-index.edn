@@ -268,4 +268,27 @@
                      :pager-local-fixture]
    :evidence/notes "Product-facing FIPS non-claim + module-boundary checklist (R-003 stays open). On-call runbook with roster template, severity routing, env template, local mock webhook fixture. No Slack secret invented; secrets-location-map had no pager webhook item."
    :evidence/result :passing
+   :evidence/retention "P7Y"}
+
+  {:evidence/id "EV-0017"
+   :evidence/type :implementation
+   :evidence/created-at "2026-07-18"
+   :evidence/producer "kotoba-lang/security"
+   :evidence/artifacts [{:kind :code :path "src/kotoba/security/alert_adapters.cljc"}
+                        {:kind :code :path "src/kotoba/security/alert_delivery.cljs"}
+                        {:kind :test :path "test/kotoba/security/alert_adapters_test.clj"}
+                        {:kind :register :path "registers/on-call-roster.edn"}
+                        {:kind :doc :path "docs/on-call-pager.md"}
+                        {:kind :gate :path "scripts/check-hybrid-admit.cljs"}
+                        {:kind :gate :path "scripts/monitoring-heartbeat.cljs"}
+                        {:kind :smoke :path "evidence/2026-07-18/hybrid-admit-check.edn"}
+                        {:kind :smoke :path "evidence/2026-07-18/monitoring-heartbeat.edn"}
+                        {:kind :doc :path "evidence/2026-07-18/collector-stub-note.md"}
+                        {:kind :fixture :path ".env.pager.example"}]
+   :evidence/claims [:vendor-webhook-adapters
+                     :on-call-roster-example
+                     :hybrid-admit-ci-gate
+                     :monitoring-heartbeat-stub]
+   :evidence/notes "Next residual coverage: Slack Incoming Webhook + PagerDuty Events API v2 + generic payload adapters with KOTOBA_SECURITY_ALERT_SINK/URL auto-select (unit-tested; no secrets); example on-call roster @example.invalid with severity→channel and escalation minutes; CI hybrid-admit over object_encryption_gate + hybrid vectors; monitoring heartbeat collector stub. Residuals: live vendor credentials unset, real human contacts unfilled, production hybrid data path still classical, no live metric collectors, FIPS still non-claim (R-003)."
+   :evidence/result :passing
    :evidence/retention "P7Y"}]}

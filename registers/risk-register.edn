@@ -74,11 +74,13 @@
                       "hybrid X25519+ML-KEM-768 test vectors + gates (EV-0005)"
                       ":hybrid-required policy rejects classical-only KEM for new epochs"
                       "object-encryption consumer gate admits seal envelopes under hybrid-required (fail closed; EV-0015)"
+                      "CI hybrid-admit script over object_encryption_gate + real hybrid vectors (EV-0017)"
                       "residual: production long-retention blobs still classical; package signatures still classical; ML-KEM host not required for gate"]
    :risk/evidence ["docs/pqc-roadmap.md"
                    "docs/hybrid-envelope-vectors.md"
                    "conformance/crypto/vectors/hybrid-x25519-mlkem768.edn"
                    "src/kotoba/security/object_encryption_gate.cljc"
+                   "scripts/check-hybrid-admit.cljs"
                    "evidence/2026-07-18/object-encryption-hybrid-gate.edn"]
    :risk/review-by "2026-10-01"}
   {:risk/id "R-005"
@@ -96,11 +98,16 @@
                       "technical revoked-signer simulation + SEV-1/SEV-2 structured alert samples EDN/JSON (EV-0009)"
                       "pager delivery path: file sink + optional webhook via scripts/emit-alert.cljs (EV-0012)"
                       "local mock webhook transport returned HTTP 200 for pager smoke and revoked-signer SEV-1 delivery (EV-0012)"
-                      "on-call runbook + roster template + .env.pager.example + mock-webhook-sink fixture (docs/on-call-pager.md)"
-                      "residual: live human on-call roster unfilled; host-denial spike still synthetic; production Slack/PagerDuty webhook unset (no secret in map)"]
+                      "on-call runbook + example roster @example.invalid + severity→channel + escalation minutes (registers/on-call-roster.edn, EV-0017)"
+                      "vendor webhook adapters Slack Incoming + PagerDuty Events API v2 + generic auto-select (EV-0017)"
+                      "monitoring heartbeat collector stub script (EV-0017)"
+                      "residual: live human contacts not real; host-denial spike still synthetic; production Slack/PagerDuty credentials unset (no secret invented); no live metric collectors"]
    :risk/evidence ["docs/continuous-monitoring.md"
                    "docs/incident-response.md"
                    "docs/on-call-pager.md"
+                   "registers/on-call-roster.edn"
+                   "src/kotoba/security/alert_adapters.cljc"
+                   "scripts/monitoring-heartbeat.cljs"
                    "evidence/2026-07-17/tabletop-compromised-signer.md"
                    "evidence/2026-07-17/alert-compromised-signer.edn"
                    "evidence/2026-07-17/revoked-signer-simulation.edn"

@@ -2,9 +2,15 @@
   "Pluggable sinks for continuous-monitoring v1 alerts (R-005 pager wiring).
 
   Sinks (structured public alert maps only — never secrets):
-  - file:    write EDN+JSON under a directory (default always-on)
-  - webhook: POST JSON when KOTOBA_SECURITY_ALERT_WEBHOOK or explicit URL set
-  - stdout:  print pretty JSON
+  - file:    write EDN+JSON under a directory (default always-on; canonical map)
+  - webhook: POST vendor-adapted JSON when KOTOBA_SECURITY_ALERT_WEBHOOK set
+  - stdout:  print pretty JSON (canonical map)
+
+  Vendor adapters (Slack Incoming Webhook / PagerDuty Events API v2 / generic)
+  live in kotoba.security.alert-adapters. Selection:
+    KOTOBA_SECURITY_ALERT_SINK=slack|pagerduty|generic
+    or URL heuristics (hooks.slack.com / events.pagerduty.com)
+    else generic (raw continuous-monitoring v1 map).
 
   nbb/node helpers. CLI exit policy lives in scripts/emit-alert.cljs."
   (:require ["node:fs" :as fs]
@@ -13,11 +19,12 @@
             ["node:path" :as path]
             ["node:url" :as url]
             [clojure.string :as str]
+            [kotoba.security.alert-adapters :as aa]
             [kotoba.security.key-lifecycle :as kl]))
 
 (defn alert->json
-  [alert]
-  (.stringify js/JSON (clj->js alert) nil 2))
+  [alert-or-body]
+  (.stringify js/JSON (clj->js alert-or-body) nil 2))
 
 (defn- ensure-dir!
   [dir]
@@ -25,7 +32,8 @@
     (fs/mkdirSync dir #js {:recursive true})))
 
 (defn deliver-file!
-  "Write alert as EDN + JSON under dir. Returns {:ok? true :sink :file ...}."
+  "Write canonical alert as EDN + JSON under dir. Returns {:ok? true :sink :file ...}.
+  File sink is always the raw continuous-monitoring map (not vendor-shaped)."
   [alert dir]
   (ensure-dir! dir)
   (let [id (or (:alert/id alert) "alert")
@@ -46,15 +54,29 @@
   (println (alert->json alert))
   {:ok? true :sink :stdout})
 
+(defn webhook-body
+  "Vendor-adapted body for webhook POST. Never invents secrets.
+
+  Uses KOTOBA_SECURITY_ALERT_SINK / URL heuristics / KOTOBA_SECURITY_PAGERDUTY_ROUTING_KEY."
+  [alert webhook-url]
+  (let [env (.-env js/process)
+        env-sink (some-> (.-KOTOBA_SECURITY_ALERT_SINK env) not-empty)
+        routing (some-> (.-KOTOBA_SECURITY_PAGERDUTY_ROUTING_KEY env) not-empty)
+        adapted (aa/adapt-alert alert {:url webhook-url
+                                       :env-sink env-sink
+                                       :routing-key routing})]
+    adapted))
+
 (defn deliver-webhook!
-  "POST JSON alert to url. Returns a Promise of result map."
+  "POST vendor-adapted JSON alert to url. Returns a Promise of result map."
   [alert webhook-url]
   (js/Promise.
    (fn [resolve]
      (try
-       (let [u (url/URL. webhook-url)
-             body (alert->json alert)
-             body-buf (js/Buffer.from body "utf8")
+       (let [{:keys [sink body]} (webhook-body alert webhook-url)
+             u (url/URL. webhook-url)
+             body-str (alert->json body)
+             body-buf (js/Buffer.from body-str "utf8")
              is-https? (= "https:" (.-protocol u))
              lib (if is-https? https http)
              opts #js {:protocol (.-protocol u)
@@ -75,6 +97,7 @@
                                             ok? (and status (>= status 200) (< status 300))]
                                         (resolve {:ok? ok?
                                                   :sink :webhook
+                                                  :vendor sink
                                                   :status status
                                                   :host (.-hostname u)
                                                   :path (.-pathname u)})))))))]
@@ -82,6 +105,7 @@
               (fn [err]
                 (resolve {:ok? false
                           :sink :webhook
+                          :vendor sink
                           :error (str err)
                           :host (try (.-hostname (url/URL. webhook-url))
                                      (catch :default _ "invalid-url"))})))
@@ -125,8 +149,8 @@
                          any-ok? (boolean (some :ok? results))]
                      {:ok? any-ok?
                       :results results
-                      :webhook-skipped? false}))))
+                      :webhook-skipped? webhook-skipped?}))))
       (js/Promise.resolve
        {:ok? (boolean (some :ok? sync-results))
         :results sync-results
-        :webhook-skipped? true}))))
+        :webhook-skipped? webhook-skipped?}))))
