@@ -14,7 +14,7 @@
    :path "evidence/2026-07-18/alerts/pager-wiring-smoke-pager-smoke-2026-07-18.edn"
    :notes "Default file sink always on; wrote EDN+JSON+ndjson under evidence/2026-07-18/alerts/."}
   {:sink :webhook
-   :result :success
+   :result :succeeded
    :status 200
    :receiver "local mock HTTP sink"
    :path "/security-alert"
