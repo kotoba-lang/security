@@ -71,6 +71,7 @@
            checkpoint-at-ms rto-limit-ms rpo-limit-ms]}]
   (let [sites (set (map :backup/site backups))
         eligible (filter #(and (:backup/encrypted? %)
+                               (:backup/immutable? %)
                                (:backup/artifact %)
                                (:backup/digest %)) backups)
         expected-digests (set (map :backup/digest eligible))]
@@ -92,7 +93,49 @@
       {:restore-drill/status (if passed? :passed :failed)
        :restore-drill/destructive? destroyed?
        :restore-drill/sites sites
+       :restore-drill/backups-encrypted? true
+       :restore-drill/backups-immutable? true
+       :restore-drill/artifact-digest (first expected-digests)
        :restore-drill/digest-verified? digest-ok?
        :restore-drill/rto-ms rto-ms :restore-drill/rpo-ms rpo-ms
        :restore-drill/rto-limit-ms rto-limit-ms
        :restore-drill/rpo-limit-ms rpo-limit-ms})))
+
+(defn evaluate-restore-receipt
+  "Validate operational restore evidence before a release or promotion gate.
+
+  Signature, authority, freshness, and environment are deliberately verified
+  by qualification/verify-signed-receipt; this function validates the drill's
+  recovery semantics and artifact binding."
+  [receipt expected-artifact-digest]
+  (let [rto (:restore-drill/rto-ms receipt)
+        rpo (:restore-drill/rpo-ms receipt)
+        rto-limit (:restore-drill/rto-limit-ms receipt)
+        rpo-limit (:restore-drill/rpo-limit-ms receipt)
+        violations
+        (cond-> []
+          (not= :passed (:restore-drill/status receipt)) (conj :status)
+          (not= true (:restore-drill/destructive? receipt)) (conj :destructive)
+          (< (count (set (:restore-drill/sites receipt))) 2)
+          (conj :independent-sites)
+          (not= true (:restore-drill/backups-encrypted? receipt))
+          (conj :encrypted-backups)
+          (not= true (:restore-drill/backups-immutable? receipt))
+          (conj :immutable-backups)
+          (not= true (:restore-drill/digest-verified? receipt))
+          (conj :digest-verification)
+          (not= expected-artifact-digest
+                (:restore-drill/artifact-digest receipt))
+          (conj :artifact-binding)
+          (not (and (number? rto) (number? rto-limit)
+                    (<= 0 rto rto-limit)))
+          (conj :rto)
+          (not (and (number? rpo) (number? rpo-limit)
+                    (<= 0 rpo rpo-limit)))
+          (conj :rpo))]
+    {:restore-drill/qualified? (empty? violations)
+     :restore-drill/violations violations
+     :restore-drill/artifact-digest (:restore-drill/artifact-digest receipt)
+     :restore-drill/sites (set (:restore-drill/sites receipt))
+     :restore-drill/rto-ms rto
+     :restore-drill/rpo-ms rpo}))
