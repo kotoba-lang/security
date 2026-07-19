@@ -91,6 +91,24 @@
     error
     {:valid? true}))
 
+(defn check-production-envelope
+  "Strict production admission rejects migration-era legacy envelopes."
+  [policy envelope]
+  (let [checked (check-envelope policy envelope)]
+    (cond
+      (not (:valid? checked)) checked
+      (not= :hybrid-required (:mode policy))
+      (invalid "production boundary requires hybrid-required mode"
+               {:mode (:mode policy)})
+      (< (:envelope/epoch envelope 0) (:hybrid-epoch-floor policy 0))
+      (invalid "legacy envelope epoch forbidden at production boundary"
+               {:epoch (:envelope/epoch envelope)
+                :hybrid-epoch-floor (:hybrid-epoch-floor policy)})
+      (not (hybrid-kem-components? (:envelope/algorithms envelope)))
+      (invalid "production boundary requires classical plus ML-KEM-768"
+               {:algorithms (:envelope/algorithms envelope)})
+      :else checked)))
+
 (defn rotate-envelope
   "Require a strictly newer epoch and a complete classical+ML-KEM envelope."
   [policy current next-envelope]
