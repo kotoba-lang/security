@@ -22,7 +22,7 @@
   (let [averages (score/repo-averages (score/read-register))]
     (is (= 66 (Math/round (averages :kotoba))))
     (is (= 44 (Math/round (averages :kotoba-lang))))
-    (is (= 53 (Math/round (averages :kototama))))
+    (is (= 55 (Math/round (averages :kototama))))
     (is (= 29 (Math/round (averages :kotobase))))
     (is (= 63 (Math/round (averages :aiueos))))
     (is (= 69 (Math/round (averages :compiler))))
