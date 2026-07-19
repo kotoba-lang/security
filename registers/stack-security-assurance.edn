@@ -7,23 +7,23 @@
            :assurance/release-gate :partial :assurance/evidence :E3
            :assurance/residual-critical-gaps 5}
   :kotoba-lang {:assurance/score 44 :assurance/maturity :L2 :assurance/grade :C
-                :assurance/release-gate :partial :assurance/evidence :E2
+                :assurance/release-gate :fail :assurance/evidence :E2
                 :assurance/residual-critical-gaps 6}
   :kototama {:assurance/score 53 :assurance/maturity :L2 :assurance/grade :C
-             :assurance/release-gate :partial :assurance/evidence :E3
+             :assurance/release-gate :fail :assurance/evidence :E3
              :assurance/residual-critical-gaps 5}
   :kotobase {:assurance/score 29 :assurance/maturity :L2 :assurance/grade :D
-             :assurance/release-gate :partial :assurance/evidence :E3
+             :assurance/release-gate :fail :assurance/evidence :E3
              :assurance/residual-critical-gaps 7}
-  :aiueos {:assurance/score 60 :assurance/maturity :L3 :assurance/grade :B
-           :assurance/release-gate :partial :assurance/evidence :E3
+  :aiueos {:assurance/score 60 :assurance/maturity :L3 :assurance/grade :C
+           :assurance/release-gate :fail :assurance/evidence :E3
            :assurance/residual-critical-gaps 5}
-  :compiler {:assurance/score 68 :assurance/maturity :L3 :assurance/grade :B
+  :compiler {:assurance/score 68 :assurance/maturity :L3 :assurance/grade :C
              :assurance/release-gate :partial :assurance/evidence :E3
              :assurance/residual-critical-gaps 4}
   :kagi {:assurance/score 78 :assurance/maturity :L3 :assurance/grade :B
          :assurance/release-gate :partial :assurance/evidence :E3
          :assurance/residual-critical-gaps 4}
   :kagitaba {:assurance/score 23 :assurance/maturity :L1 :assurance/grade :D
-             :assurance/release-gate :partial :assurance/evidence :E2
+             :assurance/release-gate :fail :assurance/evidence :E2
              :assurance/residual-critical-gaps 7}}}
