@@ -45,7 +45,7 @@
    :memory-corruption 75 :dos 75 :information-flow 85 :insider-threat 55
    :unknown-compromise 65 :quantum-communication 0 :unrecoverable-loss 65}
   :compiler
-  {:zero-trust 85 :capability 90 :pqc 55 :hsm 20 :monitoring-recovery 55
+  {:zero-trust 85 :capability 90 :pqc 55 :hsm 40 :monitoring-recovery 55
    :transport-confidentiality-integrity 40 :anti-impersonation 85 :abac 80
    :authorized-process-abuse 70 :software-tamper 90 :private-key-theft 75
    :memory-corruption 90 :dos 90 :information-flow 90 :insider-threat 70
@@ -90,6 +90,8 @@
                   "../compiler/test/kotoba/compiler/admission_test.clj"
                   "../aiueos/src/aiueos/policy.cljc"
                   "../aiueos/test/aiueos/policy_test.cljc"
+                  "../compiler/src/kotoba/compiler/admission.cljc"
+                  "../compiler/test/kotoba/compiler/admission_test.clj"
                   "../kototama/src/kototama/transport_provider.clj"
                   "../kototama/test/kototama/transport_provider_test.clj"
                   "../kotobase/src/kotobase/kotobase.cljc"
