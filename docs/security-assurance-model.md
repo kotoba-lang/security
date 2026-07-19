@@ -55,7 +55,7 @@ is separately evaluated as likelihood × impact × exposure.
 | aiueos | 63 | L3 | B | Partial | E3 |
 | kototama | 55 | L3 | C | Partial | E3 |
 | kotoba-lang | 48 | L3 | C | Partial | E3 |
-| kotobase | 41 | L3 | C | Partial | E3 |
+| kotobase | 45 | L3 | C | Partial | E3 |
 | kagitaba | 41 | L3 | C | Partial | E3 |
 
 ## Security heatmap
@@ -72,12 +72,12 @@ Legend: 🟢 ≥80, 🟡 60–79, 🟠 40–59, 🔴 0–39, ◻️ N/A/non-goal
 | Transport C/I | 🟡 | 🔴 | 🟢 | 🟠 | 🟡 | 🟠 | 🟢 | 🔴 |
 | Anti-impersonation | 🟢 | 🟡 | 🟡 | 🟠 | 🟡 | 🟢 | 🟢 | 🟠 |
 | ABAC | 🟢 | 🟠 | 🟡 | 🟡 | 🟡 | 🟢 | 🟢 | 🔴 |
-| Authorized abuse | 🟡 | 🟠 | 🔴 | 🟠 | 🟡 | 🟡 | 🟢 | 🔴 |
+| Authorized abuse | 🟡 | 🟠 | 🔴 | 🟡 | 🟡 | 🟡 | 🟢 | 🔴 |
 | Software tamper | 🟡 | 🟡 | 🟠 | 🟡 | 🟡 | 🟢 | 🟢 | 🟡 |
 | Private-key theft | 🟡 | 🟠 | 🟠 | 🟠 | 🟠 | 🟡 | 🟢 | 🟠 |
 | Memory corruption | 🟠 | 🟡 | 🟡 | 🔴 | 🟡 | 🟢 | 🟠 | 🟠 |
 | DoS | 🟡 | 🟠 | 🟡 | 🔴 | 🟡 | 🟢 | 🟡 | 🟠 |
-| Information flow | 🟢 | 🟡 | 🟡 | 🟡 | 🟢 | 🟢 | 🟢 | 🟢 |
+| Information flow | 🟢 | 🟡 | 🟡 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
 | Insider threat | 🟡 | 🟠 | 🟠 | 🔴 | 🟠 | 🟡 | 🟢 | 🔴 |
 | Unknown compromise | 🟡 | 🟠 | 🟠 | 🟠 | 🟡 | 🟢 | 🟢 | 🟠 |
 | Quantum communication | ◻️ | ◻️ | ◻️ | ◻️ | ◻️ | ◻️ | ◻️ | ◻️ |
