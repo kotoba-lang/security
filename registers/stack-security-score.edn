@@ -33,9 +33,9 @@
    :memory-corruption 65 :dos 65 :information-flow 75 :insider-threat 40
    :unknown-compromise 50 :quantum-communication 0 :unrecoverable-loss 70}
   :kotobase
-  {:zero-trust 30 :capability 55 :pqc 55 :hsm 40 :monitoring-recovery 30
+  {:zero-trust 40 :capability 55 :pqc 60 :hsm 40 :monitoring-recovery 30
    :transport-confidentiality-integrity 55 :anti-impersonation 45 :abac 70
-   :authorized-process-abuse 60 :software-tamper 70 :private-key-theft 50
+   :authorized-process-abuse 70 :software-tamper 75 :private-key-theft 50
    :memory-corruption 30 :dos 25 :information-flow 80 :insider-threat 20
    :unknown-compromise 50 :quantum-communication 0 :unrecoverable-loss 40}
   :aiueos
