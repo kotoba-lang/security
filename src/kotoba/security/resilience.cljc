@@ -21,6 +21,48 @@
              (recur (next remaining) (inc index) (:telemetry/hash entry))))
       true)))
 
+(defn append-remote-telemetry!
+  [{:keys [events event encode-fn digest-fn append-fn verify-ack-fn]}]
+  (let [next-events (append-telemetry events event encode-fn digest-fn)
+        entry (peek next-events)
+        ack (append-fn entry)
+        accepted? (and (= (:telemetry/hash entry) (:telemetry/hash ack))
+                       (= true (:telemetry/immutable? ack))
+                       (= true (:telemetry/remote? ack))
+                       (true? (verify-ack-fn ack)))]
+    (when-not accepted?
+      (throw (ex-info "remote immutable telemetry acknowledgement required"
+                      {:acknowledgement ack})))
+    {:telemetry/events next-events :telemetry/acknowledgement ack}))
+
+(def containment-order
+  [:isolate-workload :revoke-credentials :freeze-writes
+   :capture-evidence :restore-known-clean :verify])
+
+(defn contain! [actions]
+  (loop [remaining containment-order receipts []]
+    (if-let [step (first remaining)]
+      (let [action (get actions step)
+            receipt (when (ifn? action) (action))]
+        (if (= :passed (:status receipt))
+          (recur (next remaining) (conj receipts (assoc receipt :step step)))
+          {:containment/status :failed :containment/failed-step step
+           :containment/receipts receipts}))
+      {:containment/status :passed :containment/receipts receipts})))
+
+(defn qualify-backup-sites [backups]
+  (let [regions (set (map :backup/region backups))
+        failures (cond-> []
+                   (< (count regions) 2) (conj :independent-regions)
+                   (some #(not= true (:backup/encrypted? %)) backups)
+                   (conj :encryption)
+                   (some #(not= true (:backup/immutable? %)) backups)
+                   (conj :immutability)
+                   (some #(not (string? (:backup/artifact-digest %))) backups)
+                   (conj :artifact-digest))]
+    {:backup/qualified? (empty? failures)
+     :backup/regions regions :backup/violations failures}))
+
 (defn destructive-restore-drill!
   "Destroy TARGET, restore from independently located encrypted backups and
   verify the recovered digest. Times are injected monotonic milliseconds.
