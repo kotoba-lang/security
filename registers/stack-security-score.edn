@@ -33,11 +33,11 @@
    :memory-corruption 65 :dos 65 :information-flow 75 :insider-threat 40
    :unknown-compromise 50 :quantum-communication 0 :unrecoverable-loss 70}
   :kotobase
-  {:zero-trust 10 :capability 10 :pqc 45 :hsm 0 :monitoring-recovery 30
+  {:zero-trust 10 :capability 55 :pqc 45 :hsm 40 :monitoring-recovery 30
    :transport-confidentiality-integrity 55 :anti-impersonation 45 :abac 70
-   :authorized-process-abuse 10 :software-tamper 35 :private-key-theft 0
+   :authorized-process-abuse 50 :software-tamper 60 :private-key-theft 45
    :memory-corruption 30 :dos 25 :information-flow 70 :insider-threat 10
-   :unknown-compromise 35 :quantum-communication 0 :unrecoverable-loss 40}
+   :unknown-compromise 50 :quantum-communication 0 :unrecoverable-loss 40}
   :aiueos
   {:zero-trust 80 :capability 90 :pqc 50 :hsm 40 :monitoring-recovery 60
    :transport-confidentiality-integrity 70 :anti-impersonation 75 :abac 75
@@ -90,14 +90,10 @@
                   "../compiler/test/kotoba/compiler/admission_test.clj"
                   "../kototama/src/kototama/transport_provider.clj"
                   "../kototama/test/kototama/transport_provider_test.clj"
-                  "../aiueos/src/aiueos/policy.cljc"
-                  "../aiueos/test/aiueos/policy_test.cljc"
-                  "../compiler/src/kotoba/compiler/admission.cljc"
-                  "../compiler/test/kotoba/compiler/admission_test.clj"
-                  "../kototama/src/kototama/transport_provider.clj"
-                  "../kototama/test/kototama/transport_provider_test.clj"
                   "../kotobase/src/kotobase/kotobase.cljc"
                   "../kotobase/test/kotobase/store_test.cljc"
+                  "../aiueos/src/aiueos/policy.cljc"
+                  "../aiueos/test/aiueos/policy_test.cljc"
                   "../kagi/src/kagi/crypto.clj" "../kagi/test/kagi/crypto_test.clj"]}
   {:gap/id :G-004 :gap/control :hsm :gap/status :partially-resolved
    :gap/repos [:kotoba :kotoba-lang :kototama :kotobase :aiueos :compiler :kagi]
@@ -113,6 +109,12 @@
                   "registers/apple-secure-enclave-qualification.edn"
                   "../aiueos/src/aiueos/policy.cljc"
                   "../aiueos/test/aiueos/policy_test.cljc"
+                  "../compiler/src/kotoba/compiler/admission.cljc"
+                  "../compiler/test/kotoba/compiler/admission_test.clj"
+                  "../kototama/src/kototama/transport_provider.clj"
+                  "../kototama/test/kototama/transport_provider_test.clj"
+                  "../kotobase/src/kotobase/kotobase.cljc"
+                  "../kotobase/test/kotobase/store_test.cljc"
                   "../kagi/src/kagi/native_key.clj" "../kagi/test/kagi/native_key_test.clj"]}
   {:gap/id :G-005 :gap/control :transport-confidentiality-integrity :gap/status :partially-resolved
    :gap/repos [:kototama :aiueos :kotobase :kagi]
@@ -169,6 +171,8 @@
                   "registers/destructive-restore-drill.edn"
                   "src/kotoba/security/qualification.cljc"
                   "registers/production-qualification-template.edn"
+                  "../kotobase/src/kotobase/kotobase.cljc"
+                  "../kotobase/test/kotobase/store_test.cljc"
                   "../kagi/src/kagi/incident.clj" "../kagi/test/kagi/incident_test.clj"]}
   {:gap/id :G-009 :gap/control :quantum-communication :gap/status :accepted-non-goal
    :gap/repos [:kotoba :kotoba-lang :kototama :kotobase :aiueos :compiler :kagi :kagitaba]
