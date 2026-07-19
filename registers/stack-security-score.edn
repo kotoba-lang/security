@@ -39,9 +39,9 @@
    :memory-corruption 30 :dos 25 :information-flow 70 :insider-threat 10
    :unknown-compromise 35 :quantum-communication 0 :unrecoverable-loss 40}
   :aiueos
-  {:zero-trust 80 :capability 90 :pqc 50 :hsm 0 :monitoring-recovery 60
+  {:zero-trust 80 :capability 90 :pqc 50 :hsm 40 :monitoring-recovery 60
    :transport-confidentiality-integrity 70 :anti-impersonation 75 :abac 75
-   :authorized-process-abuse 60 :software-tamper 75 :private-key-theft 30
+   :authorized-process-abuse 60 :software-tamper 75 :private-key-theft 45
    :memory-corruption 75 :dos 75 :information-flow 85 :insider-threat 55
    :unknown-compromise 65 :quantum-communication 0 :unrecoverable-loss 65}
   :compiler
@@ -107,6 +107,8 @@
                   "src/kotoba/security/apple_hardware.clj"
                   "scripts/qualify-apple-secure-enclave.swift"
                   "registers/apple-secure-enclave-qualification.edn"
+                  "../aiueos/src/aiueos/policy.cljc"
+                  "../aiueos/test/aiueos/policy_test.cljc"
                   "../kagi/src/kagi/native_key.clj" "../kagi/test/kagi/native_key_test.clj"]}
   {:gap/id :G-005 :gap/control :transport-confidentiality-integrity :gap/status :partially-resolved
    :gap/repos [:kototama :aiueos :kotobase :kagi]

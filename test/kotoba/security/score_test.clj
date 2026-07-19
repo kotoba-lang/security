@@ -24,7 +24,7 @@
     (is (= 44 (Math/round (averages :kotoba-lang))))
     (is (= 53 (Math/round (averages :kototama))))
     (is (= 29 (Math/round (averages :kotobase))))
-    (is (= 60 (Math/round (averages :aiueos))))
+    (is (= 63 (Math/round (averages :aiueos))))
     (is (= 68 (Math/round (averages :compiler))))
     (is (= 78 (Math/round (averages :kagi))))
     (is (= 23 (Math/round (averages :kagitaba))))))
