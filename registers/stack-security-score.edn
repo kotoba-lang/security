@@ -87,13 +87,16 @@
                   "../kagi/src/kagi/crypto.clj" "../kagi/test/kagi/crypto_test.clj"]}
   {:gap/id :G-004 :gap/control :hsm :gap/status :partially-resolved
    :gap/repos [:kotoba :kotoba-lang :kototama :kotobase :aiueos :compiler :kagi]
-   :gap/summary "kagi has fail-closed native KeyStore signing/KEM handles. The signed production qualification gate requires verified hardware attestation, non-export, signing/KEM, rotation, fail-closed outage, immutable artifact binding and fresh operations-authority evidence; no real device/provider receipt exists yet."
+   :gap/summary "kagi has fail-closed native KeyStore signing/KEM handles. On the Apple M1 Max host, a real Secure Enclave EC key passed hardware-backed generation, private-export rejection and sign/verify. It is only a partial HSM substitute: ML-KEM, vendor attestation receipt, rotation and outage qualification remain open."
    :gap/acceptance ["provider contract" "non-export and attestation tests" "rotation and outage drill"]
    :gap/evidence ["../security/docs/key-lifecycle.md" "../kotoba/docs/SECURITY-AUDIT-PACKAGE.md"
                   "src/kotoba/security/hardware.cljc" "test/kotoba/security/hardware_test.cljc"
                   "registers/hardware-qualification-template.edn"
                   "src/kotoba/security/qualification.cljc"
                   "registers/production-qualification-template.edn"
+                  "src/kotoba/security/apple_hardware.clj"
+                  "scripts/qualify-apple-secure-enclave.swift"
+                  "registers/apple-secure-enclave-qualification.edn"
                   "../kagi/src/kagi/native_key.clj" "../kagi/test/kagi/native_key_test.clj"]}
   {:gap/id :G-005 :gap/control :transport-confidentiality-integrity :gap/status :partially-resolved
    :gap/repos [:kototama :aiueos :kotobase :kagi]
