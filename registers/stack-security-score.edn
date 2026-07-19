@@ -76,19 +76,24 @@
    :gap/evidence ["../aiueos/test/aiueos/decide_test.cljc"]}
   {:gap/id :G-003 :gap/control :pqc :gap/status :partially-resolved
    :gap/repos [:kotoba :kotoba-lang :kototama :kotobase :aiueos :compiler :kagi]
-   :gap/summary "kagi uses X25519+ML-KEM-768 and Ed25519+ML-DSA-65 on its vault path. The shared policy now rejects algorithm-label downgrades, requires actual classical plus ML-KEM-768 components, and enforces monotonic envelope rotation; production-path integration outside kagi remains."
+   :gap/summary "kagi uses X25519+ML-KEM-768 and Ed25519+ML-DSA-65 on its vault path. The shared production qualification gate requires all five stack boundaries, actual classical plus ML-KEM-768 envelopes, monotonic rotation, downgrade and rollback rejection, and an authority-signed fresh production receipt. Boundary migration outside kagi remains."
    :gap/acceptance ["ML-KEM-768 plus classical hybrid envelope on the production path"
                     "algorithm downgrade negative tests" "rotation and rollback drill"]
    :gap/evidence ["../security/docs/pqc-roadmap.md" "../security/docs/hybrid-envelope-vectors.md"
                   "src/kotoba/security/crypto_policy.cljc" "test/kotoba/security/crypto_policy_test.clj"
+                  "src/kotoba/security/qualification.cljc"
+                  "test/kotoba/security/qualification_test.cljc"
+                  "registers/production-qualification-template.edn"
                   "../kagi/src/kagi/crypto.clj" "../kagi/test/kagi/crypto_test.clj"]}
   {:gap/id :G-004 :gap/control :hsm :gap/status :partially-resolved
    :gap/repos [:kotoba :kotoba-lang :kototama :kotobase :aiueos :compiler :kagi]
-   :gap/summary "kagi has fail-closed native KeyStore signing/KEM handles. The shared qualification gate requires verified hardware attestation, non-export, signing/KEM, rotation, and fail-closed outage evidence; no real device/provider receipt exists yet."
+   :gap/summary "kagi has fail-closed native KeyStore signing/KEM handles. The signed production qualification gate requires verified hardware attestation, non-export, signing/KEM, rotation, fail-closed outage, immutable artifact binding and fresh operations-authority evidence; no real device/provider receipt exists yet."
    :gap/acceptance ["provider contract" "non-export and attestation tests" "rotation and outage drill"]
    :gap/evidence ["../security/docs/key-lifecycle.md" "../kotoba/docs/SECURITY-AUDIT-PACKAGE.md"
                   "src/kotoba/security/hardware.cljc" "test/kotoba/security/hardware_test.cljc"
                   "registers/hardware-qualification-template.edn"
+                  "src/kotoba/security/qualification.cljc"
+                  "registers/production-qualification-template.edn"
                   "../kagi/src/kagi/native_key.clj" "../kagi/test/kagi/native_key_test.clj"]}
   {:gap/id :G-005 :gap/control :transport-confidentiality-integrity :gap/status :partially-resolved
    :gap/repos [:kototama :aiueos :kotobase :kagi]
@@ -138,11 +143,13 @@
                   "../aiueos/src/aiueos/audit.cljc" "../aiueos/test/aiueos/audit_test.cljc"]}
   {:gap/id :G-008 :gap/control :unknown-compromise :gap/status :partially-resolved
    :gap/repos [:kotoba :kototama :kotobase :aiueos :kagi]
-   :gap/summary "kagi executes ordered containment through verification with hybrid-signed receipts. The shared resilience library adds rewrite-detecting telemetry and measured destructive restore; live remote authorities and production RTO/RPO evidence remain."
+   :gap/summary "kagi executes ordered containment through verification with hybrid-signed receipts. The shared production gate now rejects simulated, unsigned, stale, wrong-authority, non-remote or single-region evidence; live remote authorities and production RTO/RPO evidence remain."
    :gap/acceptance ["immutable remote telemetry" "automated containment" "known-clean restore drill with measured RTO/RPO"]
    :gap/evidence ["../security/docs/continuous-monitoring.md" "../security/docs/incident-response.md"
                   "src/kotoba/security/resilience.cljc" "test/kotoba/security/resilience_test.clj"
                   "registers/destructive-restore-drill.edn"
+                  "src/kotoba/security/qualification.cljc"
+                  "registers/production-qualification-template.edn"
                   "../kagi/src/kagi/incident.clj" "../kagi/test/kagi/incident_test.clj"]}
   {:gap/id :G-009 :gap/control :quantum-communication :gap/status :accepted-non-goal
    :gap/repos [:kotoba :kotoba-lang :kototama :kotobase :aiueos :compiler :kagi :kagitaba]
@@ -151,9 +158,11 @@
    :gap/evidence ["../security/docs/pqc-roadmap.md"]}
   {:gap/id :G-010 :gap/control :unrecoverable-loss :gap/status :partially-resolved
    :gap/repos [:kotoba-lang :kotobase :compiler :kagi]
-   :gap/summary "kagi implements distinct-member threshold hybrid recovery. A two-site encrypted destructive restore with digest verification and measured RTO/RPO passes in simulation; independent production-region evidence remains open."
+   :gap/summary "kagi implements distinct-member threshold hybrid recovery. Simulation passes, while the signed production gate requires at least two distinct regions, destructive restore, digest verification and bounded measured RTO/RPO; independent production-region evidence remains open."
    :gap/acceptance ["independent encrypted backups" "threshold-key recovery" "destructive restore drill"]
    :gap/evidence ["../kotoba/docs/SECURITY-ARCHITECTURE.md" "../kototama/docs/maturity.md"
                   "../kagi/src/kagi/recovery.clj" "src/kotoba/security/resilience.cljc"
                   "test/kotoba/security/resilience_test.clj"
-                  "registers/destructive-restore-drill.edn"]}]}
+                  "registers/destructive-restore-drill.edn"
+                  "src/kotoba/security/qualification.cljc"
+                  "registers/production-qualification-template.edn"]}]}
