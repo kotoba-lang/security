@@ -1,0 +1,53 @@
+(ns kotoba.security.transport-test
+  (:require [clojure.test :refer [deftest is]]
+            [kotoba.security.transport :as transport]))
+
+(def complete-profile
+  {:protocol :tls-1.3 :mutual-auth? true
+   :peer-id "did:web:kotobase.net" :expected-peer-id "did:web:kotobase.net"
+   :certificate-fingerprint "sha256:current"
+   :trusted-fingerprints #{"sha256:current" "sha256:next"}
+   :revocation-checked? true :now "2026-07-19T12:00:00Z"
+   :certificate-not-before "2026-07-01T00:00:00Z"
+   :certificate-expires-at "2026-08-01T00:00:00Z"
+   :require-rotation-overlap? true
+   :next-certificate-fingerprint "sha256:next"})
+
+(deftest complete-mutual-profile-is-allowed
+  (is (:transport/allowed? (transport/evaluate complete-profile))))
+
+(deftest every-transport-assurance-fails-closed
+  (doseq [[path value control]
+          [[[:protocol] :tls-1.2 :tls-version]
+           [[:mutual-auth?] false :mutual-auth]
+           [[:peer-id] "did:web:attacker" :peer-identity]
+           [[:certificate-fingerprint] "sha256:unknown" :certificate-trust]
+           [[:revocation-checked?] false :revocation]
+           [[:now] "2026-09-01T00:00:00Z" :certificate-validity]
+           [[:next-certificate-fingerprint] nil :rotation-overlap]]]
+    (let [result (transport/evaluate (assoc-in complete-profile path value))]
+      (is (false? (:transport/allowed? result)))
+      (is (some #(= control (:transport/control %))
+                (:transport/violations result))))))
+
+(deftest certificate-rotation-drill-promotes-and-blocks-revoked-rollback
+  (let [receipt (transport/rotation-drill
+                 {:current "sha256:old" :next "sha256:new"
+                  :staged-at "2026-07-19T10:00:00Z"
+                  :promoted-at "2026-07-19T11:00:00Z"
+                  :revoked-at "2026-07-19T12:00:00Z"
+                  :rollback-tested-at "2026-07-19T12:01:00Z"})]
+    (is (= :passed (:rotation-drill/status receipt)))
+    (is (= "sha256:new" (:rotation-drill/current receipt)))
+    (is (= #{"sha256:old"} (:rotation-drill/revoked receipt)))
+    (is (true? (:rotation-drill/rollback-denied? receipt)))
+    (is (= [:stage :promote :revoke]
+           (mapv :event (:rotation-drill/events receipt))))))
+
+(deftest revoked-certificate-cannot-be-staged-again
+  (let [state (-> (transport/rotation-state "old")
+                  (transport/stage "new" "t1")
+                  (transport/promote "t2")
+                  (transport/revoke-previous "t3"))]
+    (is (thrown? #?(:clj Exception :cljs js/Error)
+                 (transport/stage state "old" "t4")))))
