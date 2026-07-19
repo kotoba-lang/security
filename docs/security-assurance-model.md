@@ -56,7 +56,7 @@ is separately evaluated as likelihood × impact × exposure.
 | kototama | 60 | L3 | B | Partial | E3 |
 | kotoba-lang | 60 | L3 | B | Partial | E3 |
 | kotobase | 60 | L3 | B | Partial | E3 |
-| kagitaba | 41 | L3 | C | Partial | E3 |
+| kagitaba | 61 | L3 | B | Partial | E3 |
 
 ## Security heatmap
 
@@ -68,20 +68,20 @@ Legend: 🟢 ≥80, 🟡 60–79, 🟠 40–59, 🔴 0–39, ◻️ N/A/non-goal
 | Capability | 🟢 | 🟢 | 🟡 | 🟡 | 🟢 | 🟢 | 🟢 | 🟡 |
 | PQC | 🟠 | 🟠 | 🟠 | 🟡 | 🟠 | 🟠 | 🟢 | 🟠 |
 | HSM | 🟠 | 🟠 | 🟠 | 🟠 | 🟠 | 🟠 | 🟢 | 🟠 |
-| Monitoring/recovery | 🟡 | 🟠 | 🟡 | 🟡 | 🟡 | 🟠 | 🟢 | 🔴 |
-| Transport C/I | 🟡 | 🟡 | 🟢 | 🟠 | 🟡 | 🟠 | 🟢 | 🔴 |
-| Anti-impersonation | 🟢 | 🟡 | 🟡 | 🟠 | 🟡 | 🟢 | 🟢 | 🟠 |
-| ABAC | 🟢 | 🟡 | 🟡 | 🟢 | 🟡 | 🟢 | 🟢 | 🔴 |
-| Authorized abuse | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 | 🟡 | 🟢 | 🔴 |
-| Software tamper | 🟡 | 🟢 | 🟠 | 🟢 | 🟡 | 🟢 | 🟢 | 🟡 |
+| Monitoring/recovery | 🟡 | 🟠 | 🟡 | 🟡 | 🟡 | 🟠 | 🟢 | 🟡 |
+| Transport C/I | 🟡 | 🟡 | 🟢 | 🟠 | 🟡 | 🟠 | 🟢 | 🟠 |
+| Anti-impersonation | 🟢 | 🟡 | 🟡 | 🟠 | 🟡 | 🟢 | 🟢 | 🟡 |
+| ABAC | 🟢 | 🟡 | 🟡 | 🟢 | 🟡 | 🟢 | 🟢 | 🟡 |
+| Authorized abuse | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 | 🟡 | 🟢 | 🟢 |
+| Software tamper | 🟡 | 🟢 | 🟠 | 🟢 | 🟡 | 🟢 | 🟢 | 🟢 |
 | Private-key theft | 🟡 | 🟠 | 🟠 | 🟠 | 🟠 | 🟡 | 🟢 | 🟠 |
-| Memory corruption | 🟠 | 🟡 | 🟡 | 🟠 | 🟡 | 🟢 | 🟠 | 🟠 |
-| DoS | 🟡 | 🟠 | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 | 🟠 |
+| Memory corruption | 🟠 | 🟡 | 🟡 | 🟠 | 🟡 | 🟢 | 🟠 | 🟡 |
+| DoS | 🟡 | 🟠 | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 | 🟡 |
 | Information flow | 🟢 | 🟡 | 🟡 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
-| Insider threat | 🟡 | 🟡 | 🟡 | 🟡 | 🟠 | 🟡 | 🟢 | 🔴 |
-| Unknown compromise | 🟡 | 🟡 | 🟠 | 🟡 | 🟡 | 🟢 | 🟢 | 🟠 |
+| Insider threat | 🟡 | 🟡 | 🟡 | 🟡 | 🟠 | 🟡 | 🟢 | 🟡 |
+| Unknown compromise | 🟡 | 🟡 | 🟠 | 🟡 | 🟡 | 🟢 | 🟢 | 🟡 |
 | Quantum communication | ◻️ | ◻️ | ◻️ | ◻️ | ◻️ | ◻️ | ◻️ | ◻️ |
-| Unrecoverable loss | 🟡 | 🟡 | 🟡 | 🟡 | 🟡 | 🟡 | 🟢 | 🔴 |
+| Unrecoverable loss | 🟡 | 🟡 | 🟡 | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 |
 
 Colors aid navigation; exact values and evidence in
 [the score register](../registers/stack-security-score.edn) remain authoritative.

@@ -57,11 +57,11 @@
    :memory-corruption 55 :dos 70 :information-flow 85 :insider-threat 85
    :unknown-compromise 90 :quantum-communication 0 :unrecoverable-loss 90}
   :kagitaba
-  {:zero-trust 50 :capability 60 :pqc 50 :hsm 40 :monitoring-recovery 35
-   :transport-confidentiality-integrity 30 :anti-impersonation 40 :abac 25
-   :authorized-process-abuse 30 :software-tamper 65 :private-key-theft 40
-   :memory-corruption 45 :dos 55 :information-flow 80 :insider-threat 15
-   :unknown-compromise 50 :quantum-communication 0 :unrecoverable-loss 20}}
+  {:zero-trust 70 :capability 75 :pqc 50 :hsm 40 :monitoring-recovery 60
+   :transport-confidentiality-integrity 40 :anti-impersonation 60 :abac 70
+   :authorized-process-abuse 80 :software-tamper 80 :private-key-theft 55
+   :memory-corruption 65 :dos 70 :information-flow 80 :insider-threat 65
+   :unknown-compromise 70 :quantum-communication 0 :unrecoverable-loss 65}}
  :assessment/gaps
  [{:gap/id :G-001 :gap/control :build-reproducibility :gap/status :resolved
    :gap/repos [:kotoba :kototama]
