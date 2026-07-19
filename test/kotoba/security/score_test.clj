@@ -25,6 +25,6 @@
     (is (= 53 (Math/round (averages :kototama))))
     (is (= 29 (Math/round (averages :kotobase))))
     (is (= 63 (Math/round (averages :aiueos))))
-    (is (= 68 (Math/round (averages :compiler))))
+    (is (= 69 (Math/round (averages :compiler))))
     (is (= 78 (Math/round (averages :kagi))))
     (is (= 23 (Math/round (averages :kagitaba))))))

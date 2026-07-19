@@ -18,7 +18,7 @@
   :aiueos {:assurance/score 63 :assurance/maturity :L3 :assurance/grade :B
            :assurance/release-gate :partial :assurance/evidence :E3
            :assurance/residual-critical-gaps 5}
-  :compiler {:assurance/score 68 :assurance/maturity :L3 :assurance/grade :C
+  :compiler {:assurance/score 69 :assurance/maturity :L3 :assurance/grade :B
              :assurance/release-gate :partial :assurance/evidence :E3
              :assurance/residual-critical-gaps 4}
   :kagi {:assurance/score 78 :assurance/maturity :L3 :assurance/grade :B
