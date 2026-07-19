@@ -15,37 +15,37 @@
   :unknown-compromise :quantum-communication :unrecoverable-loss]
  :assessment/repos
  {:kotoba
-  {:zero-trust 75 :capability 85 :pqc 15 :hsm 45 :monitoring-recovery 70
+  {:zero-trust 75 :capability 85 :pqc 55 :hsm 45 :monitoring-recovery 70
    :transport-confidentiality-integrity 70 :anti-impersonation 80 :abac 80
    :authorized-process-abuse 75 :software-tamper 70 :private-key-theft 75
    :memory-corruption 55 :dos 60 :information-flow 80 :insider-threat 75
    :unknown-compromise 60 :quantum-communication 0 :unrecoverable-loss 70}
   :kotoba-lang
-  {:zero-trust 65 :capability 85 :pqc 10 :hsm 5 :monitoring-recovery 25
+  {:zero-trust 65 :capability 85 :pqc 20 :hsm 5 :monitoring-recovery 25
    :transport-confidentiality-integrity 30 :anti-impersonation 60 :abac 45
    :authorized-process-abuse 50 :software-tamper 70 :private-key-theft 35
    :memory-corruption 60 :dos 55 :information-flow 75 :insider-threat 45
    :unknown-compromise 40 :quantum-communication 0 :unrecoverable-loss 35}
   :kototama
-  {:zero-trust 55 :capability 70 :pqc 0 :hsm 5 :monitoring-recovery 70
+  {:zero-trust 55 :capability 70 :pqc 50 :hsm 5 :monitoring-recovery 70
    :transport-confidentiality-integrity 80 :anti-impersonation 70 :abac 70
    :authorized-process-abuse 35 :software-tamper 45 :private-key-theft 30
    :memory-corruption 65 :dos 65 :information-flow 75 :insider-threat 40
    :unknown-compromise 50 :quantum-communication 0 :unrecoverable-loss 70}
   :kotobase
-  {:zero-trust 10 :capability 10 :pqc 0 :hsm 0 :monitoring-recovery 30
+  {:zero-trust 10 :capability 10 :pqc 45 :hsm 0 :monitoring-recovery 30
    :transport-confidentiality-integrity 55 :anti-impersonation 45 :abac 70
    :authorized-process-abuse 10 :software-tamper 35 :private-key-theft 0
    :memory-corruption 30 :dos 25 :information-flow 70 :insider-threat 10
    :unknown-compromise 35 :quantum-communication 0 :unrecoverable-loss 40}
   :aiueos
-  {:zero-trust 80 :capability 90 :pqc 0 :hsm 0 :monitoring-recovery 60
+  {:zero-trust 80 :capability 90 :pqc 50 :hsm 0 :monitoring-recovery 60
    :transport-confidentiality-integrity 70 :anti-impersonation 75 :abac 75
    :authorized-process-abuse 60 :software-tamper 75 :private-key-theft 30
    :memory-corruption 75 :dos 75 :information-flow 85 :insider-threat 55
    :unknown-compromise 65 :quantum-communication 0 :unrecoverable-loss 65}
   :compiler
-  {:zero-trust 85 :capability 90 :pqc 0 :hsm 20 :monitoring-recovery 55
+  {:zero-trust 85 :capability 90 :pqc 55 :hsm 20 :monitoring-recovery 55
    :transport-confidentiality-integrity 40 :anti-impersonation 85 :abac 80
    :authorized-process-abuse 70 :software-tamper 90 :private-key-theft 75
    :memory-corruption 90 :dos 90 :information-flow 90 :insider-threat 70
@@ -76,7 +76,7 @@
    :gap/evidence ["../aiueos/test/aiueos/decide_test.cljc"]}
   {:gap/id :G-003 :gap/control :pqc :gap/status :partially-resolved
    :gap/repos [:kotoba :kotoba-lang :kototama :kotobase :aiueos :compiler :kagi]
-   :gap/summary "kagi uses X25519+ML-KEM-768 and Ed25519+ML-DSA-65 on its vault path. The shared production qualification gate requires all five stack boundaries, actual classical plus ML-KEM-768 envelopes, monotonic rotation, downgrade and rollback rejection, and an authority-signed fresh production receipt. Boundary migration outside kagi remains."
+   :gap/summary "kagi provides the hybrid vault path. Kotoba package admission, compiler artifact admission, aiueos deployment admission, kototama transport admission and kotobase XRPC admission now fail closed on missing metadata, classical-only KEM, false hybrid labels and legacy epochs. An operations-authority-signed production rotation/rollback receipt remains."
    :gap/acceptance ["ML-KEM-768 plus classical hybrid envelope on the production path"
                     "algorithm downgrade negative tests" "rotation and rollback drill"]
    :gap/evidence ["../security/docs/pqc-roadmap.md" "../security/docs/hybrid-envelope-vectors.md"
@@ -84,6 +84,16 @@
                   "src/kotoba/security/qualification.cljc"
                   "test/kotoba/security/qualification_test.cljc"
                   "registers/production-qualification-template.edn"
+                  "../kotoba/src/kotoba/package_admission.clj"
+                  "../kotoba/test/kotoba/package_admission_test.clj"
+                  "../compiler/src/kotoba/compiler/admission.cljc"
+                  "../compiler/test/kotoba/compiler/admission_test.clj"
+                  "../aiueos/src/aiueos/policy.cljc"
+                  "../aiueos/test/aiueos/policy_test.cljc"
+                  "../kototama/src/kototama/transport_provider.clj"
+                  "../kototama/test/kototama/transport_provider_test.clj"
+                  "../kotobase/src/kotobase/kotobase.cljc"
+                  "../kotobase/test/kotobase/store_test.cljc"
                   "../kagi/src/kagi/crypto.clj" "../kagi/test/kagi/crypto_test.clj"]}
   {:gap/id :G-004 :gap/control :hsm :gap/status :partially-resolved
    :gap/repos [:kotoba :kotoba-lang :kototama :kotobase :aiueos :compiler :kagi]
