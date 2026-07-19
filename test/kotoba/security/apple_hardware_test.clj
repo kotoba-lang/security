@@ -1,0 +1,17 @@
+(ns kotoba.security.apple-hardware-test
+  (:require [clojure.test :refer [deftest is]]
+            [kotoba.security.apple-hardware :as apple]
+            [kotoba.security.hardware :as hardware]))
+
+(deftest apple-adapter-never-overclaims-general-hsm
+  (let [probe-result {:apple/provider-id :apple-secure-enclave
+                      :apple/hardware-backed? true
+                      :apple/non-exportable? true
+                      :apple/sign-verified? true}
+        evidence (apple/hardware-evidence probe-result)
+        qualified (hardware/evaluate evidence)]
+    (is (= false (:private-exported? evidence)))
+    (is (= false (:kem-verified? evidence)))
+    (is (= false (:attestation-verified? evidence)))
+    (is (false? (:hardware/qualified? qualified)))
+    (is (some #{:kem-operation} (:hardware/violations qualified)))))
