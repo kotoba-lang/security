@@ -21,11 +21,11 @@
    :memory-corruption 55 :dos 60 :information-flow 80 :insider-threat 75
    :unknown-compromise 60 :quantum-communication 0 :unrecoverable-loss 70}
   :kotoba-lang
-  {:zero-trust 65 :capability 85 :pqc 20 :hsm 5 :monitoring-recovery 25
+  {:zero-trust 65 :capability 85 :pqc 20 :hsm 40 :monitoring-recovery 25
    :transport-confidentiality-integrity 30 :anti-impersonation 60 :abac 45
-   :authorized-process-abuse 50 :software-tamper 70 :private-key-theft 35
+   :authorized-process-abuse 50 :software-tamper 70 :private-key-theft 45
    :memory-corruption 60 :dos 55 :information-flow 75 :insider-threat 45
-   :unknown-compromise 40 :quantum-communication 0 :unrecoverable-loss 35}
+   :unknown-compromise 50 :quantum-communication 0 :unrecoverable-loss 35}
   :kototama
   {:zero-trust 55 :capability 70 :pqc 50 :hsm 40 :monitoring-recovery 70
    :transport-confidentiality-integrity 80 :anti-impersonation 70 :abac 70
@@ -100,6 +100,8 @@
    :gap/summary "kagi has fail-closed native KeyStore signing/KEM handles. On the Apple M1 Max host, a real Secure Enclave EC key passed hardware-backed generation, private-export rejection and sign/verify. It is only a partial HSM substitute: ML-KEM, vendor attestation receipt, rotation and outage qualification remain open."
    :gap/acceptance ["provider contract" "non-export and attestation tests" "rotation and outage drill"]
    :gap/evidence ["../security/docs/key-lifecycle.md" "../kotoba/docs/SECURITY-AUDIT-PACKAGE.md"
+                  "../kotoba-lang/src/kotoba/lang/release_admission.clj"
+                  "../kotoba-lang/test/kotoba/lang/release_admission_test.clj"
                   "src/kotoba/security/hardware.cljc" "test/kotoba/security/hardware_test.cljc"
                   "registers/hardware-qualification-template.edn"
                   "src/kotoba/security/qualification.cljc"
