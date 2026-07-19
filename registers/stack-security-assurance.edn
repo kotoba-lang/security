@@ -9,7 +9,7 @@
   :kotoba-lang {:assurance/score 60 :assurance/maturity :L3 :assurance/grade :B
                 :assurance/release-gate :partial :assurance/evidence :E3
                 :assurance/residual-critical-gaps 5}
-  :kototama {:assurance/score 55 :assurance/maturity :L3 :assurance/grade :C
+  :kototama {:assurance/score 60 :assurance/maturity :L3 :assurance/grade :B
              :assurance/release-gate :partial :assurance/evidence :E3
              :assurance/residual-critical-gaps 5}
   :kotobase {:assurance/score 46 :assurance/maturity :L3 :assurance/grade :C
