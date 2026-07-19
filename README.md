@@ -10,6 +10,10 @@ claims, standards mappings, test gates, and open gaps.
 
 This repository owns:
 
+- the repository-wide assurance rule, mandatory report fields, critical caps,
+  and [current security heatmap](docs/security-assurance-model.md), with its
+  machine-readable authority in
+  [security-assurance-model.edn](policy/security-assurance-model.edn);
 - security architecture and threat model summaries across Kotoba language,
   Wasm execution, package distribution, identity, storage, and audit;
 - standards mappings for NIST CSF 2.0, selected NIST SP 800 controls, DoDAF
