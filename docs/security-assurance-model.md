@@ -56,7 +56,7 @@ is separately evaluated as likelihood × impact × exposure.
 | kototama | 55 | L3 | C | Partial | E3 |
 | kotoba-lang | 48 | L3 | C | Partial | E3 |
 | kotobase | 41 | L3 | C | Partial | E3 |
-| kagitaba | 23 | L1 | D | Fail | E2 |
+| kagitaba | 34 | L3 | D | Partial | E3 |
 
 ## Security heatmap
 
@@ -64,22 +64,22 @@ Legend: 🟢 ≥80, 🟡 60–79, 🟠 40–59, 🔴 0–39, ◻️ N/A/non-goal
 
 | Control | kotoba | language | kototama | kotobase | aiueos | compiler | kagi | kagitaba |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Zero trust | 🟡 | 🟡 | 🟠 | 🔴 | 🟢 | 🟢 | 🟢 | 🔴 |
-| Capability | 🟢 | 🟢 | 🟡 | 🟠 | 🟢 | 🟢 | 🟢 | 🔴 |
+| Zero trust | 🟡 | 🟡 | 🟠 | 🔴 | 🟢 | 🟢 | 🟢 | 🟠 |
+| Capability | 🟢 | 🟢 | 🟡 | 🟠 | 🟢 | 🟢 | 🟢 | 🟠 |
 | PQC | 🟠 | 🔴 | 🟠 | 🟠 | 🟠 | 🟠 | 🟢 | 🔴 |
-| HSM | 🟠 | 🟠 | 🟠 | 🟠 | 🟠 | 🟠 | 🟢 | 🔴 |
+| HSM | 🟠 | 🟠 | 🟠 | 🟠 | 🟠 | 🟠 | 🟢 | 🟠 |
 | Monitoring/recovery | 🟡 | 🔴 | 🟡 | 🔴 | 🟡 | 🟠 | 🟢 | 🔴 |
 | Transport C/I | 🟡 | 🔴 | 🟢 | 🟠 | 🟡 | 🟠 | 🟢 | 🔴 |
-| Anti-impersonation | 🟢 | 🟡 | 🟡 | 🟠 | 🟡 | 🟢 | 🟢 | 🔴 |
+| Anti-impersonation | 🟢 | 🟡 | 🟡 | 🟠 | 🟡 | 🟢 | 🟢 | 🟠 |
 | ABAC | 🟢 | 🟠 | 🟡 | 🟡 | 🟡 | 🟢 | 🟢 | 🔴 |
 | Authorized abuse | 🟡 | 🟠 | 🔴 | 🟠 | 🟡 | 🟡 | 🟢 | 🔴 |
 | Software tamper | 🟡 | 🟡 | 🟠 | 🟡 | 🟡 | 🟢 | 🟢 | 🟠 |
-| Private-key theft | 🟡 | 🟠 | 🟠 | 🟠 | 🟠 | 🟡 | 🟢 | 🔴 |
+| Private-key theft | 🟡 | 🟠 | 🟠 | 🟠 | 🟠 | 🟡 | 🟢 | 🟠 |
 | Memory corruption | 🟠 | 🟡 | 🟡 | 🔴 | 🟡 | 🟢 | 🟠 | 🟠 |
 | DoS | 🟡 | 🟠 | 🟡 | 🔴 | 🟡 | 🟢 | 🟡 | 🟠 |
 | Information flow | 🟢 | 🟡 | 🟡 | 🟡 | 🟢 | 🟢 | 🟢 | 🟡 |
 | Insider threat | 🟡 | 🟠 | 🟠 | 🔴 | 🟠 | 🟡 | 🟢 | 🔴 |
-| Unknown compromise | 🟡 | 🟠 | 🟠 | 🟠 | 🟡 | 🟢 | 🟢 | 🔴 |
+| Unknown compromise | 🟡 | 🟠 | 🟠 | 🟠 | 🟡 | 🟢 | 🟢 | 🟠 |
 | Quantum communication | ◻️ | ◻️ | ◻️ | ◻️ | ◻️ | ◻️ | ◻️ | ◻️ |
 | Unrecoverable loss | 🟡 | 🔴 | 🟡 | 🟠 | 🟡 | 🟡 | 🟢 | 🔴 |
 
