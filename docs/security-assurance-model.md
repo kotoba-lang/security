@@ -52,7 +52,7 @@ is separately evaluated as likelihood × impact × exposure.
 | kagi | 78 | L3 | B | Partial | E3 |
 | compiler | 68 | L3 | C | Partial | E3 |
 | kotoba | 66 | L3 | B | Partial | E3 |
-| aiueos | 60 | L3 | C | Fail | E3 |
+| aiueos | 63 | L3 | B | Partial | E3 |
 | kototama | 53 | L2 | C | Fail | E3 |
 | kotoba-lang | 44 | L2 | C | Fail | E2 |
 | kotobase | 29 | L2 | D | Fail | E3 |
@@ -67,14 +67,14 @@ Legend: 🟢 ≥80, 🟡 60–79, 🟠 40–59, 🔴 0–39, ◻️ N/A/non-goal
 | Zero trust | 🟡 | 🟡 | 🟠 | 🔴 | 🟢 | 🟢 | 🟢 | 🔴 |
 | Capability | 🟢 | 🟢 | 🟡 | 🔴 | 🟢 | 🟢 | 🟢 | 🔴 |
 | PQC | 🟠 | 🔴 | 🟠 | 🟠 | 🟠 | 🟠 | 🟢 | 🔴 |
-| HSM | 🟠 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🟢 | 🔴 |
+| HSM | 🟠 | 🔴 | 🔴 | 🔴 | 🟠 | 🔴 | 🟢 | 🔴 |
 | Monitoring/recovery | 🟡 | 🔴 | 🟡 | 🔴 | 🟡 | 🟠 | 🟢 | 🔴 |
 | Transport C/I | 🟡 | 🔴 | 🟢 | 🟠 | 🟡 | 🟠 | 🟢 | 🔴 |
 | Anti-impersonation | 🟢 | 🟡 | 🟡 | 🟠 | 🟡 | 🟢 | 🟢 | 🔴 |
 | ABAC | 🟢 | 🟠 | 🟡 | 🟡 | 🟡 | 🟢 | 🟢 | 🔴 |
 | Authorized abuse | 🟡 | 🟠 | 🔴 | 🔴 | 🟡 | 🟡 | 🟢 | 🔴 |
 | Software tamper | 🟡 | 🟡 | 🟠 | 🔴 | 🟡 | 🟢 | 🟢 | 🟠 |
-| Private-key theft | 🟡 | 🔴 | 🔴 | 🔴 | 🔴 | 🟡 | 🟢 | 🔴 |
+| Private-key theft | 🟡 | 🔴 | 🔴 | 🔴 | 🟠 | 🟡 | 🟢 | 🔴 |
 | Memory corruption | 🟠 | 🟡 | 🟡 | 🔴 | 🟡 | 🟢 | 🟠 | 🟠 |
 | DoS | 🟡 | 🟠 | 🟡 | 🔴 | 🟡 | 🟢 | 🟡 | 🟠 |
 | Information flow | 🟢 | 🟡 | 🟡 | 🟡 | 🟢 | 🟢 | 🟢 | 🟡 |

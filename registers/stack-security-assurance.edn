@@ -15,8 +15,8 @@
   :kotobase {:assurance/score 29 :assurance/maturity :L2 :assurance/grade :D
              :assurance/release-gate :fail :assurance/evidence :E3
              :assurance/residual-critical-gaps 7}
-  :aiueos {:assurance/score 60 :assurance/maturity :L3 :assurance/grade :C
-           :assurance/release-gate :fail :assurance/evidence :E3
+  :aiueos {:assurance/score 63 :assurance/maturity :L3 :assurance/grade :B
+           :assurance/release-gate :partial :assurance/evidence :E3
            :assurance/residual-critical-gaps 5}
   :compiler {:assurance/score 68 :assurance/maturity :L3 :assurance/grade :C
              :assurance/release-gate :partial :assurance/evidence :E3
