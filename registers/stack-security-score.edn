@@ -57,11 +57,11 @@
    :memory-corruption 55 :dos 70 :information-flow 85 :insider-threat 85
    :unknown-compromise 90 :quantum-communication 0 :unrecoverable-loss 90}
   :kagitaba
-  {:zero-trust 40 :capability 50 :pqc 0 :hsm 40 :monitoring-recovery 35
-   :transport-confidentiality-integrity 20 :anti-impersonation 40 :abac 25
-   :authorized-process-abuse 20 :software-tamper 55 :private-key-theft 40
-   :memory-corruption 45 :dos 55 :information-flow 75 :insider-threat 15
-   :unknown-compromise 45 :quantum-communication 0 :unrecoverable-loss 20}}
+  {:zero-trust 50 :capability 60 :pqc 50 :hsm 40 :monitoring-recovery 35
+   :transport-confidentiality-integrity 30 :anti-impersonation 40 :abac 25
+   :authorized-process-abuse 30 :software-tamper 65 :private-key-theft 40
+   :memory-corruption 45 :dos 55 :information-flow 80 :insider-threat 15
+   :unknown-compromise 50 :quantum-communication 0 :unrecoverable-loss 20}}
  :assessment/gaps
  [{:gap/id :G-001 :gap/control :build-reproducibility :gap/status :resolved
    :gap/repos [:kotoba :kototama]
@@ -92,6 +92,8 @@
                   "../kototama/test/kototama/transport_provider_test.clj"
                   "../kotobase/src/kotobase/kotobase.cljc"
                   "../kotobase/test/kotobase/store_test.cljc"
+                  "../kagitaba/src/kagitaba/import/sealed_archive.clj"
+                  "../kagitaba/test/kagitaba/import/sealed_archive_test.clj"
                   "../aiueos/src/aiueos/policy.cljc"
                   "../aiueos/test/aiueos/policy_test.cljc"
                   "../kagi/src/kagi/crypto.clj" "../kagi/test/kagi/crypto_test.clj"]}
