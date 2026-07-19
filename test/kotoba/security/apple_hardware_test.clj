@@ -15,3 +15,13 @@
     (is (= false (:attestation-verified? evidence)))
     (is (false? (:hardware/qualified? qualified)))
     (is (some #{:kem-operation} (:hardware/violations qualified)))))
+
+(deftest live-probe-can-qualify-only-signing-scope
+  (let [probe-result {:apple/provider-id :apple-secure-enclave
+                      :apple/hardware-backed? true
+                      :apple/non-exportable? true
+                      :apple/sign-verified? true}
+        result (hardware/evaluate-signing
+                (apple/signing-evidence probe-result true))]
+    (is (:hardware-signing/qualified? result))
+    (is (contains? (:hardware-signing/non-claims result) :kem))))
