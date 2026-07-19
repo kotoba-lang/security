@@ -57,11 +57,11 @@
    :memory-corruption 55 :dos 70 :information-flow 85 :insider-threat 85
    :unknown-compromise 90 :quantum-communication 0 :unrecoverable-loss 90}
   :kagitaba
-  {:zero-trust 30 :capability 20 :pqc 0 :hsm 0 :monitoring-recovery 20
-   :transport-confidentiality-integrity 10 :anti-impersonation 15 :abac 10
-   :authorized-process-abuse 20 :software-tamper 55 :private-key-theft 0
+  {:zero-trust 40 :capability 50 :pqc 0 :hsm 40 :monitoring-recovery 35
+   :transport-confidentiality-integrity 20 :anti-impersonation 40 :abac 25
+   :authorized-process-abuse 20 :software-tamper 55 :private-key-theft 40
    :memory-corruption 45 :dos 55 :information-flow 75 :insider-threat 15
-   :unknown-compromise 25 :quantum-communication 0 :unrecoverable-loss 20}}
+   :unknown-compromise 45 :quantum-communication 0 :unrecoverable-loss 20}}
  :assessment/gaps
  [{:gap/id :G-001 :gap/control :build-reproducibility :gap/status :resolved
    :gap/repos [:kotoba :kototama]
@@ -75,7 +75,7 @@
    :gap/acceptance ["invoke a declared entry point" "full aiueos test suite passes"]
    :gap/evidence ["../aiueos/test/aiueos/decide_test.cljc"]}
   {:gap/id :G-003 :gap/control :pqc :gap/status :partially-resolved
-   :gap/repos [:kotoba :kotoba-lang :kototama :kotobase :aiueos :compiler :kagi]
+   :gap/repos [:kotoba :kotoba-lang :kototama :kotobase :aiueos :compiler :kagi :kagitaba]
    :gap/summary "kagi provides the hybrid vault path. Kotoba package admission, compiler artifact admission, aiueos deployment admission, kototama transport admission and kotobase XRPC admission now fail closed on missing metadata, classical-only KEM, false hybrid labels and legacy epochs. An operations-authority-signed production rotation/rollback receipt remains."
    :gap/acceptance ["ML-KEM-768 plus classical hybrid envelope on the production path"
                     "algorithm downgrade negative tests" "rotation and rollback drill"]
@@ -96,7 +96,7 @@
                   "../aiueos/test/aiueos/policy_test.cljc"
                   "../kagi/src/kagi/crypto.clj" "../kagi/test/kagi/crypto_test.clj"]}
   {:gap/id :G-004 :gap/control :hsm :gap/status :partially-resolved
-   :gap/repos [:kotoba :kotoba-lang :kototama :kotobase :aiueos :compiler :kagi]
+   :gap/repos [:kotoba :kotoba-lang :kototama :kotobase :aiueos :compiler :kagi :kagitaba]
    :gap/summary "kagi has fail-closed native KeyStore signing/KEM handles. On the Apple M1 Max host, a real Secure Enclave EC key passed hardware-backed generation, private-export rejection and sign/verify. It is only a partial HSM substitute: ML-KEM, vendor attestation receipt, rotation and outage qualification remain open."
    :gap/acceptance ["provider contract" "non-export and attestation tests" "rotation and outage drill"]
    :gap/evidence ["../security/docs/key-lifecycle.md" "../kotoba/docs/SECURITY-AUDIT-PACKAGE.md"
@@ -117,6 +117,8 @@
                   "../kototama/test/kototama/transport_provider_test.clj"
                   "../kotobase/src/kotobase/kotobase.cljc"
                   "../kotobase/test/kotobase/store_test.cljc"
+                  "../kagitaba/src/kagitaba/import/admission.clj"
+                  "../kagitaba/test/kagitaba/import/admission_test.clj"
                   "../kagi/src/kagi/native_key.clj" "../kagi/test/kagi/native_key_test.clj"]}
   {:gap/id :G-005 :gap/control :transport-confidentiality-integrity :gap/status :partially-resolved
    :gap/repos [:kototama :aiueos :kotobase :kagi]
@@ -165,7 +167,7 @@
                   "docs/information-flow-non-claims.md"
                   "../aiueos/src/aiueos/audit.cljc" "../aiueos/test/aiueos/audit_test.cljc"]}
   {:gap/id :G-008 :gap/control :unknown-compromise :gap/status :partially-resolved
-   :gap/repos [:kotoba :kototama :kotobase :aiueos :kagi]
+   :gap/repos [:kotoba :kototama :kotobase :aiueos :kagi :kagitaba]
    :gap/summary "kagi executes ordered containment through verification with hybrid-signed receipts. The shared production gate now rejects simulated, unsigned, stale, wrong-authority, non-remote or single-region evidence; live remote authorities and production RTO/RPO evidence remain."
    :gap/acceptance ["immutable remote telemetry" "automated containment" "known-clean restore drill with measured RTO/RPO"]
    :gap/evidence ["../security/docs/continuous-monitoring.md" "../security/docs/incident-response.md"
@@ -175,6 +177,8 @@
                   "registers/production-qualification-template.edn"
                   "../kotobase/src/kotobase/kotobase.cljc"
                   "../kotobase/test/kotobase/store_test.cljc"
+                  "../kagitaba/src/kagitaba/import/admission.clj"
+                  "../kagitaba/test/kagitaba/import/admission_test.clj"
                   "../kagi/src/kagi/incident.clj" "../kagi/test/kagi/incident_test.clj"]}
   {:gap/id :G-009 :gap/control :quantum-communication :gap/status :accepted-non-goal
    :gap/repos [:kotoba :kotoba-lang :kototama :kotobase :aiueos :compiler :kagi :kagitaba]
