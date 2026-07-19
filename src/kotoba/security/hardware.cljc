@@ -18,3 +18,22 @@
     {:hardware/qualified? (empty? violations)
      :hardware/provider-id provider-id
      :hardware/violations violations}))
+
+(defn evaluate-signing
+  "Scoped hardware signing qualification; never claims KEM or general HSM."
+  [{:keys [provider-id hardware-backed? provider-origin-verified?
+           private-exported? sign-verified? unavailable-failed-closed?]}]
+  (let [violations
+        (cond-> []
+          (nil? provider-id) (conj :provider-id)
+          (not= true hardware-backed?) (conj :hardware-backed)
+          (not= true provider-origin-verified?) (conj :provider-origin)
+          (not= false private-exported?) (conj :private-export)
+          (not= true sign-verified?) (conj :sign-operation)
+          (not= true unavailable-failed-closed?) (conj :availability-fail-closed))]
+    {:hardware-signing/qualified? (empty? violations)
+     :hardware-signing/provider-id provider-id
+     :hardware-signing/scope :non-exportable-signing
+     :hardware-signing/violations violations
+     :hardware-signing/non-claims #{:kem :pkcs11 :cluster-ha
+                                    :vendor-attestation}}))

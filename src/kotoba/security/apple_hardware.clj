@@ -30,3 +30,13 @@
    :kem-verified? false
    :rotation-drill-passed? false
    :outage-failed-closed? false})
+
+(defn signing-evidence [result unavailable-failed-closed?]
+  {:provider-id (:apple/provider-id result)
+   :hardware-backed? (:apple/hardware-backed? result)
+   :provider-origin-verified?
+   (and (= :apple-secure-enclave (:apple/provider-id result))
+        (:apple/hardware-backed? result))
+   :private-exported? (not (:apple/non-exportable? result))
+   :sign-verified? (:apple/sign-verified? result)
+   :unavailable-failed-closed? unavailable-failed-closed?})

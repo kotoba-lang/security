@@ -18,3 +18,19 @@
     (is (false? (:hardware/qualified? result)))
     (is (= [:hardware-backed :outage-fail-closed]
            (:hardware/violations result)))))
+
+(deftest scoped-signing-does-not-overclaim-general-hsm
+  (let [evidence {:provider-id :apple-secure-enclave
+                  :hardware-backed? true :provider-origin-verified? true
+                  :private-exported? false :sign-verified? true
+                  :unavailable-failed-closed? true}
+        result (hardware/evaluate-signing evidence)]
+    (is (:hardware-signing/qualified? result))
+    (is (= :non-exportable-signing (:hardware-signing/scope result)))
+    (is (contains? (:hardware-signing/non-claims result) :kem))
+    (is (false? (:hardware-signing/qualified?
+                 (hardware/evaluate-signing
+                  (assoc evidence :private-exported? true)))))
+    (is (false? (:hardware-signing/qualified?
+                 (hardware/evaluate-signing
+                  (assoc evidence :unavailable-failed-closed? false)))))))
