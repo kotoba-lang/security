@@ -24,6 +24,6 @@
   :kagi {:assurance/score 78 :assurance/maturity :L3 :assurance/grade :B
          :assurance/release-gate :partial :assurance/evidence :E3
          :assurance/residual-critical-gaps 4}
-  :kagitaba {:assurance/score 41 :assurance/maturity :L3 :assurance/grade :C
+  :kagitaba {:assurance/score 61 :assurance/maturity :L3 :assurance/grade :B
              :assurance/release-gate :partial :assurance/evidence :E3
              :assurance/residual-critical-gaps 5}}}
