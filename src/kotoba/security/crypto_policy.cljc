@@ -10,10 +10,19 @@
   - :fips-required    providers must be FIPS-validated and inventory entries
                       must not be :crypto/fips-status :not-claimed.
 
-  See docs/fips-validation.md and docs/pqc-roadmap.md.")
+  See docs/fips-validation.md and docs/pqc-roadmap.md."
+  (:require [clojure.set :as set]))
 
 (def known-modes
   #{:crypto-agile :hybrid-required :fips-required})
+
+(def classical-kems #{:x25519 :p-256})
+(def pq-kems #{:ml-kem-768})
+
+(defn hybrid-kem-components? [algorithms]
+  (let [algorithms (set algorithms)]
+    (and (seq (set/intersection algorithms classical-kems))
+         (seq (set/intersection algorithms pq-kems)))))
 
 (defn invalid
   [message data]
@@ -63,11 +72,13 @@
 
      :hybrid-required
      (when (and (true? (:envelope/kem? envelope))
-                (not (true? (:envelope/hybrid? envelope)))
                 (>= (:envelope/epoch envelope 0)
-                    (:hybrid-epoch-floor policy 0)))
+                    (:hybrid-epoch-floor policy 0))
+                (or (not (true? (:envelope/hybrid? envelope)))
+                    (not (hybrid-kem-components? (:envelope/algorithms envelope)))))
        (invalid "hybrid kem required for new epochs"
                 {:epoch (:envelope/epoch envelope)
+                 :algorithms (:envelope/algorithms envelope)
                  :hybrid-epoch-floor (:hybrid-epoch-floor policy)}))
 
      :crypto-agile nil)))
@@ -79,6 +90,19 @@
   (if-let [error (envelope-error policy envelope)]
     error
     {:valid? true}))
+
+(defn rotate-envelope
+  "Require a strictly newer epoch and a complete classical+ML-KEM envelope."
+  [policy current next-envelope]
+  (let [checked (check-envelope policy next-envelope)]
+    (cond
+      (not (:valid? checked)) checked
+      (<= (:envelope/epoch next-envelope 0) (:envelope/epoch current 0))
+      (invalid "envelope epoch must increase"
+               {:current (:envelope/epoch current) :next (:envelope/epoch next-envelope)})
+      :else {:valid? true :previous-epoch (:envelope/epoch current)
+             :current-epoch (:envelope/epoch next-envelope)
+             :algorithms (:envelope/algorithms next-envelope)})))
 
 (def inventory-entry-required
   [:crypto/use

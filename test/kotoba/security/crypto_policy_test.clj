@@ -83,6 +83,23 @@
         result (run-case tc)]
     (is (= "hybrid kem required for new epochs" (:message result)))))
 
+(deftest hybrid-flag-cannot-hide-algorithm-downgrade
+  (let [p {:kotoba.security/crypto-policy-version 1
+           :mode :hybrid-required :hybrid-epoch-floor 1}
+        provider {:provider/id :test :provider/fips-validated false}
+        current {:envelope/provider provider :envelope/kem? true
+                 :envelope/hybrid? true :envelope/epoch 1
+                 :envelope/algorithms [:x25519 :ml-kem-768]}
+        downgraded (assoc current :envelope/epoch 2
+                         :envelope/algorithms [:x25519])
+        rotated (assoc current :envelope/epoch 2)]
+    (is (false? (:valid? (policy/check-envelope p downgraded))))
+    (is (= "envelope epoch must increase"
+           (:message (policy/rotate-envelope p current current))))
+    (is (= {:valid? true :previous-epoch 1 :current-epoch 2
+            :algorithms [:x25519 :ml-kem-768]}
+           (policy/rotate-envelope p current rotated)))))
+
 (deftest missing-provider-metadata-rejected-under-any-mode
   (doseq [mode [:crypto-agile :hybrid-required :fips-required]]
     (testing (str mode)
