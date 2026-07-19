@@ -20,11 +20,11 @@
 
 (deftest averages-are-derived-not-hand-maintained
   (let [averages (score/repo-averages (score/read-register))]
-    (is (= 63 (Math/round (averages :kotoba))))
+    (is (= 66 (Math/round (averages :kotoba))))
     (is (= 44 (Math/round (averages :kotoba-lang))))
-    (is (= 50 (Math/round (averages :kototama))))
-    (is (= 26 (Math/round (averages :kotobase))))
-    (is (= 58 (Math/round (averages :aiueos))))
-    (is (= 65 (Math/round (averages :compiler))))
+    (is (= 53 (Math/round (averages :kototama))))
+    (is (= 29 (Math/round (averages :kotobase))))
+    (is (= 60 (Math/round (averages :aiueos))))
+    (is (= 68 (Math/round (averages :compiler))))
     (is (= 78 (Math/round (averages :kagi))))
     (is (= 23 (Math/round (averages :kagitaba))))))
