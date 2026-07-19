@@ -23,8 +23,10 @@
         receipt (resilience/destructive-restore-drill!
                  {:target target
                   :backups [{:backup/site :region-a :backup/encrypted? true
+                             :backup/immutable? true
                              :backup/artifact "cipher-a" :backup/digest expected}
                             {:backup/site :region-b :backup/encrypted? true
+                             :backup/immutable? true
                              :backup/artifact "cipher-b" :backup/digest expected}]
                   :restore-fn (fn [_] data) :digest-fn digest
                   :clock-ms #(let [v (first @ticks)] (swap! ticks subvec 1) v)
@@ -35,7 +37,34 @@
     (is (:restore-drill/digest-verified? receipt))
     (is (= 42 (:restore-drill/rto-ms receipt)))
     (is (= 50 (:restore-drill/rpo-ms receipt)))
+    (is (:restore-drill/qualified?
+         (resilience/evaluate-restore-receipt receipt expected)))
     (is (= data @target))))
+
+(deftest restore-receipt-rejects-every-critical-claim-failure
+  (let [digest "sha256:artifact"
+        receipt {:restore-drill/status :passed
+                 :restore-drill/destructive? true
+                 :restore-drill/sites #{:region-a :region-b}
+                 :restore-drill/backups-encrypted? true
+                 :restore-drill/backups-immutable? true
+                 :restore-drill/artifact-digest digest
+                 :restore-drill/digest-verified? true
+                 :restore-drill/rto-ms 40 :restore-drill/rto-limit-ms 100
+                 :restore-drill/rpo-ms 20 :restore-drill/rpo-limit-ms 60}]
+    (is (:restore-drill/qualified?
+         (resilience/evaluate-restore-receipt receipt digest)))
+    (doseq [bad [(assoc receipt :restore-drill/status :failed)
+                 (assoc receipt :restore-drill/destructive? false)
+                 (assoc receipt :restore-drill/sites #{:region-a})
+                 (assoc receipt :restore-drill/backups-encrypted? false)
+                 (assoc receipt :restore-drill/backups-immutable? false)
+                 (assoc receipt :restore-drill/digest-verified? false)
+                 (assoc receipt :restore-drill/artifact-digest "sha256:other")
+                 (assoc receipt :restore-drill/rto-ms 101)
+                 (assoc receipt :restore-drill/rpo-ms 61)]]
+      (is (false? (:restore-drill/qualified?
+                   (resilience/evaluate-restore-receipt bad digest)))))))
 
 (deftest same-site-or-unencrypted-backups-fail-closed
   (is (thrown-with-msg?
