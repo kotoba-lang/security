@@ -21,11 +21,11 @@
    :memory-corruption 55 :dos 60 :information-flow 80 :insider-threat 75
    :unknown-compromise 60 :quantum-communication 0 :unrecoverable-loss 70}
   :kotoba-lang
-  {:zero-trust 65 :capability 85 :pqc 20 :hsm 40 :monitoring-recovery 40
-   :transport-confidentiality-integrity 60 :anti-impersonation 70 :abac 45
-   :authorized-process-abuse 50 :software-tamper 70 :private-key-theft 45
-   :memory-corruption 60 :dos 55 :information-flow 75 :insider-threat 45
-   :unknown-compromise 55 :quantum-communication 0 :unrecoverable-loss 60}
+  {:zero-trust 75 :capability 85 :pqc 55 :hsm 40 :monitoring-recovery 40
+   :transport-confidentiality-integrity 60 :anti-impersonation 75 :abac 65
+   :authorized-process-abuse 75 :software-tamper 85 :private-key-theft 45
+   :memory-corruption 60 :dos 55 :information-flow 75 :insider-threat 70
+   :unknown-compromise 60 :quantum-communication 0 :unrecoverable-loss 60}
   :kototama
   {:zero-trust 55 :capability 70 :pqc 50 :hsm 40 :monitoring-recovery 70
    :transport-confidentiality-integrity 80 :anti-impersonation 70 :abac 70
@@ -84,6 +84,8 @@
                   "src/kotoba/security/qualification.cljc"
                   "test/kotoba/security/qualification_test.cljc"
                   "registers/production-qualification-template.edn"
+                  "../kotoba-lang/src/kotoba/lang/release_admission.clj"
+                  "../kotoba-lang/test/kotoba/lang/release_admission_test.clj"
                   "../kotoba/src/kotoba/package_admission.clj"
                   "../kotoba/test/kotoba/package_admission_test.clj"
                   "../compiler/src/kotoba/compiler/admission.cljc"
@@ -150,6 +152,9 @@
                   "../kototama/src/kototama/transport_provider.clj" "../kototama/test/kototama/transport_provider_test.clj"
                   "../kagi/src/kagi/governor.cljc" "../kagi/test/kagi/governor_abac_test.clj"
                   "../kotoba/src/kotoba/package_admission.clj" "../kotoba/test/kotoba/package_admission_test.clj"
+                  "src/kotoba/security/approval.cljc" "test/kotoba/security/approval_test.cljc"
+                  "../kotoba-lang/src/kotoba/lang/release_admission.clj"
+                  "../kotoba-lang/test/kotoba/lang/release_admission_test.clj"
                   "../kotobase/src/kotobase/kotobase.cljc" "../kotobase/test/kotobase/store_test.cljc"]}
   {:gap/id :G-007 :gap/control :information-flow :gap/status :resolved
    :gap/repos [:kotoba :kotoba-lang :kototama :kotobase :aiueos :compiler :kagi :kagitaba]
