@@ -36,6 +36,9 @@ jobs:
       - name: Crypto inventory gate
         run: bb scripts/check-crypto-inventory.bb
 
+      - name: Public-only key register gate
+        run: bb scripts/check-key-register.bb
+
   # Recomputes the hybrid X25519 + ML-KEM-768 wrapping vectors with Bouncy
   # Castle (:vectors alias only; the gates job above stays BC-free).
   vectors:

@@ -1,0 +1,159 @@
+{:register/type :kotoba.security/stack-security-score
+ :register/version 1
+ :assessment/as-of "2026-07-19"
+ :assessment/scale {:minimum 0 :maximum 100
+                    :bands [{:min 80 :meaning :implemented-tested-ci-gated}
+                            {:min 60 :meaning :implemented-with-residual-gaps}
+                            {:min 40 :meaning :partial-or-profile-dependent}
+                            {:min 20 :meaning :design-or-limited-control}
+                            {:min 0 :meaning :absent-or-no-evidence}]}
+ :assessment/controls
+ [:zero-trust :capability :pqc :hsm :monitoring-recovery
+  :transport-confidentiality-integrity :anti-impersonation :abac
+  :authorized-process-abuse :software-tamper :private-key-theft
+  :memory-corruption :dos :information-flow :insider-threat
+  :unknown-compromise :quantum-communication :unrecoverable-loss]
+ :assessment/repos
+ {:kotoba
+  {:zero-trust 75 :capability 85 :pqc 15 :hsm 45 :monitoring-recovery 70
+   :transport-confidentiality-integrity 70 :anti-impersonation 80 :abac 80
+   :authorized-process-abuse 75 :software-tamper 70 :private-key-theft 75
+   :memory-corruption 55 :dos 60 :information-flow 80 :insider-threat 75
+   :unknown-compromise 60 :quantum-communication 0 :unrecoverable-loss 70}
+  :kotoba-lang
+  {:zero-trust 65 :capability 85 :pqc 10 :hsm 5 :monitoring-recovery 25
+   :transport-confidentiality-integrity 30 :anti-impersonation 60 :abac 45
+   :authorized-process-abuse 50 :software-tamper 70 :private-key-theft 35
+   :memory-corruption 60 :dos 55 :information-flow 75 :insider-threat 45
+   :unknown-compromise 40 :quantum-communication 0 :unrecoverable-loss 35}
+  :kototama
+  {:zero-trust 55 :capability 70 :pqc 0 :hsm 5 :monitoring-recovery 70
+   :transport-confidentiality-integrity 80 :anti-impersonation 70 :abac 70
+   :authorized-process-abuse 35 :software-tamper 45 :private-key-theft 30
+   :memory-corruption 65 :dos 65 :information-flow 75 :insider-threat 40
+   :unknown-compromise 50 :quantum-communication 0 :unrecoverable-loss 70}
+  :kotobase
+  {:zero-trust 10 :capability 10 :pqc 0 :hsm 0 :monitoring-recovery 30
+   :transport-confidentiality-integrity 55 :anti-impersonation 45 :abac 70
+   :authorized-process-abuse 10 :software-tamper 35 :private-key-theft 0
+   :memory-corruption 30 :dos 25 :information-flow 70 :insider-threat 10
+   :unknown-compromise 35 :quantum-communication 0 :unrecoverable-loss 40}
+  :aiueos
+  {:zero-trust 80 :capability 90 :pqc 0 :hsm 0 :monitoring-recovery 60
+   :transport-confidentiality-integrity 70 :anti-impersonation 75 :abac 75
+   :authorized-process-abuse 60 :software-tamper 75 :private-key-theft 30
+   :memory-corruption 75 :dos 75 :information-flow 85 :insider-threat 55
+   :unknown-compromise 65 :quantum-communication 0 :unrecoverable-loss 65}
+  :compiler
+  {:zero-trust 85 :capability 90 :pqc 0 :hsm 20 :monitoring-recovery 55
+   :transport-confidentiality-integrity 40 :anti-impersonation 85 :abac 80
+   :authorized-process-abuse 70 :software-tamper 90 :private-key-theft 75
+   :memory-corruption 90 :dos 90 :information-flow 90 :insider-threat 70
+   :unknown-compromise 80 :quantum-communication 0 :unrecoverable-loss 60}
+  :kagi
+  {:zero-trust 85 :capability 85 :pqc 90 :hsm 80 :monitoring-recovery 80
+   :transport-confidentiality-integrity 80 :anti-impersonation 90 :abac 80
+   :authorized-process-abuse 85 :software-tamper 90 :private-key-theft 85
+   :memory-corruption 55 :dos 70 :information-flow 85 :insider-threat 85
+   :unknown-compromise 90 :quantum-communication 0 :unrecoverable-loss 90}
+  :kagitaba
+  {:zero-trust 30 :capability 20 :pqc 0 :hsm 0 :monitoring-recovery 20
+   :transport-confidentiality-integrity 10 :anti-impersonation 15 :abac 10
+   :authorized-process-abuse 20 :software-tamper 55 :private-key-theft 0
+   :memory-corruption 45 :dos 55 :information-flow 75 :insider-threat 15
+   :unknown-compromise 25 :quantum-communication 0 :unrecoverable-loss 20}}
+ :assessment/gaps
+ [{:gap/id :G-001 :gap/control :build-reproducibility :gap/status :resolved
+   :gap/repos [:kotoba :kototama]
+   :gap/summary "The exact kotoba-lang and transitive core-contracts commits are now published. Exact remote fetch, public-only dependency preparation, and the non-development test path pass without local overrides."
+   :gap/acceptance ["publish the exact pinned commit" "fresh-clone classpath and test pass"]
+   :gap/evidence ["../kotoba/deps.edn" "../kototama/deps.edn"
+                  "registers/reproducibility-drill.edn"]}
+  {:gap/id :G-002 :gap/control :monitoring-recovery :gap/status :resolved
+   :gap/repos [:aiueos]
+   :gap/summary "The decision subprocess smoke test called an undeclared bb task."
+   :gap/acceptance ["invoke a declared entry point" "full aiueos test suite passes"]
+   :gap/evidence ["../aiueos/test/aiueos/decide_test.cljc"]}
+  {:gap/id :G-003 :gap/control :pqc :gap/status :partially-resolved
+   :gap/repos [:kotoba :kotoba-lang :kototama :kotobase :aiueos :compiler :kagi]
+   :gap/summary "kagi uses X25519+ML-KEM-768 and Ed25519+ML-DSA-65 on its vault path. The shared policy now rejects algorithm-label downgrades, requires actual classical plus ML-KEM-768 components, and enforces monotonic envelope rotation; production-path integration outside kagi remains."
+   :gap/acceptance ["ML-KEM-768 plus classical hybrid envelope on the production path"
+                    "algorithm downgrade negative tests" "rotation and rollback drill"]
+   :gap/evidence ["../security/docs/pqc-roadmap.md" "../security/docs/hybrid-envelope-vectors.md"
+                  "src/kotoba/security/crypto_policy.cljc" "test/kotoba/security/crypto_policy_test.clj"
+                  "../kagi/src/kagi/crypto.clj" "../kagi/test/kagi/crypto_test.clj"]}
+  {:gap/id :G-004 :gap/control :hsm :gap/status :partially-resolved
+   :gap/repos [:kotoba :kotoba-lang :kototama :kotobase :aiueos :compiler :kagi]
+   :gap/summary "kagi has fail-closed native KeyStore signing/KEM handles. The shared qualification gate requires verified hardware attestation, non-export, signing/KEM, rotation, and fail-closed outage evidence; no real device/provider receipt exists yet."
+   :gap/acceptance ["provider contract" "non-export and attestation tests" "rotation and outage drill"]
+   :gap/evidence ["../security/docs/key-lifecycle.md" "../kotoba/docs/SECURITY-AUDIT-PACKAGE.md"
+                  "src/kotoba/security/hardware.cljc" "test/kotoba/security/hardware_test.cljc"
+                  "registers/hardware-qualification-template.edn"
+                  "../kagi/src/kagi/native_key.clj" "../kagi/test/kagi/native_key_test.clj"]}
+  {:gap/id :G-005 :gap/control :transport-confidentiality-integrity :gap/status :partially-resolved
+   :gap/repos [:kototama :aiueos :kotobase :kagi]
+   :gap/summary "kagi witness and kototama native transport enforce client-certificate-required mTLS. Aiueos and kotobase enforce the shared profile. A deterministic overlap/promotion/revocation/rollback-denial drill passes; production CA/HSM rotation evidence remains."
+   :gap/acceptance ["mutual peer authentication" "TLS downgrade and forged-publisher negative tests"
+                    "certificate or key rotation drill"]
+   :gap/evidence ["../aiueos/SECURITY.md" "../kototama/docs/maturity.md"
+                  "src/kotoba/security/transport.cljc" "test/kotoba/security/transport_test.cljc"
+                  "registers/certificate-rotation-drill.edn"
+                  "../aiueos/src/aiueos/policy.cljc" "../aiueos/test/aiueos/policy_test.cljc"
+                  "../kotobase/src/kotobase/kotobase.cljc" "../kotobase/test/kotobase/store_test.cljc"
+                  "../kototama/src/kototama/transport_provider.clj"
+                  "../kototama/test/kototama/tender_test.clj"
+                  "../kagi/src/kagi/witness_http.clj" "../kagi/test/kagi/witness_http_test.clj"]}
+  {:gap/id :G-006 :gap/control :abac :gap/status :resolved
+   :gap/repos [:kotoba :kotoba-lang :kototama :kotobase :aiueos :compiler :kagi]
+   :gap/summary "kotoba-lang/security owns the canonical evaluator. aiueos deployment, compiler admission, kototama transport, kagi disclosure, kotoba package admission and kotobase remote-store boundaries enforce it."
+   :gap/acceptance ["canonical ABAC decision and receipt schema" "deny-by-default host enforcement"
+                    "confused-deputy and stale-attribute tests"]
+   :gap/evidence ["src/kotoba/security/abac.cljc" "test/kotoba/security/abac_test.cljc"
+                  "../aiueos/src/aiueos/policy.cljc" "../aiueos/test/aiueos/policy_test.cljc"
+                  "../compiler/src/kotoba/compiler/admission.cljc" "../compiler/test/kotoba/compiler/admission_test.clj"
+                  "../kototama/src/kototama/transport_provider.clj" "../kototama/test/kototama/transport_provider_test.clj"
+                  "../kagi/src/kagi/governor.cljc" "../kagi/test/kagi/governor_abac_test.clj"
+                  "../kotoba/src/kotoba/package_admission.clj" "../kotoba/test/kotoba/package_admission_test.clj"
+                  "../kotobase/src/kotobase/kotobase.cljc" "../kotobase/test/kotobase/store_test.cljc"]}
+  {:gap/id :G-007 :gap/control :information-flow :gap/status :resolved
+   :gap/repos [:kotoba :kotoba-lang :kototama :kotobase :aiueos :compiler :kagi :kagitaba]
+   :gap/summary "The shared security library defines label joins, exact expiring declassification grants and structured log redaction. All documented stack boundaries gate downgrades; covert/side-channel non-claims and residual mitigations are explicit."
+   :gap/acceptance ["data labels and propagation rules" "egress declassification policy"
+                    "log-redaction and covert-channel non-claims"]
+   :gap/evidence ["src/kotoba/security/information_flow.cljc"
+                  "test/kotoba/security/information_flow_test.cljc"
+                  "../compiler/src/kotoba/compiler/admission.cljc"
+                  "../compiler/test/kotoba/compiler/admission_test.clj"
+                  "../kagitaba/src/kagitaba/field.cljc" "../kagitaba/src/kagitaba/item.cljc"
+                  "../kagi/src/kagi/governor.cljc" "../kagi/test/kagi/governor_abac_test.clj"
+                  "../kototama/src/kototama/transport_provider.clj"
+                  "../kototama/test/kototama/transport_provider_test.clj"
+                  "../kotobase/src/kotobase/kotobase.cljc"
+                  "../kotobase/test/kotobase/store_test.cljc"
+                  "../aiueos/src/aiueos/policy.cljc" "../aiueos/test/aiueos/policy_test.cljc"
+                  "../kotoba/src/kotoba/host_providers.clj"
+                  "../kotoba/test/kotoba/host_providers_test.clj"
+                  "src/kotoba/security/redaction.cljc" "test/kotoba/security/redaction_test.cljc"
+                  "docs/information-flow-non-claims.md"
+                  "../aiueos/src/aiueos/audit.cljc" "../aiueos/test/aiueos/audit_test.cljc"]}
+  {:gap/id :G-008 :gap/control :unknown-compromise :gap/status :partially-resolved
+   :gap/repos [:kotoba :kototama :kotobase :aiueos :kagi]
+   :gap/summary "kagi executes ordered containment through verification with hybrid-signed receipts. The shared resilience library adds rewrite-detecting telemetry and measured destructive restore; live remote authorities and production RTO/RPO evidence remain."
+   :gap/acceptance ["immutable remote telemetry" "automated containment" "known-clean restore drill with measured RTO/RPO"]
+   :gap/evidence ["../security/docs/continuous-monitoring.md" "../security/docs/incident-response.md"
+                  "src/kotoba/security/resilience.cljc" "test/kotoba/security/resilience_test.clj"
+                  "registers/destructive-restore-drill.edn"
+                  "../kagi/src/kagi/incident.clj" "../kagi/test/kagi/incident_test.clj"]}
+  {:gap/id :G-009 :gap/control :quantum-communication :gap/status :accepted-non-goal
+   :gap/repos [:kotoba :kotoba-lang :kototama :kotobase :aiueos :compiler :kagi :kagitaba]
+   :gap/summary "QKD/quantum-network transport is not implemented; PQC is the portable mitigation track."
+   :gap/acceptance ["retain explicit non-claim" "do not conflate QKD with PQC"]
+   :gap/evidence ["../security/docs/pqc-roadmap.md"]}
+  {:gap/id :G-010 :gap/control :unrecoverable-loss :gap/status :partially-resolved
+   :gap/repos [:kotoba-lang :kotobase :compiler :kagi]
+   :gap/summary "kagi implements distinct-member threshold hybrid recovery. A two-site encrypted destructive restore with digest verification and measured RTO/RPO passes in simulation; independent production-region evidence remains open."
+   :gap/acceptance ["independent encrypted backups" "threshold-key recovery" "destructive restore drill"]
+   :gap/evidence ["../kotoba/docs/SECURITY-ARCHITECTURE.md" "../kototama/docs/maturity.md"
+                  "../kagi/src/kagi/recovery.clj" "src/kotoba/security/resilience.cljc"
+                  "test/kotoba/security/resilience_test.clj"
+                  "registers/destructive-restore-drill.edn"]}]}
