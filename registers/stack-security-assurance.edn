@@ -12,7 +12,7 @@
   :kototama {:assurance/score 55 :assurance/maturity :L3 :assurance/grade :C
              :assurance/release-gate :partial :assurance/evidence :E3
              :assurance/residual-critical-gaps 5}
-  :kotobase {:assurance/score 41 :assurance/maturity :L3 :assurance/grade :C
+  :kotobase {:assurance/score 45 :assurance/maturity :L3 :assurance/grade :C
              :assurance/release-gate :partial :assurance/evidence :E3
              :assurance/residual-critical-gaps 5}
   :aiueos {:assurance/score 63 :assurance/maturity :L3 :assurance/grade :B
