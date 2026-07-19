@@ -27,11 +27,11 @@
    :memory-corruption 60 :dos 55 :information-flow 75 :insider-threat 70
    :unknown-compromise 60 :quantum-communication 0 :unrecoverable-loss 60}
   :kototama
-  {:zero-trust 55 :capability 70 :pqc 50 :hsm 40 :monitoring-recovery 70
-   :transport-confidentiality-integrity 80 :anti-impersonation 70 :abac 70
-   :authorized-process-abuse 35 :software-tamper 45 :private-key-theft 45
-   :memory-corruption 65 :dos 65 :information-flow 75 :insider-threat 40
-   :unknown-compromise 50 :quantum-communication 0 :unrecoverable-loss 70}
+  {:zero-trust 65 :capability 70 :pqc 50 :hsm 40 :monitoring-recovery 70
+   :transport-confidentiality-integrity 80 :anti-impersonation 75 :abac 75
+   :authorized-process-abuse 65 :software-tamper 55 :private-key-theft 45
+   :memory-corruption 65 :dos 65 :information-flow 75 :insider-threat 65
+   :unknown-compromise 55 :quantum-communication 0 :unrecoverable-loss 70}
   :kotobase
   {:zero-trust 40 :capability 55 :pqc 60 :hsm 40 :monitoring-recovery 30
    :transport-confidentiality-integrity 55 :anti-impersonation 45 :abac 70
