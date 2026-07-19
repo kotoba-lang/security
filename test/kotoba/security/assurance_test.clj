@@ -30,9 +30,25 @@
 
 (deftest current-stack-profiles-conform-to-repo-wide-rule
   (let [register (edn/read-string
-                  (slurp "registers/stack-security-assurance.edn"))]
+                  (slurp "registers/stack-security-assurance.edn"))
+        scores (:assessment/repos (score/read-register))]
     (is (= :kotoba.security/stack-assurance (:register/type register)))
     (is (= 8 (count (:register/profiles register))))
     (doseq [[repo profile] (:register/profiles register)]
       (is (= [] (assurance/profile-problems model profile))
-          (str repo " assurance profile must satisfy the common rule")))))
+          (str repo " assurance profile must satisfy the common rule"))
+      (is (= [] (assurance/semantic-profile-problems
+                 model (get scores repo) profile))
+          (str repo " profile must obey critical caps")))))
+
+(deftest critical-zero-cannot-hide-behind-high-average
+  (let [scores (zipmap (keys (get-in model [:score :weights])) (repeat 100))
+        broken (assoc scores :hsm 0)
+        profile {:assurance/score 94 :assurance/maturity :L3
+                 :assurance/grade :A :assurance/release-gate :partial
+                 :assurance/evidence :E3
+                 :assurance/residual-critical-gaps 1}]
+    (is (= :C (assurance/expected-grade model broken 94)))
+    (is (= :fail (assurance/expected-gate model broken profile)))
+    (is (= [:critical-grade-cap :critical-release-gate]
+           (assurance/semantic-profile-problems model broken profile)))))

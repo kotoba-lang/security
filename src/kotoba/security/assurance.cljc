@@ -6,6 +6,33 @@
     :assurance/release-gate :assurance/evidence
     :assurance/residual-critical-gaps})
 
+(def grade-order [:S :A :B :C :D :F])
+(def evidence-order [:E0 :E1 :E2 :E3 :E4 :E5])
+
+(defn grade-for-score [model score]
+  (:id (first (filter #(>= score (:minimum %)) (:grades model)))))
+
+(defn cap-grade [grade maximum-grade]
+  (let [rank (zipmap grade-order (range))]
+    (if (< (rank grade) (rank maximum-grade)) maximum-grade grade)))
+
+(defn expected-grade [model control-scores score]
+  (let [base (grade-for-score model score)
+        critical-values (map control-scores (:critical-controls model))]
+    (if (some #(< % 40) critical-values)
+      (cap-grade base :C)
+      base)))
+
+(defn expected-gate [model control-scores profile]
+  (let [critical-values (map control-scores (:critical-controls model))
+        evidence-rank (zipmap evidence-order (range))]
+    (cond
+      (some #(< % 20) critical-values) :fail
+      (or (< (evidence-rank (:assurance/evidence profile)) (evidence-rank :E4))
+          (pos? (:assurance/residual-critical-gaps profile)))
+      :partial
+      :else :pass)))
+
 (defn weights-valid? [model controls]
   (let [weights (get-in model [:score :weights])]
     (and (= (set controls) (set (keys weights)))
@@ -16,6 +43,10 @@
   (reduce-kv (fn [total control weight]
                (+ total (* weight (get scores control 0))))
              0 (get-in model [:score :weights])))
+
+(defn rounded-score [model scores]
+  (#?(:clj Math/round :cljs js/Math.round)
+   (double (weighted-score model scores))))
 
 (defn heat [model score]
   (some (fn [color]
@@ -47,3 +78,14 @@
       (not (contains? gates (:assurance/release-gate profile))) (conj :gate)
       (not (integer? (:assurance/residual-critical-gaps profile)))
       (conj :residual-critical-gaps))))
+
+(defn semantic-profile-problems [model control-scores profile]
+  (cond-> []
+    (not= (:assurance/score profile) (rounded-score model control-scores))
+    (conj :weighted-score)
+    (not= (:assurance/grade profile)
+          (expected-grade model control-scores (:assurance/score profile)))
+    (conj :critical-grade-cap)
+    (not= (:assurance/release-gate profile)
+          (expected-gate model control-scores profile))
+    (conj :critical-release-gate)))

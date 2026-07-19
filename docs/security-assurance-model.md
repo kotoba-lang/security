@@ -50,13 +50,13 @@ is separately evaluated as likelihood × impact × exposure.
 | Repository | Score | Level | Grade | Gate | Evidence |
 |---|---:|---:|---:|---|---:|
 | kagi | 78 | L3 | B | Partial | E3 |
-| compiler | 68 | L3 | B | Partial | E3 |
+| compiler | 68 | L3 | C | Partial | E3 |
 | kotoba | 66 | L3 | B | Partial | E3 |
-| aiueos | 60 | L3 | B | Partial | E3 |
-| kototama | 53 | L2 | C | Partial | E3 |
-| kotoba-lang | 44 | L2 | C | Partial | E2 |
-| kotobase | 29 | L2 | D | Partial | E3 |
-| kagitaba | 23 | L1 | D | Partial | E2 |
+| aiueos | 60 | L3 | C | Fail | E3 |
+| kototama | 53 | L2 | C | Fail | E3 |
+| kotoba-lang | 44 | L2 | C | Fail | E2 |
+| kotobase | 29 | L2 | D | Fail | E3 |
+| kagitaba | 23 | L1 | D | Fail | E2 |
 
 ## Security heatmap
 
