@@ -100,6 +100,18 @@
             :algorithms [:x25519 :ml-kem-768]}
            (policy/rotate-envelope p current rotated)))))
 
+(deftest production-boundary-rejects-legacy-epoch
+  (let [p {:kotoba.security/crypto-policy-version 1
+           :mode :hybrid-required :hybrid-epoch-floor 7}
+        envelope {:envelope/provider {:provider/id :test
+                                      :provider/fips-validated false}
+                  :envelope/kem? true :envelope/hybrid? true
+                  :envelope/algorithms [:x25519 :ml-kem-768]}]
+    (is (false? (:valid? (policy/check-production-envelope
+                          p (assoc envelope :envelope/epoch 6)))))
+    (is (:valid? (policy/check-production-envelope
+                  p (assoc envelope :envelope/epoch 7))))))
+
 (deftest missing-provider-metadata-rejected-under-any-mode
   (doseq [mode [:crypto-agile :hybrid-required :fips-required]]
     (testing (str mode)
