@@ -44,3 +44,47 @@
         {:target (atom {:x 1})
          :backups [{:backup/site :one :backup/encrypted? false
                     :backup/artifact "plain" :backup/digest "x"}]}))))
+
+(deftest remote-telemetry-rejects-local-or-forged-ack
+  (let [base {:events [] :event {:kind :compromise}
+              :encode-fn encode :digest-fn digest
+              :verify-ack-fn #(= :valid (:signature %))}
+        append (fn [entry]
+                 {:telemetry/hash (:telemetry/hash entry)
+                  :telemetry/remote? true :telemetry/immutable? true
+                  :signature :valid})]
+    (is (= 1 (count (:telemetry/events
+                     (resilience/append-remote-telemetry!
+                      (assoc base :append-fn append))))))
+    (is (thrown? clojure.lang.ExceptionInfo
+                 (resilience/append-remote-telemetry!
+                  (assoc base :append-fn
+                         #(assoc (append %) :telemetry/remote? false)))))
+    (is (thrown? clojure.lang.ExceptionInfo
+                 (resilience/append-remote-telemetry!
+                  (assoc base :append-fn #(assoc (append %) :signature :forged)))))))
+
+(deftest containment-stops-on-first-failed-authority
+  (let [called (atom [])
+        actions (into {}
+                      (map (fn [step]
+                             [step #(do (swap! called conj step)
+                                        {:status (if (= step :freeze-writes)
+                                                   :failed :passed)})]))
+                      resilience/containment-order)
+        result (resilience/contain! actions)]
+    (is (= :failed (:containment/status result)))
+    (is (= :freeze-writes (:containment/failed-step result)))
+    (is (= [:isolate-workload :revoke-credentials :freeze-writes] @called))))
+
+(deftest geo-backups-require-distinct-failure-domains
+  (let [backup {:backup/encrypted? true :backup/immutable? true
+                :backup/artifact-digest "sha256:x"}]
+    (is (:backup/qualified?
+         (resilience/qualify-backup-sites
+          [(assoc backup :backup/region :jp-east)
+           (assoc backup :backup/region :jp-west)])))
+    (is (false? (:backup/qualified?
+                 (resilience/qualify-backup-sites
+                  [(assoc backup :backup/region :jp-east)
+                   (assoc backup :backup/region :jp-east)]))))))
