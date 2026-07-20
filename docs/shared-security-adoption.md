@@ -6,9 +6,10 @@ Direct consumers must pin the full immutable commit recorded in
 duplicated local implementations do not satisfy this contract.
 
 The machine-readable adoption register records every direct consumer and its
-rollout PR. `kotoba-lang` and `kagitaba` are explicitly recorded as
-non-consumers because they currently import no `kotoba.security.*` namespace.
-They must be moved into `:required-consumers` before adding such an import.
+rollout PR. All eight authoritative stack repositories are consumers.
+`kotoba-lang` loads the controls in release admission, and `kagitaba` loads
+them in sealed-import admission. Their repository tests fail if the immutable
+pin drifts or those runtime control namespaces no longer load.
 
 An open PR is not completed adoption. The register may use `:adopted` only
 after consumer verification has passed, or a pre-existing unrelated CI failure

@@ -4,15 +4,13 @@
  :library {:repository "kotoba-lang/security"
            :git-sha "65811c9d6878e881357e98f9f9fe6a60aeff7070"
            :pin-rule :full-immutable-git-sha}
- :required-consumers #{:kotoba :kototama :kotobase :aiueos :compiler :kagi}
- :non-consumers
- {:kotoba-lang {:reason :authority-and-policy-repository
-                :direct-security-namespace-import? false}
-  :kagitaba {:reason :no-direct-security-namespace-import
-             :direct-security-namespace-import? false}}
+ :required-consumers #{:kotoba :kotoba-lang :kototama :kotobase
+                       :aiueos :compiler :kagi :kagitaba}
+ :non-consumers {}
  :rules [:one-central-security-library
          :no-floating-security-dependency
          :register-every-direct-consumer
+         :security-sensitive-path-must-load-central-controls
          :semantic-test-the-register
          :consumer-verification-must-be-recorded-before-adoption-is-complete]
  :register "registers/shared-security-adoption.edn"}
