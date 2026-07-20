@@ -4,6 +4,9 @@
   Receipts are accepted only when bound to an expected environment, authority,
   immutable artifact digest and verifier-supplied signature check."
   (:require [clojure.set :as set]
+            [kotoba.security.abac :as abac]
+            [kotoba.security.approval :as approval]
+            [kotoba.security.capability :as capability]
             [kotoba.security.crypto-policy :as crypto]
             [kotoba.security.evidence-plane :as evidence-plane]
             [kotoba.security.hardware :as hardware]
@@ -235,4 +238,44 @@
          :qualification/peer-id (:transport/peer-id transport-check)
          :qualification/workload-id (:workload-identity/id identity-check)
          :qualification/ca-id (:ca-custody/ca-id ca-check)
+         :qualification/evidence-head (:evidence/head-digest evidence-check)})))
+
+(defn verify-governance-e4
+  "Compose operation capability, four-axis ABAC, independent approvals,
+  break-glass post-review, and production evidence."
+  [{:keys [capability-token attributes abac-policy approvals
+           break-glass-receipt evidence-log]}
+   {:keys [capability-context approval-context break-glass-context
+           evidence-context]}]
+  (let [capability-check (capability/evaluate capability-token capability-context)
+        abac-check (abac/evaluate attributes abac-policy)
+        approval-check (approval/evaluate approvals approval-context)
+        break-glass-check (approval/evaluate-break-glass
+                           break-glass-receipt break-glass-context)
+        evidence-check (evidence-plane/verify-log
+                        evidence-log
+                        (assoc evidence-context
+                               :control :authorized-process-abuse))
+        violations
+        (cond-> []
+          (not (:capability/allowed? capability-check))
+          (into (:capability/violations capability-check))
+          (not (:abac/allowed? abac-check))
+          (into (map :abac/control (:abac/violations abac-check)))
+          (not (:approval/allowed? approval-check))
+          (into (:approval/violations approval-check))
+          (not (:break-glass/qualified? break-glass-check))
+          (into (:break-glass/violations break-glass-check))
+          (not (:evidence/accepted? evidence-check))
+          (conj :production-evidence))]
+    (if (seq violations) (fail violations)
+        {:qualification/accepted? true
+         :qualification/control :authorized-process-abuse
+         :qualification/evidence-level :E4
+         :qualification/subject (:capability/subject capability-check)
+         :qualification/action (:capability/action capability-check)
+         :qualification/resource (:capability/resource capability-check)
+         :qualification/approvers (:approval/approvers approval-check)
+         :qualification/break-glass-reviewer
+         (:break-glass/reviewer break-glass-check)
          :qualification/evidence-head (:evidence/head-digest evidence-check)})))

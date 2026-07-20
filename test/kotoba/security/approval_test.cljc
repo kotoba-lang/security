@@ -40,3 +40,40 @@
                              :approval/signature [:forged])
                       (signed :bob :release)]]]
     (is (false? (:approval/allowed? (approval/evaluate approvals context))))))
+
+(def break-glass
+  {:break-glass/version 1 :break-glass/status :closed
+   :break-glass/initiator :operator :break-glass/request-digest digest
+   :break-glass/reason "production recovery" :break-glass/incident-id "INC-1"
+   :break-glass/issued-at-ms 1000 :break-glass/used-at-ms 1100
+   :break-glass/expires-at-ms 1200
+   :break-glass/signature [:valid-emergency :operator digest]
+   :break-glass/post-review
+   {:review/completed? true :review/reviewer :auditor
+    :review/completed-at-ms 1300 :review/outcome :accepted
+    :review/signature [:valid-review :auditor digest]}})
+
+(def break-glass-context
+  {:request-digest digest :max-duration-ms 300 :review-deadline-ms 500
+   :verify-signature-fn
+   (fn [body signature]
+     (= signature [:valid-emergency (:break-glass/initiator body)
+                   (:break-glass/request-digest body)]))
+   :verify-review-signature-fn
+   (fn [body signature]
+     (= signature [:valid-review (:review/reviewer body) digest]))})
+
+(deftest break-glass-requires-expiry-and-independent-signed-post-review
+  (is (:break-glass/qualified?
+       (approval/evaluate-break-glass break-glass break-glass-context)))
+  (doseq [bad [(assoc break-glass :break-glass/status :open)
+               (assoc break-glass :break-glass/expires-at-ms 2000)
+               (assoc break-glass :break-glass/request-digest "sha256:other")
+               (assoc-in break-glass [:break-glass/post-review :review/reviewer]
+                         :operator)
+               (assoc-in break-glass
+                         [:break-glass/post-review :review/completed-at-ms] 2000)
+               (assoc-in break-glass
+                         [:break-glass/post-review :review/signature] :forged)]]
+    (is (false? (:break-glass/qualified?
+                 (approval/evaluate-break-glass bad break-glass-context))))))
