@@ -11,11 +11,12 @@
    :digest "abc"})
 
 (deftest guarded-effect-runs-only-after-allow
-  (is (= :executed (effect/guard! (assoc request :effect (constantly :executed)))))
+  (is (= {:allowed? true}
+         (effect/guard! (assoc request :effect identity))))
   (is (thrown-with-msg? clojure.lang.ExceptionInfo #"denied"
                         (effect/guard! (assoc request
                                              :request {:trusted? false}
-                                             :effect (constantly :bypass))))))
+                                             :effect (fn [_] :bypass))))))
 
 (deftest grants-are-one-shot-and-claim-bound
   (let [grant (effect/issue! request)]
@@ -24,11 +25,11 @@
                                            {:action :artifact/delete
                                             :resource "sha256:abc"
                                             :digest "abc"
-                                            :effect (constantly :bad)})))
+                                            :effect (fn [_] :bad)})))
     (testing "claim mismatch burns the grant"
       (is (thrown-with-msg? clojure.lang.ExceptionInfo #"denied"
                             (effect/consume! grant
                                              {:action :artifact/publish
                                               :resource "sha256:abc"
                                               :digest "abc"
-                                              :effect (constantly :replay)}))))))
+                                              :effect (fn [_] :replay)}))))))

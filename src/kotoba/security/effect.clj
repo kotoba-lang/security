@@ -15,20 +15,22 @@
       (throw (ex-info "effect authorization denied"
                       {:security.effect/problem :decision-denied})))
     (let [grant (Object.)]
-      (.put grants grant {:action action :resource resource :digest digest})
+      (.put grants grant {:action action :resource resource :digest digest
+                          :decision decision})
       grant)))
 
 (defn consume!
   "Consume GRANT exactly once and run EFFECT only when all bound claims match."
   [grant {:keys [action resource digest effect]}]
-  (let [claims (.remove grants grant)]
-    (when-not claims
+  (let [authorization (.remove grants grant)]
+    (when-not authorization
       (throw (ex-info "effect authorization denied"
                       {:security.effect/problem :invalid-or-consumed-grant})))
-    (when-not (= claims {:action action :resource resource :digest digest})
+    (when-not (= (dissoc authorization :decision)
+                 {:action action :resource resource :digest digest})
       (throw (ex-info "effect authorization denied"
                       {:security.effect/problem :claim-mismatch})))
-    (effect)))
+    (effect (:decision authorization))))
 
 (defn guard!
   "Evaluate, bind, consume, and execute an effect without exposing a bypass gap."
