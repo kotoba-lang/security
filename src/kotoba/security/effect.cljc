@@ -1,9 +1,7 @@
 (ns kotoba.security.effect
-  "One-shot, opaque authorization binding a control decision to an effect."
-  (:import [java.util Collections IdentityHashMap]))
+  "Portable one-shot authorization binding a control decision to an effect.")
 
-(defonce ^:private grants
-  (Collections/synchronizedMap (IdentityHashMap.)))
+(defonce ^:private grants (atom {}))
 
 (defn issue!
   "Evaluate REQUEST and return an opaque, one-shot grant only when APPROVED?
@@ -14,15 +12,17 @@
     (when-not (approved? decision)
       (throw (ex-info "effect authorization denied"
                       {:security.effect/problem :decision-denied})))
-    (let [grant (Object.)]
-      (.put grants grant {:action action :resource resource :digest digest
-                          :decision decision})
+    (let [grant #?(:clj (Object.) :cljs (js-obj))]
+      (swap! grants assoc grant
+             {:action action :resource resource :digest digest
+              :decision decision})
       grant)))
 
 (defn consume!
-  "Consume GRANT exactly once and run EFFECT only when all bound claims match."
+  "Atomically consume GRANT once and run EFFECT only when bound claims match."
   [grant {:keys [action resource digest effect]}]
-  (let [authorization (.remove grants grant)]
+  (let [[before _after] (swap-vals! grants dissoc grant)
+        authorization (get before grant)]
     (when-not authorization
       (throw (ex-info "effect authorization denied"
                       {:security.effect/problem :invalid-or-consumed-grant})))
