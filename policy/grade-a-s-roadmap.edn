@@ -169,6 +169,11 @@
  :execution-order
  [:W0 :W1 [:W2 :W3 :W6 :W7 :W8] [:W4 :W5] :W9 :P2 :P3]
 
+ :repo-promotion-gate
+ {:status :implemented-awaiting-production-receipts
+  :policy "policy/repo-grade-a-promotion.edn"
+  :remaining-gaps "registers/remaining-operational-gaps.edn"}
+
  :non-claims
  [:score-is-not-probability-of-safety
   :grade-is-not-release-authorization
