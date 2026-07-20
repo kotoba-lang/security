@@ -87,6 +87,7 @@ Implementation and compliance evidence remain incomplete:
 - [PQC Roadmap](docs/pqc-roadmap.md)
 - [DoDAF Viewpoints](docs/dodaf-viewpoints.md)
 - [Evidence Gates](docs/evidence-gates.md)
+- [ADR: Shared Security Adoption v3](docs/ADR-shared-security-adoption-v3.md)
 - [Hybrid Envelope Test Vectors](docs/hybrid-envelope-vectors.md)
 
 ## Registers
