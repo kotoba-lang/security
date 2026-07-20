@@ -53,7 +53,8 @@
 
 (deftest cljc-inventory-is-the-union-of-clj-and-cljs
   (is (= {'demo.core #{'kotoba.security.abac
-                       'kotoba.security.crypto-policy}}
+                       'kotoba.security.crypto-policy}
+          'demo.tagged #{'kotoba.security.redaction}}
          (adoption/source-security-inventory "test-fixtures/multifeature"))))
 
 (deftest sensitive-operations-cannot-hide-outside-protected-entrypoints
