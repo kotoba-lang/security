@@ -94,6 +94,7 @@
                       :digest-bound-independent-approval
                       :break-glass-expiry-and-post-review]}
   :W7 {:name :software-supply-chain
+       :status :evidence-plane-integrated-awaiting-production-release
        :depends-on #{:W1}
        :deliverables [:hermetic-fresh-clone-builds :reproducible-artifacts
                       :signed-sbom-and-provenance :dependency-transparency

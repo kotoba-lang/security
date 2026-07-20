@@ -197,6 +197,68 @@
       (= signature [:valid-review governance-digest]))}
    :evidence-context (context governance-digest)})
 
+(def supply-commit "0123456789abcdef0123456789abcdef01234567")
+(def supply-artifact "sha256:release-artifact")
+
+(def supply-reproducibility
+  {:fresh-clone? true :hermetic? true :local-overrides? false
+   :source-commit supply-commit :first-artifact-digest supply-artifact
+   :second-artifact-digest supply-artifact
+   :dependencies [{:dependency/repository "https://github.com/kotoba-lang/security"
+                   :dependency/commit supply-commit
+                   :dependency/exact-fetch :passed}]})
+
+(def supply-sbom
+  {:sbom/version 1 :sbom/subject {:repo :security :commit supply-commit}
+   :sbom/artifact-digest supply-artifact :sbom/digest "sha256:sbom"
+   :sbom/generator-digest "sha256:generator" :sbom/components [{:name "app"}]
+   :sbom/signature [:valid-sbom supply-artifact]})
+
+(def supply-provenance
+  {:provenance/version 1 :provenance/artifact-digest supply-artifact
+   :provenance/source-commit supply-commit
+   :provenance/sbom-digest "sha256:sbom" :provenance/isolated-builder? true
+   :provenance/invocation-digest "sha256:invocation"
+   :provenance/signature [:valid-provenance supply-artifact]})
+
+(def supply-release-input
+  {:evidence-index
+   {:register/type :kotoba.security/evidence-index :register/version 1
+    :evidence [{:evidence/claims
+                [:conformance-results :package-verification :sbom :provenance
+                 :key-status-snapshot :risk-review :deployment-profile]
+                :evidence/result :passed}]}
+   :exception-register
+   {:register/type :kotoba.security/exception-register :register/version 1
+    :exceptions []}
+   :key-register
+   {:register/type :kotoba.security/key-register :register/version 1
+    :keys [{:key/id "release" :key/status :active}]}
+   :now "2026-07-20"})
+
+(defn supply-approval [approver role]
+  {:approval/version 1 :approval/approver approver :approval/role role
+   :approval/request-digest supply-artifact
+   :approval/not-before-ms 1000 :approval/expires-at-ms 2000
+   :approval/signature [:valid-promotion approver supply-artifact]})
+
+(def supply-context
+  {:attestation-context
+   {:verify-sbom-signature-fn
+    (fn [body signature]
+      (= signature [:valid-sbom (:sbom/artifact-digest body)]))
+    :verify-provenance-signature-fn
+    (fn [body signature]
+      (= signature [:valid-provenance (:provenance/artifact-digest body)]))}
+   :promotion-context
+   {:initiator :isolated-builder :required-roles #{:security :release}
+    :min-approvals 2 :request-digest supply-artifact :now-ms 1500
+    :verify-signature-fn
+    (fn [body signature]
+      (= signature [:valid-promotion (:approval/approver body)
+                    (:approval/request-digest body)]))}
+   :evidence-context (context supply-artifact)})
+
 (deftest hardware-e4-requires-provider-and-independent-evidence
   (let [artifact "sha256:hsm-attestation"
         deployment {:hardware-evidence hardware-evidence
@@ -340,3 +402,37 @@
       (is (false? (:qualification/accepted?
                    (qualification/verify-governance-e4
                     candidate governance-context)))))))
+
+(deftest supply-chain-e4-requires-reproducible-signed-two-party-release
+  (let [deployment {:release-input supply-release-input
+                    :reproducibility supply-reproducibility
+                    :attestations {:sbom supply-sbom
+                                   :provenance supply-provenance}
+                    :promotion-approvals
+                    [(supply-approval :alice :security)
+                     (supply-approval :bob :release)]
+                    :evidence-log (evidence-log :software-tamper
+                                                supply-artifact)}]
+    (is (= :E4 (:qualification/evidence-level
+                (qualification/verify-supply-chain-e4
+                 deployment supply-context))))
+    (doseq [candidate
+            [(assoc-in deployment [:reproducibility :local-overrides?] true)
+             (assoc-in deployment
+                       [:reproducibility :second-artifact-digest] "sha256:other")
+             (assoc-in deployment
+                       [:reproducibility :dependencies 0 :dependency/commit]
+                       "main")
+             (assoc-in deployment [:attestations :sbom :sbom/artifact-digest]
+                       "sha256:substituted")
+             (assoc-in deployment
+                       [:attestations :provenance :provenance/isolated-builder?]
+                       false)
+             (assoc deployment
+                    :promotion-approvals
+                    [(supply-approval :isolated-builder :security)
+                     (supply-approval :bob :release)])
+             (assoc-in deployment [:evidence-log :remote?] false)]]
+      (is (false? (:qualification/accepted?
+                   (qualification/verify-supply-chain-e4
+                    candidate supply-context)))))))
