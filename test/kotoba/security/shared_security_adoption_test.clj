@@ -1,0 +1,39 @@
+(ns kotoba.security.shared-security-adoption-test
+  (:require [clojure.edn :as edn]
+            [clojure.test :refer [deftest is testing]]))
+
+(def policy
+  (edn/read-string (slurp "policy/shared-security-adoption.edn")))
+
+(def register
+  (edn/read-string (slurp (:register policy))))
+
+(def full-sha-pattern #"[0-9a-f]{40}")
+
+(deftest adoption-register-is-complete-and-immutable
+  (is (= :kotoba.security/shared-security-adoption (:policy/type policy)))
+  (is (= :kotoba.security/shared-security-adoption (:register/type register)))
+  (is (= (:required-consumers policy) (set (keys (:consumers register)))))
+  (is (= (set (keys (:non-consumers policy))) (:non-consumers register)))
+  (is (= (get-in policy [:library :git-sha]) (:security/git-sha register)))
+  (is (re-matches full-sha-pattern (get-in policy [:library :git-sha])))
+  (is (= :full-immutable-git-sha (get-in policy [:library :pin-rule]))))
+
+(deftest every-consumer-has-an-auditable-rollout
+  (let [consumers (vals (:consumers register))
+        prs (map :pull-request consumers)]
+    (is (= (count prs) (count (distinct prs))))
+    (doseq [{:keys [status pull-request] :as consumer} consumers]
+      (is (#{:adoption-pr-open :adopted} status))
+      (is (re-matches #"https://github.com/kotoba-lang/[^/]+/pull/[0-9]+"
+                      pull-request))
+      (when (= :adopted status)
+        (testing pull-request
+          (is (re-matches full-sha-pattern (:main/git-sha consumer)))
+          (is (= :pass (get-in consumer [:verification :local]))))))))
+
+(deftest non-consumers-are-explicit-non-importers
+  (doseq [[repo declaration] (:non-consumers policy)]
+    (testing (name repo)
+      (is (false? (:direct-security-namespace-import? declaration)))
+      (is (keyword? (:reason declaration))))))
