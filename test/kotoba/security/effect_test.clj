@@ -1,0 +1,34 @@
+(ns kotoba.security.effect-test
+  (:require [clojure.test :refer [deftest is testing]]
+            [kotoba.security.effect :as effect]))
+
+(def request
+  {:evaluate (fn [value] {:allowed? (:trusted? value)})
+   :request {:trusted? true}
+   :approved? :allowed?
+   :action :artifact/publish
+   :resource "sha256:abc"
+   :digest "abc"})
+
+(deftest guarded-effect-runs-only-after-allow
+  (is (= :executed (effect/guard! (assoc request :effect (constantly :executed)))))
+  (is (thrown-with-msg? clojure.lang.ExceptionInfo #"denied"
+                        (effect/guard! (assoc request
+                                             :request {:trusted? false}
+                                             :effect (constantly :bypass))))))
+
+(deftest grants-are-one-shot-and-claim-bound
+  (let [grant (effect/issue! request)]
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"denied"
+                          (effect/consume! grant
+                                           {:action :artifact/delete
+                                            :resource "sha256:abc"
+                                            :digest "abc"
+                                            :effect (constantly :bad)})))
+    (testing "claim mismatch burns the grant"
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo #"denied"
+                            (effect/consume! grant
+                                             {:action :artifact/publish
+                                              :resource "sha256:abc"
+                                              :digest "abc"
+                                              :effect (constantly :replay)}))))))

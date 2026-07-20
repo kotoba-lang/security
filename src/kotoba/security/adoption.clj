@@ -4,12 +4,15 @@
             [clojure.java.io :as io]
             [clojure.set :as set]
             [clojure.string :as str])
-  (:import [java.io PushbackReader]
+  (:import [clojure.lang ReaderConditional]
+           [java.io PushbackReader]
            [java.time LocalDate]))
 
 (def security-coordinate 'io.github.kotoba-lang/security)
 (def security-url "https://github.com/kotoba-lang/security.git")
 (def full-sha-pattern #"[0-9a-f]{40}")
+(def sensitive-name-pattern
+  #"(?i)(encrypt|decrypt|authorize|authenticate|credential|private-key|secret|revoke|rotate-key|restore-backup|verify-signature|sign-artifact)")
 
 (defn- non-empty-string? [value]
   (and (string? value) (not (str/blank? value))))
@@ -27,9 +30,10 @@
         required-sha (:security/git-sha config)
         controls (:required-control-namespaces config)
         entrypoints (:security-sensitive-entrypoints config)
+        sensitive-operations (:sensitive-operations config)
         exceptions (:exceptions config)]
     (cond-> []
-      (not= 2 (:adoption/version config))
+      (not= 3 (:adoption/version config))
       (conj :unsupported-adoption-version)
 
       (not (keyword? (:consumer/id config)))
@@ -55,6 +59,11 @@
                           (contains? (set controls) required))
                         (mapcat identity (vals entrypoints)))))
       (conj :missing-security-sensitive-entrypoints)
+
+      (not (and (map? sensitive-operations)
+                (every? symbol? (keys sensitive-operations))
+                (every? seq (vals sensitive-operations))))
+      (conj :missing-sensitive-operation-inventory)
 
       (not (every? #(active-exception? today %) exceptions))
       (conj :invalid-or-expired-exception))))
@@ -82,29 +91,87 @@
   (and (symbol? value)
        (str/starts-with? (str value) "kotoba.security.")))
 
+(defn- read-children [value]
+  (if (instance? ReaderConditional value)
+    [(.form ^ReaderConditional value)]
+    (seq value)))
+
+(defn- all-nodes [form]
+  (tree-seq #(or (coll? %) (instance? ReaderConditional %))
+            read-children form))
+
 (defn- ns-form [file]
   (with-open [reader (PushbackReader. (io/reader file))]
     (loop []
-      (let [form (read {:read-cond :allow :features #{:clj} :eof nil} reader)]
+      (let [form (read {:read-cond :preserve :eof nil} reader)]
         (cond
           (nil? form) nil
           (and (seq? form) (= 'ns (first form))) form
           :else (recur))))))
 
-(defn source-security-inventory
-  "Discover namespace-to-central-control import edges under ROOT/src."
+(defn- source-forms [file]
+  (with-open [reader (PushbackReader. (io/reader file))]
+    (loop [forms []]
+      (let [form (read {:read-cond :preserve :eof nil} reader)]
+        (if (nil? form) forms (recur (conj forms form)))))))
+
+(defn source-sensitive-inventory
+  "Discover high-confidence sensitive def/defn operations under ROOT/src."
   [root]
-  (into {}
-        (keep (fn [file]
-                (when-let [form (ns-form file)]
-                  (let [namespace (second form)
-                        controls (into #{} (filter security-symbol?)
-                                       (tree-seq coll? seq (drop 2 form)))]
-                    (when (seq controls) [namespace controls])))))
-        (filter (fn [file]
-                  (and (.isFile file)
-                       (re-find #"\.clj[cs]?$" (.getName file))))
-                (file-seq (io/file root "src")))))
+  (into #{}
+        (for [file (filter (fn [candidate]
+                            (and (.isFile candidate)
+                                 (re-find #"\.clj[cs]?$" (.getName candidate))))
+                          (file-seq (io/file root "src")))
+              :let [forms (source-forms file)
+                    namespace (some #(when (and (seq? %) (= 'ns (first %)))
+                                       (second %)) forms)]
+              form (mapcat all-nodes forms)
+              :when (and namespace (seq? form)
+                         (#{'def 'defn 'defn- 'defmacro} (first form))
+                         (symbol? (second form))
+                         (re-find sensitive-name-pattern (name (second form))))]
+          (symbol (str namespace) (name (second form))))))
+
+(defn sensitive-operation-violations [config discovered]
+  (let [declared (:sensitive-operations config)
+        entrypoints (:security-sensitive-entrypoints config)
+        missing (sort (remove (set (keys declared)) discovered))
+        stale (sort (remove discovered (keys declared)))
+        invalid-bindings
+        (into []
+              (keep (fn [[operation controls]]
+                      (let [namespace (symbol (namespace operation))
+                            entrypoint-controls (set (get entrypoints namespace))]
+                        (when-not (and (seq entrypoint-controls)
+                                       (every? entrypoint-controls controls))
+                          {:operation operation :controls controls}))))
+              declared)]
+    (cond-> []
+      (seq missing) (conj {:problem :undeclared-sensitive-operations
+                           :operations missing})
+      (seq stale) (conj {:problem :stale-sensitive-operations
+                         :operations stale})
+      (seq invalid-bindings) (conj {:problem :unprotected-sensitive-operations
+                                    :operations invalid-bindings}))))
+
+(defn source-security-inventory
+  "Discover the union of CLJ and CLJS control-import edges under ROOT/src."
+  [root]
+  (reduce
+   (fn [inventory [namespace controls]]
+     (update inventory namespace (fnil set/union #{}) controls))
+   {}
+   (for [file (filter (fn [candidate]
+                       (and (.isFile candidate)
+                            (re-find #"\.clj[cs]?$" (.getName candidate))))
+                     (file-seq (io/file root "src")))
+         :let [form (ns-form file)
+               namespace (second form)
+               controls (into #{} (filter security-symbol?)
+                              (all-nodes (drop 2 form)))]
+         :when (seq controls)]
+     [namespace controls])))
 
 (defn inventory-violations
   "Compare declared entrypoint edges with imports discovered under src/."
@@ -145,6 +212,12 @@
        (when (seq inventory-problems)
          (throw (ex-info "shared security source inventory denied"
                          {:security.adoption/violations inventory-problems}))))
+     (let [sensitive-problems
+           (sensitive-operation-violations
+            config (source-sensitive-inventory root))]
+       (when (seq sensitive-problems)
+         (throw (ex-info "sensitive operation inventory denied"
+                         {:security.adoption/violations sensitive-problems}))))
      (doseq [namespace (concat (:required-control-namespaces config)
                                (keys (:security-sensitive-entrypoints config)))]
        (require namespace))

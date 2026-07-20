@@ -6,12 +6,13 @@
 (def sha "65811c9d6878e881357e98f9f9fe6a60aeff7070")
 (def today (LocalDate/parse "2026-07-20"))
 (def valid-config
-  {:adoption/version 2
+  {:adoption/version 3
    :consumer/id :kotoba
    :security/git-sha sha
    :required-control-namespaces ['kotoba.security.adoption]
    :security-sensitive-entrypoints
    {'kotoba.security.adoption-test ['kotoba.security.adoption]}
+   :sensitive-operations {}
    :exceptions []})
 (def valid-deps
   {:deps {'io.github.kotoba-lang/security
@@ -27,7 +28,8 @@
                             valid-deps valid-config)))
                 adoption/source-security-inventory
                 (constantly {'kotoba.security.adoption-test
-                             #{'kotoba.security.adoption}})]
+                             #{'kotoba.security.adoption}})
+                adoption/source-sensitive-inventory (constantly #{})]
     (is (= :pass (:security.adoption/status (adoption/verify! "."))))))
 
 (deftest source-inventory-must-exactly-match-declared-edges
@@ -48,6 +50,22 @@
                     {'kotoba.security.adoption-test
                      #{'kotoba.security.capability}})
                    [0 :problem])))))
+
+(deftest cljc-inventory-is-the-union-of-clj-and-cljs
+  (is (= {'demo.core #{'kotoba.security.abac
+                       'kotoba.security.crypto-policy}}
+         (adoption/source-security-inventory "test-fixtures/multifeature"))))
+
+(deftest sensitive-operations-cannot-hide-outside-protected-entrypoints
+  (let [operation 'kotoba.security.adoption-test/authorize-secret]
+    (is (= :undeclared-sensitive-operations
+           (get-in (adoption/sensitive-operation-violations
+                    valid-config #{operation}) [0 :problem])))
+    (is (empty?
+         (adoption/sensitive-operation-violations
+          (assoc valid-config :sensitive-operations
+                 {operation ['kotoba.security.adoption]})
+          #{operation})))))
 
 (deftest dependency-and-routing-drift-fail-closed
   (is (= [:security-pin-mismatch]
