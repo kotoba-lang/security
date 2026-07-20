@@ -2,7 +2,8 @@
   "Repo-wide assurance promotion gate. Individual control success cannot
   promote a repository without every declared workstream and profile guard."
   (:require [clojure.set :as set]
-            [kotoba.security.assurance :as assurance]))
+            [kotoba.security.assurance :as assurance]
+            [kotoba.security.continuous-verification :as continuous]))
 
 (def maturity-rank {:L0 0 :L1 1 :L2 2 :L3 3 :L4 4})
 (def evidence-rank {:E0 0 :E1 1 :E2 2 :E3 3 :E4 4 :E5 5})
@@ -66,4 +67,41 @@
      :promotion/score score
      :promotion/required-workstreams required
      :promotion/receipt-problems receipt-results
+     :promotion/violations violations}))
+
+(defn evaluate-grade-s
+  [{:keys [control-scores profile qualifications continuous-verification]
+    :as candidate}
+   {:keys [model e5-context] :as context}]
+  (let [grade-a-check (evaluate-grade-a candidate context)
+        heads (set (keep :qualification/evidence-head (vals qualifications)))
+        e5-check (continuous/evaluate
+                  continuous-verification
+                  (assoc e5-context
+                         :artifact-digest (:artifact-digest candidate)
+                         :required-controls (:critical-controls model)
+                         :required-evidence-heads heads))
+        score (assurance/rounded-score model control-scores)
+        critical-values (map control-scores (:critical-controls model))
+        violations
+        (cond-> []
+          (not (:promotion/allowed? grade-a-check)) (conj :grade-a-prerequisite)
+          (not (:continuous-verification/qualified? e5-check))
+          (conj :continuous-verification)
+          (< score 90) (conj :score-minimum)
+          (some #(< (or % 0) 80) critical-values) (conj :critical-control-floor)
+          (< (get evidence-rank (:assurance/evidence profile) -1)
+             (evidence-rank :E5)) (conj :evidence)
+          (not= :pass (:assurance/release-gate profile)) (conj :release-gate)
+          (not= 0 (:assurance/residual-critical-gaps profile))
+          (conj :residual-critical-gaps)
+          (not= :S (assurance/expected-grade model control-scores score))
+          (conj :grade-band)
+          (not= :S (:assurance/grade profile)) (conj :declared-grade))]
+    {:promotion/allowed? (empty? violations)
+     :promotion/target :S
+     :promotion/repo (:repo candidate)
+     :promotion/score score
+     :promotion/grade-a-prerequisite grade-a-check
+     :promotion/continuous-verification e5-check
      :promotion/violations violations}))
