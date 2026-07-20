@@ -33,6 +33,7 @@
           (is (= :pass (get-in consumer [:verification :local])))
           (is (true? (get-in consumer [:conformance :central-verifier-in-ci?])))
           (is (= 2 (get-in consumer [:conformance :adoption/version])))
+          (is (true? (get-in consumer [:conformance :complete-source-inventory?])))
           (is (re-matches #"https://github.com/kotoba-lang/[^/]+/pull/[0-9]+"
                           (get-in consumer [:conformance :pull-request]))))))))
 
