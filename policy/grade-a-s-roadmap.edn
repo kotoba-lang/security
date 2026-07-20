@@ -181,6 +181,13 @@
   :register "registers/shared-security-adoption.edn"
   :security/git-sha "49fc4ce359752e9fe6e547e9071b5b9b40da937a"}
 
+ :shared-security-adoption-v3
+ {:increment/status :closed-partial
+  :closure "policy/shared-security-adoption-v3-closure.edn"
+  :central/security-main "b4ff9d8a56263030bc92539b101e1eeb2dbfce39"
+  :migrated-effect-paths 3
+  :promotion-impact :none-until-deferred-items-have-merged-evidence}
+
  :non-claims
  [:score-is-not-probability-of-safety
   :grade-is-not-release-authorization
