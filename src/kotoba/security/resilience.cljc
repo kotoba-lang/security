@@ -63,6 +63,32 @@
     {:backup/qualified? (empty? failures)
      :backup/regions regions :backup/violations failures}))
 
+(defn evaluate-threshold-recovery
+  "Validate distinct-custodian threshold recovery across failure domains.
+
+  Share material is never accepted here; callers provide only public operation
+  results and identifiers. Duplicate custodians cannot satisfy the threshold."
+  [{:keys [threshold shares]}]
+  (let [successful (filter #(= true (:share/unwrap-verified? %)) shares)
+        member-ids (map :share/member-id successful)
+        regions (set (map :share/region successful))
+        violations
+        (cond-> []
+          (not (pos-int? threshold)) (conj :threshold)
+          (some nil? member-ids) (conj :member-id)
+          (not= (count member-ids) (count (set member-ids)))
+          (conj :duplicate-member)
+          (or (not (pos-int? threshold)) (< (count successful) threshold))
+          (conj :insufficient-shares)
+          (< (count regions) 2) (conj :independent-regions)
+          (some #(not= true (:share/hardware-protected? %)) successful)
+          (conj :hardware-protection))]
+    {:threshold-recovery/qualified? (empty? violations)
+     :threshold-recovery/threshold threshold
+     :threshold-recovery/members (set member-ids)
+     :threshold-recovery/regions regions
+     :threshold-recovery/violations violations}))
+
 (defn destructive-restore-drill!
   "Destroy TARGET, restore from independently located encrypted backups and
   verify the recovered digest. Times are injected monotonic milliseconds.

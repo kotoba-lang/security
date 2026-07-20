@@ -69,6 +69,7 @@
                       :downgrade-negative-suite
                       :rotation-rollback-drill]}
   :W3 {:name :hardware-key-custody
+       :status :evidence-plane-integrated-awaiting-provider-qualification
        :depends-on #{:W1}
        :deliverables [:production-hsm-or-qualified-platform-provider
                       :vendor-attestation :non-export-proof
@@ -79,6 +80,7 @@
                       :short-lived-workload-identity :automated-revocation
                       :overlap-rollback-drills]}
   :W5 {:name :geo-recovery
+       :status :evidence-plane-integrated-awaiting-production-drill
        :depends-on #{:W1 :W3}
        :deliverables [:independent-encrypted-immutable-backups
                       :threshold-recovery :scheduled-destructive-restore

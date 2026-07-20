@@ -117,3 +117,20 @@
                  (resilience/qualify-backup-sites
                   [(assoc backup :backup/region :jp-east)
                    (assoc backup :backup/region :jp-east)]))))))
+
+(deftest threshold-recovery-requires-distinct-hardware-custodians
+  (let [share {:share/hardware-protected? true :share/unwrap-verified? true}
+        recovery {:threshold 2
+                  :shares [(assoc share :share/member-id :a
+                                        :share/region :jp-east)
+                           (assoc share :share/member-id :b
+                                        :share/region :jp-west)]}]
+    (is (:threshold-recovery/qualified?
+         (resilience/evaluate-threshold-recovery recovery)))
+    (is (false? (:threshold-recovery/qualified?
+                 (resilience/evaluate-threshold-recovery
+                  (assoc-in recovery [:shares 1 :share/member-id] :a)))))
+    (is (false? (:threshold-recovery/qualified?
+                 (resilience/evaluate-threshold-recovery
+                  (assoc-in recovery [:shares 1 :share/unwrap-verified?]
+                            false)))))))
