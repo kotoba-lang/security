@@ -259,6 +259,36 @@
                     (:approval/request-digest body)]))}
    :evidence-context (context supply-artifact)})
 
+(def runtime-artifact "sha256:runtime-build")
+
+(def runtime-policy
+  {:policy/max-memory-pages 256 :policy/max-fuel 1000000
+   :policy/max-timeout-ms 1000 :policy/max-concurrency 32
+   :policy/max-queue-depth 128 :policy/max-rate-per-second 100})
+
+(def runtime-profile
+  {:runtime/memory-pages 128 :runtime/fuel 500000 :runtime/timeout-ms 500
+   :runtime/concurrency 16 :runtime/queue-depth 64
+   :runtime/rate-per-second 50 :runtime/epoch-interruption? true
+   :runtime/shared-memory? false :runtime/tenant-isolation? true
+   :runtime/limit-traps-fail-closed? true})
+
+(def runtime-verification
+  {:fuzz {:fuzz/cases 100000 :fuzz/duration-ms 60000 :fuzz/crashes 0}
+   :sanitizer {:sanitizer/status :passed
+               :sanitizer/kinds #{:address :undefined-behavior :thread}}
+   :model-check {:model-check/status :passed :model-check/states 10000}
+   :load {:load/status :passed :load/unbounded-requests 0
+          :load/p99-ms 80 :load/p99-limit-ms 100
+          :load/overload-rejected? true}
+   :chaos {:chaos/status :passed :chaos/cross-tenant-data-observed? false
+           :chaos/noisy-neighbor-bounded? true
+           :chaos/recovery-verified? true}})
+
+(def runtime-context
+  {:memory-evidence-context (context runtime-artifact)
+   :dos-evidence-context (context runtime-artifact)})
+
 (deftest hardware-e4-requires-provider-and-independent-evidence
   (let [artifact "sha256:hsm-attestation"
         deployment {:hardware-evidence hardware-evidence
@@ -436,3 +466,30 @@
       (is (false? (:qualification/accepted?
                    (qualification/verify-supply-chain-e4
                     candidate supply-context)))))))
+
+(deftest runtime-resilience-e4-requires-bounds-campaigns-and-dual-evidence
+  (let [deployment {:runtime-profile runtime-profile
+                    :runtime-policy runtime-policy
+                    :verification runtime-verification
+                    :memory-evidence-log
+                    (evidence-log :memory-corruption runtime-artifact)
+                    :dos-evidence-log (evidence-log :dos runtime-artifact)}]
+    (is (= :E4 (:qualification/evidence-level
+                (qualification/verify-runtime-resilience-e4
+                 deployment runtime-context))))
+    (doseq [candidate
+            [(assoc-in deployment [:runtime-profile :runtime/memory-pages] 999)
+             (assoc-in deployment [:runtime-profile :runtime/shared-memory?] true)
+             (assoc-in deployment
+                       [:runtime-profile :runtime/tenant-isolation?] false)
+             (assoc-in deployment [:verification :fuzz :fuzz/crashes] 1)
+             (assoc-in deployment [:verification :load :load/p99-ms] 101)
+             (assoc-in deployment
+                       [:verification :chaos
+                        :chaos/cross-tenant-data-observed?] true)
+             (assoc-in deployment [:memory-evidence-log :remote?] false)
+             (assoc-in deployment [:dos-evidence-log :seen-nonces]
+                       #{"nonce-dos"})]]
+      (is (false? (:qualification/accepted?
+                   (qualification/verify-runtime-resilience-e4
+                    candidate runtime-context)))))))

@@ -12,6 +12,7 @@
             [kotoba.security.hardware :as hardware]
             [kotoba.security.resilience :as resilience]
             [kotoba.security.release-gate :as release-gate]
+            [kotoba.security.runtime-resilience :as runtime-resilience]
             [kotoba.security.supply-chain :as supply-chain]
             [kotoba.security.transport :as transport]))
 
@@ -325,3 +326,34 @@
          :qualification/source-commit source-commit
          :qualification/promoters (:approval/approvers promotion-check)
          :qualification/evidence-head (:evidence/head-digest evidence-check)})))
+
+(defn verify-runtime-resilience-e4
+  "Compose resource limits, verification campaigns, chaos/load drills, and
+  separate production evidence for memory-corruption and DoS controls."
+  [{:keys [runtime-profile runtime-policy verification
+           memory-evidence-log dos-evidence-log]}
+   {:keys [memory-evidence-context dos-evidence-context]}]
+  (let [limits-check (runtime-resilience/evaluate-limits
+                      runtime-profile runtime-policy)
+        verification-check (runtime-resilience/evaluate-verification verification)
+        memory-check (evidence-plane/verify-log
+                      memory-evidence-log
+                      (assoc memory-evidence-context :control :memory-corruption))
+        dos-check (evidence-plane/verify-log
+                   dos-evidence-log (assoc dos-evidence-context :control :dos))
+        violations
+        (cond-> []
+          (not (:runtime-limits/qualified? limits-check))
+          (into (:runtime-limits/violations limits-check))
+          (not (:runtime-verification/qualified? verification-check))
+          (into (:runtime-verification/violations verification-check))
+          (not (:evidence/accepted? memory-check))
+          (conj :memory-production-evidence)
+          (not (:evidence/accepted? dos-check))
+          (conj :dos-production-evidence))]
+    (if (seq violations) (fail violations)
+        {:qualification/accepted? true
+         :qualification/controls #{:memory-corruption :dos}
+         :qualification/evidence-level :E4
+         :qualification/memory-evidence-head (:evidence/head-digest memory-check)
+         :qualification/dos-evidence-head (:evidence/head-digest dos-check)})))

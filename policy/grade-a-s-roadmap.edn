@@ -100,6 +100,7 @@
                       :signed-sbom-and-provenance :dependency-transparency
                       :two-party-release-promotion]}
   :W8 {:name :isolation-memory-and-dos
+       :status :evidence-plane-integrated-awaiting-production-chaos
        :depends-on #{:W1}
        :deliverables [:coverage-guided-fuzzing :sanitizers-and-model-checks
                       :request-memory-fuel-bounds :adversarial-load-tests
