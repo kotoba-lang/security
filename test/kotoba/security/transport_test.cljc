@@ -51,3 +51,30 @@
                   (transport/revoke-previous "t3"))]
     (is (thrown? #?(:clj Exception :cljs js/Error)
                  (transport/stage state "old" "t4")))))
+
+(deftest workload-identity-is-short-lived-bound-and-active
+  (let [identity {:workload-id "spiffe://kotoba/compiler"
+                  :issuer :production-ca :audience "compiler"
+                  :issued-at-ms 1000 :expires-at-ms 1500 :now-ms 1200
+                  :max-ttl-ms 600 :revocation-status :active}]
+    (is (:workload-identity/qualified?
+         (transport/evaluate-workload-identity identity)))
+    (doseq [bad [(assoc identity :workload-id "did:web:attacker")
+                 (assoc identity :expires-at-ms 2000)
+                 (assoc identity :now-ms 2001)
+                 (assoc identity :revocation-status :revoked)]]
+      (is (false? (:workload-identity/qualified?
+                   (transport/evaluate-workload-identity bad)))))))
+
+(deftest production-ca-custody-requires-hardware-and-outage-drill
+  (let [custody {:ca-id :production-ca :provider-id :hsm/production
+                 :hardware-backed? true :attestation-verified? true
+                 :private-exported? false :sign-verified? true
+                 :rotation-drill-passed? true :outage-failed-closed? true}]
+    (is (:ca-custody/qualified? (transport/evaluate-ca-custody custody)))
+    (doseq [bad [(assoc custody :hardware-backed? false)
+                 (assoc custody :attestation-verified? false)
+                 (assoc custody :private-exported? true)
+                 (assoc custody :outage-failed-closed? false)]]
+      (is (false? (:ca-custody/qualified?
+                   (transport/evaluate-ca-custody bad)))))))

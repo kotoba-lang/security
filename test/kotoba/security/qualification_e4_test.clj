@@ -87,6 +87,38 @@
   {:kotoba.security/crypto-policy-version 1
    :mode :hybrid-required :hybrid-epoch-floor 1})
 
+(def transport-artifact "sha256:ca-module")
+
+(def transport-profile
+  {:protocol :tls-1.3 :mutual-auth? true
+   :peer-id "spiffe://kotoba/aiueos"
+   :expected-peer-id "spiffe://kotoba/aiueos"
+   :certificate-fingerprint "sha256:new-cert"
+   :trusted-fingerprints #{"sha256:new-cert" "sha256:next-cert"}
+   :revocation-checked? true :now "2026-07-20T02:00:00Z"
+   :certificate-not-before "2026-07-20T01:00:00Z"
+   :certificate-expires-at "2026-07-20T03:00:00Z"
+   :require-rotation-overlap? true
+   :next-certificate-fingerprint "sha256:next-cert"})
+
+(def workload-identity
+  {:workload-id "spiffe://kotoba/aiueos" :issuer :production-workload-ca
+   :audience "kotoba-production" :issued-at-ms 1000 :expires-at-ms 1600
+   :now-ms 1200 :max-ttl-ms 900 :revocation-status :active})
+
+(def ca-custody
+  {:ca-id :production-workload-ca :provider-id :hsm/production
+   :hardware-backed? true :attestation-verified? true
+   :private-exported? false :sign-verified? true
+   :rotation-drill-passed? true :outage-failed-closed? true})
+
+(def transport-rotation
+  {:rotation-drill/status :passed
+   :rotation-drill/current "sha256:new-cert"
+   :rotation-drill/revoked #{"sha256:old-cert"}
+   :rotation-drill/rollback-denied? true
+   :rotation-drill/events [{:event :stage} {:event :promote} {:event :revoke}]})
+
 (deftest hardware-e4-requires-provider-and-independent-evidence
   (let [artifact "sha256:hsm-attestation"
         deployment {:hardware-evidence hardware-evidence
@@ -169,3 +201,34 @@
                     (assoc-in deployment [:evidence-log :seen-nonces]
                               #{"nonce-unrecoverable-loss"})
                     (context artifact))))))))
+
+(deftest transport-e4-requires-mtls-short-lived-identity-ca-and-rotation
+  (let [deployment {:transport-profile transport-profile
+                    :workload-identity workload-identity
+                    :ca-custody ca-custody
+                    :rotation-receipt transport-rotation
+                    :evidence-log
+                    (evidence-log :transport-confidentiality-integrity
+                                  transport-artifact)}]
+    (is (= :E4 (:qualification/evidence-level
+                (qualification/verify-transport-e4
+                 deployment (context transport-artifact)))))
+    (doseq [candidate
+            [(assoc-in deployment [:transport-profile :protocol] :tls-1.2)
+             (assoc-in deployment [:transport-profile :mutual-auth?] false)
+             (assoc-in deployment [:transport-profile :peer-id]
+                       "spiffe://attacker/workload")
+             (assoc-in deployment [:workload-identity :expires-at-ms] 3000)
+             (assoc-in deployment [:workload-identity :revocation-status]
+                       :revoked)
+             (assoc-in deployment [:ca-custody :private-exported?] true)
+             (assoc-in deployment [:ca-custody :outage-failed-closed?] false)
+             (assoc-in deployment
+                       [:rotation-receipt :rotation-drill/rollback-denied?]
+                       false)
+             (assoc-in deployment [:rotation-receipt :rotation-drill/events]
+                       [{:event :promote} {:event :stage} {:event :revoke}])
+             (assoc-in deployment [:evidence-log :immutable?] false)]]
+      (is (false? (:qualification/accepted?
+                   (qualification/verify-transport-e4
+                    candidate (context transport-artifact))))))))

@@ -7,7 +7,8 @@
             [kotoba.security.crypto-policy :as crypto]
             [kotoba.security.evidence-plane :as evidence-plane]
             [kotoba.security.hardware :as hardware]
-            [kotoba.security.resilience :as resilience]))
+            [kotoba.security.resilience :as resilience]
+            [kotoba.security.transport :as transport]))
 
 (def required-boundaries
   #{:package-admission :compiler-artifact :deployment :transport :secret-store})
@@ -198,4 +199,40 @@
          :qualification/threshold (:threshold-recovery/threshold threshold-check)
          :qualification/rto-ms (:restore-drill/rto-ms restore-check)
          :qualification/rpo-ms (:restore-drill/rpo-ms restore-check)
+         :qualification/evidence-head (:evidence/head-digest evidence-check)})))
+
+(defn verify-transport-e4
+  "Combine mTLS, workload identity, CA custody, rotation, and E4 evidence."
+  [{:keys [transport-profile workload-identity ca-custody rotation-receipt
+           evidence-log]}
+   evidence-context]
+  (let [transport-check (transport/evaluate transport-profile)
+        identity-check (transport/evaluate-workload-identity workload-identity)
+        ca-check (transport/evaluate-ca-custody ca-custody)
+        rotation-check (transport/evaluate-rotation-receipt
+                        rotation-receipt
+                        (:transport/certificate-fingerprint transport-check))
+        evidence-check (evidence-plane/verify-log
+                        evidence-log
+                        (assoc evidence-context
+                               :control :transport-confidentiality-integrity))
+        violations
+        (cond-> []
+          (not (:transport/allowed? transport-check))
+          (into (map :transport/control (:transport/violations transport-check)))
+          (not (:workload-identity/qualified? identity-check))
+          (into (:workload-identity/violations identity-check))
+          (not (:ca-custody/qualified? ca-check))
+          (into (:ca-custody/violations ca-check))
+          (not (:rotation-drill/qualified? rotation-check))
+          (into (:rotation-drill/violations rotation-check))
+          (not (:evidence/accepted? evidence-check))
+          (conj :production-evidence))]
+    (if (seq violations) (fail violations)
+        {:qualification/accepted? true
+         :qualification/control :transport-confidentiality-integrity
+         :qualification/evidence-level :E4
+         :qualification/peer-id (:transport/peer-id transport-check)
+         :qualification/workload-id (:workload-identity/id identity-check)
+         :qualification/ca-id (:ca-custody/ca-id ca-check)
          :qualification/evidence-head (:evidence/head-digest evidence-check)})))
