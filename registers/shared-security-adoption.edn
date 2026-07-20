@@ -1,48 +1,64 @@
 {:register/type :kotoba.security/shared-security-adoption
  :register/version 1
  :register/as-of "2026-07-20"
- :security/git-sha "65811c9d6878e881357e98f9f9fe6a60aeff7070"
+ :security/git-sha "9316629ed15437ef1cf0f93b7f98e7cb31ef91d2"
  :consumers
  {:kotoba {:status :adopted
            :pull-request "https://github.com/kotoba-lang/kotoba/pull/385"
-           :main/git-sha "c0dbe26b2598dcf9622419f9c0cce2d9c4723413"
+           :main/git-sha "94e6c1a509b659b50773f3f9d5054805fb5fb521"
+           :conformance {:pull-request "https://github.com/kotoba-lang/kotoba/pull/386"
+                         :central-verifier-in-ci? true}
            :verification {:local :pass
                           :ci :inherited-main-failure
                           :failure :chicory-jdk-host-function-type}}
   :kotoba-lang {:status :adopted
                 :pull-request "https://github.com/kotoba-lang/kotoba-lang/pull/31"
-                :main/git-sha "b7c6350a5c71e470ab6f2f01df45c2654697af3d"
+                :main/git-sha "94c292f56effebd6d97c5ca2e9db440138471137"
+                :conformance {:pull-request "https://github.com/kotoba-lang/kotoba-lang/pull/32"
+                              :central-verifier-in-ci? true}
                 :verification {:local :pass :ci :pass
                                :runtime-path :release-admission}}
   :kototama {:status :adopted
              :pull-request "https://github.com/kotoba-lang/kototama/pull/43"
-             :main/git-sha "09eb7730c3c2cadc6159daa6d201a48b312e7f58"
+             :main/git-sha "7bda182f4867aa82826c92325e379774daca9482"
+             :conformance {:pull-request "https://github.com/kotoba-lang/kototama/pull/44"
+                           :central-verifier-in-ci? true}
              :verification {:local :pass
                             :ci :inherited-main-failure
                             :failure :missing-local-dependency-checkout}}
   :kotobase {:status :adopted
              :pull-request "https://github.com/kotoba-lang/kotobase/pull/13"
-             :main/git-sha "2cdbc9b49d334013118e2aafd58a6ef3b23ddfe6"
+             :main/git-sha "4efc4076b1080915e6d3149074d42c8a5f8627d4"
+             :conformance {:pull-request "https://github.com/kotoba-lang/kotobase/pull/14"
+                           :central-verifier-in-ci? true}
              :verification {:local :pass :ci :pass}}
   :aiueos {:status :adopted
            :pull-request "https://github.com/kotoba-lang/aiueos/pull/125"
-           :main/git-sha "ddab09f0af9cdfe0f0ce093270ac49d900198b00"
+           :main/git-sha "9714f9be0e84f80023c126a6cf8995cb670d2822"
+           :conformance {:pull-request "https://github.com/kotoba-lang/aiueos/pull/126"
+                         :central-verifier-in-ci? true}
            :verification {:local :pass
                           :ci/core :pass
                           :ci/uefi-smoke :running-at-merge}}
   :compiler {:status :adopted
              :pull-request "https://github.com/kotoba-lang/compiler/pull/140"
-             :main/git-sha "63ec2e8692100b5bd6ddbb419316442fc4215cd2"
+             :main/git-sha "86c3b4be3e838cc538989567e4535deba4a6c583"
+             :conformance {:pull-request "https://github.com/kotoba-lang/compiler/pull/142"
+                           :central-verifier-in-ci? true}
              :verification {:local :pass
                             :ci/completed-jobs :pass
                             :ci/platform-matrix :running-at-merge}}
   :kagi {:status :adopted
          :pull-request "https://github.com/kotoba-lang/kagi/pull/13"
-         :main/git-sha "153441e0fd0f5ff9e18424995cacc741200d4e97"
+         :main/git-sha "1fd202ae6efcc36f50cb63abc3dd3157855b8aae"
+         :conformance {:pull-request "https://github.com/kotoba-lang/kagi/pull/14"
+                       :central-verifier-in-ci? true}
          :verification {:local :pass :ci :pass}}
   :kagitaba {:status :adopted
              :pull-request "https://github.com/kotoba-lang/kagitaba/pull/5"
-             :main/git-sha "c7b8702476d180de907011e957ff59622c996563"
+             :main/git-sha "fcd97b1322654b8c45cd8006aa1a0fa04968404d"
+             :conformance {:pull-request "https://github.com/kotoba-lang/kagitaba/pull/6"
+                           :central-verifier-in-ci? true}
              :verification {:local :pass :ci :pass
                             :runtime-path :sealed-import-admission}}}
  :non-consumers #{}}

@@ -2,7 +2,7 @@
  :policy/version 1
  :policy/as-of "2026-07-20"
  :library {:repository "kotoba-lang/security"
-           :git-sha "65811c9d6878e881357e98f9f9fe6a60aeff7070"
+           :git-sha "9316629ed15437ef1cf0f93b7f98e7cb31ef91d2"
            :pin-rule :full-immutable-git-sha}
  :required-consumers #{:kotoba :kotoba-lang :kototama :kotobase
                        :aiueos :compiler :kagi :kagitaba}
@@ -11,6 +11,7 @@
          :no-floating-security-dependency
          :register-every-direct-consumer
          :security-sensitive-path-must-load-central-controls
+         :consumer-ci-must-run-central-verifier
          :semantic-test-the-register
          :consumer-verification-must-be-recorded-before-adoption-is-complete]
  :register "registers/shared-security-adoption.edn"}
