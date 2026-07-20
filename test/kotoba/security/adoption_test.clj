@@ -24,8 +24,30 @@
   (with-redefs [clojure.core/slurp
                 (fn [path]
                   (pr-str (if (.endsWith path "deps.edn")
-                            valid-deps valid-config)))]
+                            valid-deps valid-config)))
+                adoption/source-security-inventory
+                (constantly {'kotoba.security.adoption-test
+                             #{'kotoba.security.adoption}})]
     (is (= :pass (:security.adoption/status (adoption/verify! "."))))))
+
+(deftest source-inventory-must-exactly-match-declared-edges
+  (let [declared (:security-sensitive-entrypoints valid-config)]
+    (is (empty? (adoption/inventory-violations
+                 valid-config
+                 {'kotoba.security.adoption-test
+                  #{'kotoba.security.adoption}})))
+    (is (= :unregistered-security-importers
+           (get-in (adoption/inventory-violations
+                    valid-config
+                    (assoc (update-vals declared set)
+                           'consumer.hidden #{'kotoba.security.adoption}))
+                   [0 :problem])))
+    (is (= :source-control-edge-mismatch
+           (get-in (adoption/inventory-violations
+                    valid-config
+                    {'kotoba.security.adoption-test
+                     #{'kotoba.security.capability}})
+                   [0 :problem])))))
 
 (deftest dependency-and-routing-drift-fail-closed
   (is (= [:security-pin-mismatch]
