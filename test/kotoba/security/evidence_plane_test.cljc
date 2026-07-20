@@ -24,6 +24,9 @@
   {:environment :production :authority-id :operations
    :log-id :production-log :artifact-digest "sha256:artifact" :control :pqc
    :now-ms 2000 :max-age-ms 500
+   :storage-provider-id :qualified-remote-worm
+   :storage-provider-qualified? true
+   :head-authority-id :independent-auditor
    :digest-entry-fn digest-entry
    :verify-signature-fn
    (fn [entry signature]
@@ -38,6 +41,8 @@
                                    (:evidence/entry-digest first-entry) "nonce-2")]
     {:entries [first-entry second-entry]
      :head {:head/log-id :production-log :head/sequence 2
+            :head/authority-id :independent-auditor
+            :storage/provider-id :qualified-remote-worm
             :head/entry-digest (:evidence/entry-digest second-entry)
             :head/signature [:valid-head (:evidence/entry-digest second-entry)]}
      :remote? true :immutable? true :seen-nonces #{}}))
@@ -55,6 +60,8 @@
     (doseq [[label candidate]
             [[:local (assoc log :remote? false)]
              [:mutable (assoc log :immutable? false)]
+             [:unqualified-storage
+              (assoc-in log [:head :storage/provider-id] :local-disk)]
              [:replay (assoc log :seen-nonces #{"nonce-1"})]
              [:fork (assoc-in log [:entries 1 :evidence/previous-digest] "fork")]
              [:malformed-sequence

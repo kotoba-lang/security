@@ -57,7 +57,9 @@
   batch. `remote?` and `immutable?` must be asserted by the configured storage
   adapter after provider qualification."
   [{:keys [entries head remote? immutable? seen-nonces]}
-   {:keys [verify-head-signature-fn] :as context}]
+   {:keys [verify-head-signature-fn storage-provider-id
+           storage-provider-qualified? head-authority-id authority-id]
+    :as context}]
   (let [entries (vec entries)
         nonces (map :evidence/nonce entries)
         last-entry (peek entries)
@@ -85,6 +87,10 @@
           (cond-> []
             (not= true remote?) (conj :remote-storage)
             (not= true immutable?) (conj :immutable-storage)
+            (not= true storage-provider-qualified?)
+            (conj :storage-provider-qualification)
+            (not= storage-provider-id (:storage/provider-id head))
+            (conj :storage-provider)
             (empty? entries) (conj :empty-log))
           entry-violations chain-violations
           (cond-> []
@@ -93,6 +99,10 @@
             (conj :replayed-nonce)
             (not= (:head/log-id head) (:evidence/log-id last-entry))
             (conj :head-log)
+            (not= head-authority-id (:head/authority-id head))
+            (conj :head-authority)
+            (= authority-id head-authority-id)
+            (conj :independent-head-authority)
             (not= (:head/sequence head) (:evidence/sequence last-entry))
             (conj :head-sequence)
             (not= (:head/entry-digest head) (:evidence/entry-digest last-entry))

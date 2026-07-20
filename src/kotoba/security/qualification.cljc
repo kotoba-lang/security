@@ -5,7 +5,9 @@
   immutable artifact digest and verifier-supplied signature check."
   (:require [clojure.set :as set]
             [kotoba.security.crypto-policy :as crypto]
-            [kotoba.security.hardware :as hardware]))
+            [kotoba.security.evidence-plane :as evidence-plane]
+            [kotoba.security.hardware :as hardware]
+            [kotoba.security.resilience :as resilience]))
 
 (def required-boundaries
   #{:package-admission :compiler-artifact :deployment :transport :secret-store})
@@ -96,3 +98,51 @@
          :qualification/regions regions
          :qualification/rto-ms rto-ms
          :qualification/rpo-ms rpo-ms})))
+
+(defn verify-hardware-e4
+  "Combine provider semantics with the shared production evidence plane."
+  [{:keys [hardware-evidence evidence-log]} evidence-context]
+  (let [hardware-check (hardware/evaluate hardware-evidence)
+        evidence-check (evidence-plane/verify-log
+                        evidence-log (assoc evidence-context :control :hsm))
+        violations (cond-> []
+                     (not (:hardware/qualified? hardware-check))
+                     (into (:hardware/violations hardware-check))
+                     (not (:evidence/accepted? evidence-check))
+                     (conj :production-evidence))]
+    (if (seq violations) (fail violations)
+        {:qualification/accepted? true
+         :qualification/control :hsm
+         :qualification/evidence-level :E4
+         :qualification/provider-id (:hardware/provider-id hardware-check)
+         :qualification/evidence-head (:evidence/head-digest evidence-check)})))
+
+(defn verify-recovery-e4
+  "Combine destructive restore, threshold custody, and production evidence."
+  [{:keys [restore-receipt threshold-recovery evidence-log]}
+   {:keys [artifact-digest] :as evidence-context}]
+  (let [restore-check (resilience/evaluate-restore-receipt
+                       restore-receipt artifact-digest)
+        threshold-check (resilience/evaluate-threshold-recovery
+                         threshold-recovery)
+        evidence-check (evidence-plane/verify-log
+                        evidence-log
+                        (assoc evidence-context :control :unrecoverable-loss))
+        violations (cond-> []
+                     (not (:restore-drill/qualified? restore-check))
+                     (into (:restore-drill/violations restore-check))
+                     (not (:threshold-recovery/qualified? threshold-check))
+                     (into (:threshold-recovery/violations threshold-check))
+                     (not (:evidence/accepted? evidence-check))
+                     (conj :production-evidence))]
+    (if (seq violations) (fail violations)
+        {:qualification/accepted? true
+         :qualification/control :unrecoverable-loss
+         :qualification/evidence-level :E4
+         :qualification/regions
+         (set/union (:restore-drill/sites restore-check)
+                    (:threshold-recovery/regions threshold-check))
+         :qualification/threshold (:threshold-recovery/threshold threshold-check)
+         :qualification/rto-ms (:restore-drill/rto-ms restore-check)
+         :qualification/rpo-ms (:restore-drill/rpo-ms restore-check)
+         :qualification/evidence-head (:evidence/head-digest evidence-check)})))
