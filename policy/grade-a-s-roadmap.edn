@@ -172,6 +172,7 @@
  :repo-promotion-gate
  {:status :implemented-awaiting-production-receipts
   :policy "policy/repo-grade-a-promotion.edn"
+  :grade-s-policy "policy/repo-grade-s-promotion.edn"
   :remaining-gaps "registers/remaining-operational-gaps.edn"}
 
  :non-claims

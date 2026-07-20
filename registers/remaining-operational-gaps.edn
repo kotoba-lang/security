@@ -4,7 +4,10 @@
  :code/readiness :all-roadmap-workstreams-have-fail-closed-qualification-gates
  :operational/readiness :not-qualified
  :gaps
- [{:workstream :W1 :status :external-operation-required
+ [{:workstream :E5 :status :external-operation-required
+   :missing [:independent-continuous-verifier :multi-region-observation
+             :multi-provider-observation :signed-continuous-reports]}
+  {:workstream :W1 :status :external-operation-required
    :missing [:qualified-remote-immutable-log :operations-signing-authority
              :independent-head-authority :durable-replay-store]}
   {:workstream :W2 :status :external-operation-required

@@ -82,4 +82,60 @@
         gap-workstreams (set (map :workstream (:gaps gap-register)))
         policy-workstreams (apply set/union (vals required-workstreams))]
     (is (= :not-qualified (:operational/readiness gap-register)))
-    (is (= policy-workstreams gap-workstreams))))
+    (is (= (conj policy-workstreams :E5) gap-workstreams))))
+
+(def s-control-scores (zipmap controls (repeat 92)))
+(def s-profile
+  {:assurance/score 92 :assurance/maturity :L4 :assurance/grade :S
+   :assurance/release-gate :pass :assurance/evidence :E5
+   :assurance/residual-critical-gaps 0})
+(def evidence-heads
+  (set (map :qualification/evidence-head (vals qualifications))))
+(def e5-receipt
+  {:verification/version 1 :verification/mode :continuous
+   :verification/independent? true :verification/organization-id :external-lab
+   :verification/artifact-digest artifact
+   :verification/controls (:critical-controls model)
+   :verification/evidence-heads evidence-heads
+   :verification/regions #{:jp :eu} :verification/providers #{:cloud-a :cloud-b}
+   :verification/window-start-ms 100000 :verification/window-end-ms 190000
+   :verification/issued-at-ms 199500 :verification/sample-count 1000
+   :verification/max-sample-interval-ms 100
+   :verification/unresolved-failures 0
+   :verification/report-digest "sha256:e5-report"
+   :verification/signature [:valid-e5 "sha256:e5-report"]})
+(def s-context
+  (assoc context :e5-context
+         {:operations-organization-id :kotoba-operations
+          :now-ms now-ms :max-report-age-ms 1000 :min-window-ms 80000
+          :max-sample-interval-ms 200
+          :verify-signature-fn
+          (fn [body signature]
+            (= signature [:valid-e5 (:verification/report-digest body)]))}))
+(def s-candidate
+  (assoc candidate :control-scores s-control-scores :profile s-profile
+         :continuous-verification e5-receipt))
+
+(deftest complete-grade-a-bundle-plus-independent-e5-can-promote-to-s
+  (let [result (promotion/evaluate-grade-s s-candidate s-context)]
+    (is (:promotion/allowed? result) (pr-str result))
+    (is (= :S (:promotion/target result)))))
+
+(deftest grade-s-rejects-internal-stale-single-provider-or-residual-risk
+  (doseq [bad [(assoc-in s-candidate
+                         [:continuous-verification :verification/organization-id]
+                         :kotoba-operations)
+               (assoc-in s-candidate
+                         [:continuous-verification :verification/providers]
+                         #{:cloud-a})
+               (assoc-in s-candidate
+                         [:continuous-verification :verification/issued-at-ms] 1)
+               (assoc-in s-candidate
+                         [:continuous-verification :verification/evidence-heads]
+                         #{"sha256:wrong"})
+               (assoc-in s-candidate
+                         [:profile :assurance/residual-critical-gaps] 1)
+               (assoc-in s-candidate [:profile :assurance/evidence] :E4)
+               (assoc-in s-candidate [:profile :assurance/release-gate] :partial)]]
+    (is (false? (:promotion/allowed?
+                 (promotion/evaluate-grade-s bad s-context))))))
