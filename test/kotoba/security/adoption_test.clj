@@ -6,11 +6,12 @@
 (def sha "65811c9d6878e881357e98f9f9fe6a60aeff7070")
 (def today (LocalDate/parse "2026-07-20"))
 (def valid-config
-  {:adoption/version 1
+  {:adoption/version 2
    :consumer/id :kotoba
    :security/git-sha sha
-   :required-control-namespaces ['kotoba.security.capability]
-   :security-sensitive-entrypoints ['kotoba.runtime]
+   :required-control-namespaces ['kotoba.security.adoption]
+   :security-sensitive-entrypoints
+   {'kotoba.security.adoption-test ['kotoba.security.adoption]}
    :exceptions []})
 (def valid-deps
   {:deps {'io.github.kotoba-lang/security
@@ -19,6 +20,13 @@
 (deftest valid-contract-passes
   (is (empty? (adoption/violations valid-config valid-deps today))))
 
+(deftest verifier-proves-a-real-dependency-edge
+  (with-redefs [clojure.core/slurp
+                (fn [path]
+                  (pr-str (if (.endsWith path "deps.edn")
+                            valid-deps valid-config)))]
+    (is (= :pass (:security.adoption/status (adoption/verify! "."))))))
+
 (deftest dependency-and-routing-drift-fail-closed
   (is (= [:security-pin-mismatch]
          (adoption/violations valid-config
@@ -26,7 +34,8 @@
                                         [:deps adoption/security-coordinate :git/sha]
                                         "main")
                               today)))
-  (is (= [:missing-central-control-namespaces]
+  (is (= [:missing-central-control-namespaces
+          :missing-security-sensitive-entrypoints]
          (adoption/violations (assoc valid-config
                                      :required-control-namespaces
                                      ['consumer.local.security])
