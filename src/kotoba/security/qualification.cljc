@@ -11,6 +11,8 @@
             [kotoba.security.evidence-plane :as evidence-plane]
             [kotoba.security.hardware :as hardware]
             [kotoba.security.resilience :as resilience]
+            [kotoba.security.release-gate :as release-gate]
+            [kotoba.security.supply-chain :as supply-chain]
             [kotoba.security.transport :as transport]))
 
 (def required-boundaries
@@ -278,4 +280,48 @@
          :qualification/approvers (:approval/approvers approval-check)
          :qualification/break-glass-reviewer
          (:break-glass/reviewer break-glass-check)
+         :qualification/evidence-head (:evidence/head-digest evidence-check)})))
+
+(defn verify-supply-chain-e4
+  "Compose regulated release, reproducibility, signed attestations,
+  two-party promotion, and production evidence."
+  [{:keys [release-input reproducibility attestations promotion-approvals
+           evidence-log]}
+   {:keys [attestation-context promotion-context evidence-context]}]
+  (let [release-check (release-gate/evaluate-release
+                       (assoc release-input :profile :regulated))
+        reproducibility-check
+        (supply-chain/evaluate-reproducibility reproducibility)
+        artifact-digest (:reproducibility/artifact-digest reproducibility-check)
+        source-commit (:reproducibility/source-commit reproducibility-check)
+        attestation-check
+        (supply-chain/evaluate-attestations
+         attestations (assoc attestation-context
+                             :artifact-digest artifact-digest
+                             :source-commit source-commit))
+        promotion-check (approval/evaluate promotion-approvals promotion-context)
+        evidence-check (evidence-plane/verify-log
+                        evidence-log
+                        (assoc evidence-context :artifact-digest artifact-digest
+                               :control :software-tamper))
+        violations
+        (cond-> []
+          (not (:kotoba.release/ok? release-check)) (conj :regulated-release)
+          (not (:reproducibility/qualified? reproducibility-check))
+          (into (:reproducibility/violations reproducibility-check))
+          (not (:attestation/qualified? attestation-check))
+          (into (:attestation/violations attestation-check))
+          (not (:approval/allowed? promotion-check))
+          (into (:approval/violations promotion-check))
+          (not= artifact-digest (:request-digest promotion-context))
+          (conj :promotion-artifact-binding)
+          (not (:evidence/accepted? evidence-check))
+          (conj :production-evidence))]
+    (if (seq violations) (fail violations)
+        {:qualification/accepted? true
+         :qualification/control :software-tamper
+         :qualification/evidence-level :E4
+         :qualification/artifact-digest artifact-digest
+         :qualification/source-commit source-commit
+         :qualification/promoters (:approval/approvers promotion-check)
          :qualification/evidence-head (:evidence/head-digest evidence-check)})))
