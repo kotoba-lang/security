@@ -19,6 +19,36 @@
 (def classical-kems #{:x25519 :p-256})
 (def pq-kems #{:ml-kem-768})
 
+(defn evaluate-pq-provider
+  "Qualify the deployed ML-KEM provider identity and executable module.
+
+  Certification is deliberately not inferred from algorithm labels or KATs."
+  [evidence expected-module-digest]
+  (let [algorithms (set (:provider/algorithms evidence))
+        violations
+        (cond-> []
+          (not (keyword? (:provider/id evidence))) (conj :provider-id)
+          (not (string? (:provider/implementation-version evidence)))
+          (conj :implementation-version)
+          (not= expected-module-digest (:provider/module-digest evidence))
+          (conj :module-binding)
+          (not (contains? algorithms :ml-kem-768)) (conj :ml-kem-768)
+          (not= true (:provider/known-answer-tests-passed? evidence))
+          (conj :known-answer-tests)
+          (not= true (:provider/encapsulation-verified? evidence))
+          (conj :encapsulation)
+          (not= true (:provider/decapsulation-verified? evidence))
+          (conj :decapsulation)
+          (not= true (:provider/invalid-ciphertext-rejected? evidence))
+          (conj :invalid-ciphertext)
+          (not= true (:provider/module-load-failed-closed? evidence))
+          (conj :module-load-fail-closed))]
+    {:pq-provider/qualified? (empty? violations)
+     :pq-provider/id (:provider/id evidence)
+     :pq-provider/module-digest (:provider/module-digest evidence)
+     :pq-provider/violations violations
+     :pq-provider/non-claims #{:fips-validation :side-channel-certification}}))
+
 (defn hybrid-kem-components? [algorithms]
   (let [algorithms (set algorithms)]
     (and (seq (set/intersection algorithms classical-kems))

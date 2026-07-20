@@ -63,6 +63,7 @@
                       :independent-e5-verifier
                       :receipt-freshness-and-artifact-binding]}
   :W2 {:name :production-hybrid-pqc
+       :status :evidence-plane-integrated-awaiting-provider-qualification
        :depends-on #{:W1}
        :deliverables [:qualified-ml-kem-768-provider
                       :classical-plus-pq-all-production-paths
