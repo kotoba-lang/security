@@ -1,5 +1,48 @@
 (ns kotoba.security.transport
-  "Fail-closed deployment transport profile checks shared by host adapters.")
+  "Fail-closed deployment transport profile checks shared by host adapters."
+  (:require [clojure.string :as str]))
+
+(defn evaluate-workload-identity
+  [{:keys [workload-id issuer audience issued-at-ms expires-at-ms
+           now-ms max-ttl-ms revocation-status]}]
+  (let [ttl (when (and (integer? issued-at-ms) (integer? expires-at-ms))
+              (- expires-at-ms issued-at-ms))
+        violations
+        (cond-> []
+          (not (and (string? workload-id) (str/starts-with? workload-id "spiffe://")))
+          (conj :workload-id)
+          (not (keyword? issuer)) (conj :issuer)
+          (not (string? audience)) (conj :audience)
+          (not (and (integer? now-ms) (integer? issued-at-ms)
+                    (integer? expires-at-ms)
+                    (<= issued-at-ms now-ms expires-at-ms)))
+          (conj :validity)
+          (not (and (integer? ttl) (integer? max-ttl-ms)
+                    (pos? ttl) (<= ttl max-ttl-ms)))
+          (conj :short-lived)
+          (not= :active revocation-status) (conj :revocation-status))]
+    {:workload-identity/qualified? (empty? violations)
+     :workload-identity/id workload-id
+     :workload-identity/violations violations}))
+
+(defn evaluate-ca-custody
+  [{:keys [ca-id provider-id hardware-backed? attestation-verified?
+           private-exported? sign-verified? rotation-drill-passed?
+           outage-failed-closed?]}]
+  (let [violations
+        (cond-> []
+          (not (keyword? ca-id)) (conj :ca-id)
+          (not (keyword? provider-id)) (conj :provider-id)
+          (not= true hardware-backed?) (conj :hardware-backed)
+          (not= true attestation-verified?) (conj :attestation)
+          (not= false private-exported?) (conj :private-export)
+          (not= true sign-verified?) (conj :sign-operation)
+          (not= true rotation-drill-passed?) (conj :rotation-drill)
+          (not= true outage-failed-closed?) (conj :outage-fail-closed))]
+    {:ca-custody/qualified? (empty? violations)
+     :ca-custody/ca-id ca-id
+     :ca-custody/provider-id provider-id
+     :ca-custody/violations violations}))
 
 (defn evaluate
   [{:keys [protocol mutual-auth? peer-id expected-peer-id
@@ -91,3 +134,18 @@
      :rotation-drill/revoked (:rotation/revoked final-state)
      :rotation-drill/rollback-denied? rollback-denied?
      :rotation-drill/events (:rotation/events final-state)}))
+
+(defn evaluate-rotation-receipt [receipt expected-current]
+  (let [events (mapv :event (:rotation-drill/events receipt))
+        violations
+        (cond-> []
+          (not= :passed (:rotation-drill/status receipt)) (conj :status)
+          (not= expected-current (:rotation-drill/current receipt))
+          (conj :current-certificate)
+          (empty? (:rotation-drill/revoked receipt)) (conj :revocation)
+          (not= true (:rotation-drill/rollback-denied? receipt))
+          (conj :rollback-denial)
+          (not= [:stage :promote :revoke] events) (conj :event-order))]
+    {:rotation-drill/qualified? (empty? violations)
+     :rotation-drill/violations violations
+     :rotation-drill/current (:rotation-drill/current receipt)}))

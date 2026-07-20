@@ -76,6 +76,7 @@
                       :vendor-attestation :non-export-proof
                       :ha-outage-rotation-drills]}
   :W4 {:name :transport-and-workload-identity
+       :status :evidence-plane-integrated-awaiting-production-ca
        :depends-on #{:W3}
        :deliverables [:production-ca-in-hardware-custody :mandatory-mtls
                       :short-lived-workload-identity :automated-revocation
