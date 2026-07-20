@@ -62,6 +62,31 @@
             {:share/member-id :custodian-b :share/region :jp-west
              :share/hardware-protected? true :share/unwrap-verified? true}]})
 
+(def pq-module-digest "sha256:ml-kem-module")
+
+(def pq-provider
+  {:provider/id :ml-kem/production
+   :provider/implementation-version "1.0.0"
+   :provider/module-digest pq-module-digest
+   :provider/algorithms [:ml-kem-768]
+   :provider/known-answer-tests-passed? true
+   :provider/encapsulation-verified? true
+   :provider/decapsulation-verified? true
+   :provider/invalid-ciphertext-rejected? true
+   :provider/module-load-failed-closed? true})
+
+(defn pq-envelope [epoch]
+  {:envelope/provider {:provider/id :ml-kem/production
+                       :provider/module-digest pq-module-digest
+                       :provider/fips-validated false}
+   :envelope/kem? true :envelope/hybrid? true
+   :envelope/algorithms [:x25519 :ml-kem-768]
+   :envelope/epoch epoch})
+
+(def pq-policy
+  {:kotoba.security/crypto-policy-version 1
+   :mode :hybrid-required :hybrid-epoch-floor 1})
+
 (deftest hardware-e4-requires-provider-and-independent-evidence
   (let [artifact "sha256:hsm-attestation"
         deployment {:hardware-evidence hardware-evidence
@@ -84,6 +109,35 @@
                      (qualification/verify-hardware-e4
                       (assoc deployment :evidence-log bad)
                       (context artifact)))))))))
+
+(deftest pqc-e4-binds-provider-module-boundaries-and-drills
+  (let [deployment {:provider-evidence pq-provider
+                    :boundaries qualification/required-boundaries
+                    :current-envelope (pq-envelope 10)
+                    :next-envelope (pq-envelope 11)
+                    :downgrade-rejected? true :rollback-rejected? true
+                    :rotation-drill-passed? true
+                    :evidence-log (evidence-log :pqc pq-module-digest)}]
+    (is (= :E4 (:qualification/evidence-level
+                (qualification/verify-pqc-e4
+                 deployment pq-policy (context pq-module-digest)))))
+    (doseq [candidate
+            [(assoc-in deployment
+                       [:next-envelope :envelope/algorithms] [:x25519])
+             (assoc-in deployment
+                       [:next-envelope :envelope/provider :provider/id]
+                       :substituted-provider)
+             (assoc-in deployment
+                       [:provider-evidence :provider/module-digest]
+                       "sha256:other-module")
+             (assoc deployment :boundaries #{:transport})
+             (assoc deployment :downgrade-rejected? false)
+             (assoc deployment :rollback-rejected? false)
+             (assoc deployment :rotation-drill-passed? false)
+             (assoc-in deployment [:evidence-log :remote?] false)]]
+      (is (false? (:qualification/accepted?
+                   (qualification/verify-pqc-e4
+                    candidate pq-policy (context pq-module-digest))))))))
 
 (deftest recovery-e4-requires-geo-threshold-and-independent-evidence
   (let [artifact "sha256:backup"

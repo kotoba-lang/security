@@ -172,3 +172,23 @@
     (is (false? (:valid? result)))
     (is (= "fips status not-claimed forbidden under fips-required"
            (:message result)))))
+
+(deftest pq-provider-qualification-is-module-bound-and-fail-closed
+  (let [digest "sha256:module"
+        provider {:provider/id :ml-kem/production
+                  :provider/implementation-version "1.0.0"
+                  :provider/module-digest digest
+                  :provider/algorithms [:ml-kem-768]
+                  :provider/known-answer-tests-passed? true
+                  :provider/encapsulation-verified? true
+                  :provider/decapsulation-verified? true
+                  :provider/invalid-ciphertext-rejected? true
+                  :provider/module-load-failed-closed? true}]
+    (is (:pq-provider/qualified?
+         (policy/evaluate-pq-provider provider digest)))
+    (doseq [bad [(assoc provider :provider/module-digest "sha256:other")
+                 (assoc provider :provider/algorithms [:x25519])
+                 (assoc provider :provider/invalid-ciphertext-rejected? false)
+                 (assoc provider :provider/module-load-failed-closed? false)]]
+      (is (false? (:pq-provider/qualified?
+                   (policy/evaluate-pq-provider bad digest)))))))

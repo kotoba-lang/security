@@ -117,6 +117,59 @@
          :qualification/provider-id (:hardware/provider-id hardware-check)
          :qualification/evidence-head (:evidence/head-digest evidence-check)})))
 
+(defn verify-pqc-e4
+  "Combine deployed-provider, boundary, rotation, and E4 evidence checks."
+  [{:keys [provider-evidence boundaries current-envelope next-envelope
+           downgrade-rejected? rollback-rejected? rotation-drill-passed?
+           evidence-log]}
+   policy
+   {:keys [artifact-digest] :as evidence-context}]
+  (let [provider-check (crypto/evaluate-pq-provider
+                        provider-evidence artifact-digest)
+        provider-id (:pq-provider/id provider-check)
+        boundary-set (set boundaries)
+        current-check (crypto/check-production-envelope policy current-envelope)
+        next-check (crypto/check-production-envelope policy next-envelope)
+        rotation-check (crypto/rotate-envelope policy current-envelope next-envelope)
+        provider-bound? (and (= provider-id
+                                (get-in current-envelope
+                                        [:envelope/provider :provider/id]))
+                             (= provider-id
+                                (get-in next-envelope
+                                        [:envelope/provider :provider/id]))
+                             (= artifact-digest
+                                (get-in current-envelope
+                                        [:envelope/provider :provider/module-digest]))
+                             (= artifact-digest
+                                (get-in next-envelope
+                                        [:envelope/provider :provider/module-digest])))
+        evidence-check (evidence-plane/verify-log
+                        evidence-log (assoc evidence-context :control :pqc))
+        violations
+        (cond-> []
+          (not (:pq-provider/qualified? provider-check))
+          (into (:pq-provider/violations provider-check))
+          (not provider-bound?) (conj :provider-substitution)
+          (not (set/subset? required-boundaries boundary-set))
+          (conj :production-boundaries)
+          (not (:valid? current-check)) (conj :current-envelope)
+          (not (:valid? next-check)) (conj :next-envelope)
+          (not (:valid? rotation-check)) (conj :rotation)
+          (not= true downgrade-rejected?) (conj :downgrade)
+          (not= true rollback-rejected?) (conj :rollback)
+          (not= true rotation-drill-passed?) (conj :rotation-drill)
+          (not (:evidence/accepted? evidence-check))
+          (conj :production-evidence))]
+    (if (seq violations) (fail violations)
+        {:qualification/accepted? true
+         :qualification/control :pqc
+         :qualification/evidence-level :E4
+         :qualification/provider-id provider-id
+         :qualification/module-digest artifact-digest
+         :qualification/boundaries boundary-set
+         :qualification/current-epoch (:envelope/epoch next-envelope)
+         :qualification/evidence-head (:evidence/head-digest evidence-check)})))
+
 (defn verify-recovery-e4
   "Combine destructive restore, threshold custody, and production evidence."
   [{:keys [restore-receipt threshold-recovery evidence-log]}
