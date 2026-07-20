@@ -289,6 +289,45 @@
   {:memory-evidence-context (context runtime-artifact)
    :dos-evidence-context (context runtime-artifact)})
 
+(def detection-artifact "sha256:backup")
+
+(def detection-monitoring
+  {:source :live-production
+   :signals #{:capability-denial :host-trap :signer-failure
+              :audit-write-failure :crypto-policy-violation}
+   :remote? true :immutable? true :lag-ms 20 :max-lag-ms 100
+   :monitoring-failure-alerted? true})
+
+(def detection-pager
+  {:sink :pagerduty :delivered? true :incident-id "INC-PROD-1"
+   :live-roster? true :human-acknowledged? true
+   :ack-ms 100 :ack-sla-ms 300 :escalation-tested? true})
+
+(def detection-containment
+  {:status :passed :automated? true
+   :known-clean-artifact-digest detection-artifact
+   :receipts [{:step :isolate-workload :status :passed}
+              {:step :revoke-credentials :status :passed}
+              {:step :freeze-writes :status :passed}
+              {:step :capture-evidence :status :passed}
+              {:step :restore-known-clean :status :passed}
+              {:step :verify :status :passed}]})
+
+(def red-team-receipt
+  {:red-team/version 1 :red-team/organization-id :external-security-lab
+   :red-team/findings-status :closed :red-team/retest-status :passed
+   :red-team/report-digest "sha256:red-team-report"
+   :red-team/signature [:valid-red-team "sha256:red-team-report"]})
+
+(def detection-context
+  {:artifact-digest detection-artifact
+   :red-team-context
+   {:operations-organization-id :kotoba-operations
+    :verify-signature-fn
+    (fn [body signature]
+      (= signature [:valid-red-team (:red-team/report-digest body)]))}
+   :evidence-context (context detection-artifact)})
+
 (deftest hardware-e4-requires-provider-and-independent-evidence
   (let [artifact "sha256:hsm-attestation"
         deployment {:hardware-evidence hardware-evidence
@@ -493,3 +532,31 @@
       (is (false? (:qualification/accepted?
                    (qualification/verify-runtime-resilience-e4
                     candidate runtime-context)))))))
+
+(deftest detection-e4-requires-live-pager-containment-clean-restore-and-retest
+  (let [deployment {:monitoring detection-monitoring :pager detection-pager
+                    :containment detection-containment
+                    :restore-receipt restore-receipt
+                    :red-team-receipt red-team-receipt
+                    :evidence-log
+                    (evidence-log :unknown-compromise detection-artifact)}]
+    (is (= :E4 (:qualification/evidence-level
+                (qualification/verify-detection-containment-e4
+                 deployment detection-context))))
+    (doseq [candidate
+            [(assoc-in deployment [:monitoring :source] :heartbeat-stub)
+             (assoc-in deployment [:pager :live-roster?] false)
+             (assoc-in deployment [:pager :human-acknowledged?] false)
+             (assoc-in deployment [:containment :automated?] false)
+             (update-in deployment [:containment :receipts] subvec 0 5)
+             (assoc-in deployment
+                       [:containment :known-clean-artifact-digest] "sha256:dirty")
+             (assoc-in deployment
+                       [:red-team-receipt :red-team/organization-id]
+                       :kotoba-operations)
+             (assoc-in deployment
+                       [:red-team-receipt :red-team/findings-status] :open)
+             (assoc-in deployment [:evidence-log :remote?] false)]]
+      (is (false? (:qualification/accepted?
+                   (qualification/verify-detection-containment-e4
+                    candidate detection-context)))))))

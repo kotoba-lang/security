@@ -8,6 +8,7 @@
             [kotoba.security.approval :as approval]
             [kotoba.security.capability :as capability]
             [kotoba.security.crypto-policy :as crypto]
+            [kotoba.security.detection :as detection]
             [kotoba.security.evidence-plane :as evidence-plane]
             [kotoba.security.hardware :as hardware]
             [kotoba.security.resilience :as resilience]
@@ -357,3 +358,44 @@
          :qualification/evidence-level :E4
          :qualification/memory-evidence-head (:evidence/head-digest memory-check)
          :qualification/dos-evidence-head (:evidence/head-digest dos-check)})))
+
+(defn verify-detection-containment-e4
+  "Compose live monitoring, human paging, automated containment, known-clean
+  restore, independent retest, and production evidence."
+  [{:keys [monitoring pager containment restore-receipt red-team-receipt
+           evidence-log]}
+   {:keys [artifact-digest red-team-context evidence-context]}]
+  (let [monitoring-check (detection/evaluate-monitoring monitoring)
+        pager-check (detection/evaluate-pager pager)
+        containment-check (detection/evaluate-containment
+                           (assoc containment
+                                  :expected-artifact-digest artifact-digest))
+        restore-check (resilience/evaluate-restore-receipt
+                       restore-receipt artifact-digest)
+        red-team-check (detection/evaluate-red-team
+                        red-team-receipt red-team-context)
+        evidence-check (evidence-plane/verify-log
+                        evidence-log
+                        (assoc evidence-context :artifact-digest artifact-digest
+                               :control :unknown-compromise))
+        violations
+        (cond-> []
+          (not (:monitoring/qualified? monitoring-check))
+          (into (:monitoring/violations monitoring-check))
+          (not (:pager/qualified? pager-check))
+          (into (:pager/violations pager-check))
+          (not (:containment/qualified? containment-check))
+          (into (:containment/violations containment-check))
+          (not (:restore-drill/qualified? restore-check))
+          (into (:restore-drill/violations restore-check))
+          (not (:red-team/qualified? red-team-check))
+          (into (:red-team/violations red-team-check))
+          (not (:evidence/accepted? evidence-check))
+          (conj :production-evidence))]
+    (if (seq violations) (fail violations)
+        {:qualification/accepted? true
+         :qualification/control :unknown-compromise
+         :qualification/evidence-level :E4
+         :qualification/rto-ms (:restore-drill/rto-ms restore-check)
+         :qualification/rpo-ms (:restore-drill/rpo-ms restore-check)
+         :qualification/evidence-head (:evidence/head-digest evidence-check)})))
