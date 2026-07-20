@@ -106,6 +106,7 @@
                       :request-memory-fuel-bounds :adversarial-load-tests
                       :multi-tenant-chaos-tests]}
   :W9 {:name :continuous-detection-containment
+       :status :evidence-plane-integrated-awaiting-live-operations
        :depends-on #{:W1 :W5 :W6}
        :deliverables [:live-human-on-call :production-pager-delivery
                       :automated-isolation-and-revocation
