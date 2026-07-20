@@ -1,7 +1,7 @@
 {:roadmap/type :kotoba.security/grade-a-s-roadmap
- :roadmap/version 1
+ :roadmap/version 2
  :roadmap/as-of "2026-07-20"
- :roadmap/model "policy/security-assurance-model.edn"
+ :roadmap/model "policy/security-assurance-model-v2.edn"
  :roadmap/principles
  [:no-score-without-enforced-boundary
   :no-production-claim-without-signed-receipt
@@ -33,8 +33,13 @@
 
  :measurement-decision
  {:id :M-001
+  :status :resolved
   :problem "quantum-communication is gray/N/A but currently contributes zero to the weighted inner product"
   :required-decision :model-v2-na-semantics
+  :selected-option :exclude-and-renormalize
+  :evidence ["policy/security-assurance-model-v2.edn"
+             "registers/stack-security-dual-baseline.edn"
+             "test/kotoba/security/assurance_v2_test.clj"]
   :options
   [{:id :exclude-and-renormalize
     :rule "exclude explicitly accepted N/A controls and renormalize remaining declared weights"
@@ -46,6 +51,7 @@
 
  :workstreams
  {:W0 {:name :measurement-integrity
+       :status :complete
        :depends-on #{}
        :deliverables [:assurance-model-v2 :na-register :dual-baseline-report
                       :score-provenance-verifier]}
@@ -99,6 +105,7 @@
 
  :milestones
  [{:id :P0 :name :measurement-freeze
+   :status :complete
    :exit [:W0-complete :all-baselines-reproducible]}
   {:id :P1 :name :shared-production-foundation
    :depends-on #{:P0}
@@ -114,37 +121,37 @@
           :zero-residual-critical-gaps] }]
 
  :repos
- {:kotoba {:current/score 66 :to-A/points 14 :to-S/points 24
+ {:kotoba {:current/score 69 :to-A/points 11 :to-S/points 21
            :priority-controls [:hsm :pqc :memory-corruption
                                :unknown-compromise :dos]
            :workstreams [:W2 :W3 :W5 :W7 :W8 :W9]}
-  :kotoba-lang {:current/score 60 :to-A/points 20 :to-S/points 30
+  :kotoba-lang {:current/score 64 :to-A/points 16 :to-S/points 26
                 :priority-controls [:hsm :monitoring-recovery
                                     :private-key-theft :pqc :dos]
                 :workstreams [:W2 :W3 :W4 :W5 :W7 :W9]}
-  :kototama {:current/score 60 :to-A/points 20 :to-S/points 30
+  :kototama {:current/score 64 :to-A/points 16 :to-S/points 26
              :priority-controls [:hsm :private-key-theft :pqc
                                  :software-tamper :unknown-compromise]
              :workstreams [:W2 :W3 :W4 :W6 :W7 :W9]}
-  :kotobase {:current/score 60 :to-A/points 20 :to-S/points 30
+  :kotobase {:current/score 64 :to-A/points 16 :to-S/points 26
              :priority-controls [:hsm :private-key-theft
                                  :transport-confidentiality-integrity
                                  :anti-impersonation :memory-corruption]
              :workstreams [:W2 :W3 :W4 :W5 :W8 :W9]}
-  :aiueos {:current/score 63 :to-A/points 17 :to-S/points 27
+  :aiueos {:current/score 67 :to-A/points 13 :to-S/points 23
            :priority-controls [:hsm :private-key-theft :pqc
                                :insider-threat :monitoring-recovery]
            :workstreams [:W2 :W3 :W4 :W5 :W6 :W9]}
-  :compiler {:current/score 69 :to-A/points 11 :to-S/points 21
+  :compiler {:current/score 73 :to-A/points 7 :to-S/points 17
              :priority-controls [:hsm :transport-confidentiality-integrity
                                  :monitoring-recovery :pqc
                                  :unrecoverable-loss]
              :workstreams [:W2 :W3 :W4 :W5 :W7 :W9]}
-  :kagi {:current/score 78 :to-A/points 2 :to-S/points 12
+  :kagi {:current/score 83 :to-A/points 0 :to-S/points 7
          :priority-controls [:memory-corruption :dos :hsm
                              :transport-confidentiality-integrity :pqc]
          :workstreams [:W2 :W3 :W4 :W5 :W8 :W9]}
-  :kagitaba {:current/score 61 :to-A/points 19 :to-S/points 29
+  :kagitaba {:current/score 64 :to-A/points 16 :to-S/points 26
              :priority-controls [:hsm :transport-confidentiality-integrity
                                  :pqc :private-key-theft
                                  :monitoring-recovery]

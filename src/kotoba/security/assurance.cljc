@@ -39,10 +39,22 @@
          (= 1 (reduce + (vals weights)))
          (every? pos? (vals weights)))))
 
+(defn excluded-controls [model]
+  (if (= :exclude-and-renormalize (get-in model [:score :na-policy]))
+    (get-in model [:applicability :accepted-na-controls] #{})
+    #{}))
+
 (defn weighted-score [model scores]
-  (reduce-kv (fn [total control weight]
-               (+ total (* weight (get scores control 0))))
-             0 (get-in model [:score :weights])))
+  (let [excluded (excluded-controls model)
+        applicable (apply dissoc (get-in model [:score :weights]) excluded)
+        denominator (reduce + (vals applicable))]
+    (when-not (pos? denominator)
+      (throw (ex-info "assurance model has no applicable controls"
+                      {:excluded-controls excluded})))
+    (/ (reduce-kv (fn [total control weight]
+                    (+ total (* weight (get scores control 0))))
+                  0 applicable)
+       denominator)))
 
 (defn rounded-score [model scores]
   (#?(:clj Math/round :cljs js/Math.round)
@@ -55,13 +67,22 @@
         [:green :yellow :orange :red]))
 
 (defn model-problems [model controls]
-  (cond-> []
+  (let [version (:model/version model)
+        excluded (excluded-controls model)
+        weights (set (keys (get-in model [:score :weights])))]
+    (cond-> []
     (not= :kotoba.security/assurance-model (:model/type model))
     (conj :model-type)
-    (not= 1 (:model/version model)) (conj :model-version)
+    (not (contains? #{1 2} version)) (conj :model-version)
     (not (weights-valid? model controls)) (conj :weights)
+    (and (= 2 version)
+         (not= :exclude-and-renormalize (get-in model [:score :na-policy])))
+    (conj :na-policy)
+    (and (= 2 version)
+         (or (empty? excluded) (not (set/subset? excluded weights))))
+    (conj :accepted-na-controls)
     (not= required-profile-fields (set (:required-report-fields model)))
-    (conj :report-fields)))
+    (conj :report-fields))))
 
 (defn profile-problems [model profile]
   (let [missing (set/difference required-profile-fields (set (keys profile)))
