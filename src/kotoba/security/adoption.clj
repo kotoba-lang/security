@@ -102,20 +102,20 @@
 
 (defn- ns-form [file]
   (with-open [reader (PushbackReader. (io/reader file))]
-    (loop []
-      (let [form (read {:read-cond :preserve :eof nil
-                        :default (fn [_tag value] value)} reader)]
-        (cond
-          (nil? form) nil
-          (and (seq? form) (= 'ns (first form))) form
-          :else (recur))))))
+    (binding [*default-data-reader-fn* (fn [_tag value] value)]
+      (loop []
+        (let [form (read {:read-cond :preserve :eof nil} reader)]
+          (cond
+            (nil? form) nil
+            (and (seq? form) (= 'ns (first form))) form
+            :else (recur)))))))
 
 (defn- source-forms [file]
   (with-open [reader (PushbackReader. (io/reader file))]
-    (loop [forms []]
-      (let [form (read {:read-cond :preserve :eof nil
-                        :default (fn [_tag value] value)} reader)]
-        (if (nil? form) forms (recur (conj forms form)))))))
+    (binding [*default-data-reader-fn* (fn [_tag value] value)]
+      (loop [forms []]
+        (let [form (read {:read-cond :preserve :eof nil} reader)]
+          (if (nil? form) forms (recur (conj forms form))))))))
 
 (defn source-sensitive-inventory
   "Discover high-confidence sensitive def/defn operations under ROOT/src."
