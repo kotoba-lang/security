@@ -30,7 +30,10 @@
       (when (= :adopted status)
         (testing pull-request
           (is (re-matches full-sha-pattern (:main/git-sha consumer)))
-          (is (= :pass (get-in consumer [:verification :local]))))))))
+          (is (= :pass (get-in consumer [:verification :local])))
+          (is (true? (get-in consumer [:conformance :central-verifier-in-ci?])))
+          (is (re-matches #"https://github.com/kotoba-lang/[^/]+/pull/[0-9]+"
+                          (get-in consumer [:conformance :pull-request]))))))))
 
 (deftest non-consumers-are-explicit-non-importers
   (doseq [[repo declaration] (:non-consumers policy)]
