@@ -119,6 +119,84 @@
    :rotation-drill/rollback-denied? true
    :rotation-drill/events [{:event :stage} {:event :promote} {:event :revoke}]})
 
+(def governance-digest "sha256:governed-operation")
+
+(def governance-capability
+  {:capability/version 1 :capability/audience :production-governor
+   :capability/subject :release-bot :capability/actions #{:release/promote}
+   :capability/resources #{:release/production}
+   :capability/request-digest governance-digest
+   :capability/not-before-ms 1000 :capability/expires-at-ms 2000
+   :capability/nonce "governance-nonce"
+   :capability/signature [:valid-capability governance-digest]})
+
+(def governance-attributes
+  {:subject {:id :release-bot :role :release :tenant :kotoba
+             :clearance :restricted}
+   :resource {:id :release/production :tenant :kotoba :trust :verified
+              :classification :restricted :effects #{:release}}
+   :action {:id :release/promote :capabilities #{:release/promote}}
+   :environment {:surface :ci :network-zone :private
+                 :device-trusted? true :now "2026-07-20T02:00:00Z"}
+   :purpose :release})
+
+(def governance-policy
+  {:policy/id :production-release :subject/roles #{:release}
+   :resource/ids #{:release/production} :resource/trust #{:verified}
+   :resource/effects #{:release} :action/ids #{:release/promote}
+   :action/capabilities #{:release/promote} :environment/surfaces #{:ci}
+   :environment/network-zones #{:private}
+   :environment/require-device-trust? true :purpose/allowed #{:release}
+   :tenant/isolation? true :valid/not-before "2026-07-20T00:00:00Z"
+   :valid/expires-at "2026-07-21T00:00:00Z"})
+
+(defn governance-approval [approver role]
+  {:approval/version 1 :approval/approver approver :approval/role role
+   :approval/request-digest governance-digest
+   :approval/not-before-ms 1000 :approval/expires-at-ms 2000
+   :approval/signature [:valid-approval approver governance-digest]})
+
+(def governance-break-glass
+  {:break-glass/version 1 :break-glass/status :closed
+   :break-glass/initiator :incident-operator
+   :break-glass/request-digest governance-digest
+   :break-glass/reason "restore release authority"
+   :break-glass/incident-id "INC-2026-1"
+   :break-glass/issued-at-ms 1000 :break-glass/used-at-ms 1100
+   :break-glass/expires-at-ms 1200
+   :break-glass/signature [:valid-emergency governance-digest]
+   :break-glass/post-review
+   {:review/completed? true :review/reviewer :independent-auditor
+    :review/completed-at-ms 1300 :review/outcome :accepted
+    :review/signature [:valid-review governance-digest]}})
+
+(def governance-context
+  {:capability-context
+   {:audience :production-governor :subject :release-bot
+    :action :release/promote :resource :release/production
+    :request-digest governance-digest :now-ms 1500
+    :consume-nonce-fn (constantly true)
+    :verify-signature-fn
+    (fn [body signature]
+      (= signature [:valid-capability (:capability/request-digest body)]))}
+   :approval-context
+   {:initiator :release-bot :required-roles #{:security :release}
+    :min-approvals 2 :request-digest governance-digest :now-ms 1500
+    :verify-signature-fn
+    (fn [body signature]
+      (= signature [:valid-approval (:approval/approver body)
+                    (:approval/request-digest body)]))}
+   :break-glass-context
+   {:request-digest governance-digest :max-duration-ms 300
+    :review-deadline-ms 500
+    :verify-signature-fn
+    (fn [body signature]
+      (= signature [:valid-emergency (:break-glass/request-digest body)]))
+    :verify-review-signature-fn
+    (fn [_body signature]
+      (= signature [:valid-review governance-digest]))}
+   :evidence-context (context governance-digest)})
+
 (deftest hardware-e4-requires-provider-and-independent-evidence
   (let [artifact "sha256:hsm-attestation"
         deployment {:hardware-evidence hardware-evidence
@@ -232,3 +310,33 @@
       (is (false? (:qualification/accepted?
                    (qualification/verify-transport-e4
                     candidate (context transport-artifact))))))))
+
+(deftest governance-e4-requires-capability-abac-quorum-and-reviewed-break-glass
+  (let [deployment {:capability-token governance-capability
+                    :attributes governance-attributes
+                    :abac-policy governance-policy
+                    :approvals [(governance-approval :alice :security)
+                                (governance-approval :bob :release)]
+                    :break-glass-receipt governance-break-glass
+                    :evidence-log
+                    (evidence-log :authorized-process-abuse governance-digest)}]
+    (is (= :E4 (:qualification/evidence-level
+                (qualification/verify-governance-e4
+                 deployment governance-context))))
+    (doseq [candidate
+            [(assoc-in deployment [:capability-token :capability/request-digest]
+                       "sha256:substituted")
+             (assoc-in deployment [:attributes :environment :now]
+                       "2026-07-22T00:00:00Z")
+             (assoc deployment
+                    :approvals [(governance-approval :release-bot :security)
+                                (governance-approval :bob :release)])
+             (assoc-in deployment
+                       [:break-glass-receipt :break-glass/expires-at-ms] 3000)
+             (assoc-in deployment
+                       [:break-glass-receipt :break-glass/post-review
+                        :review/reviewer] :incident-operator)
+             (assoc-in deployment [:evidence-log :remote?] false)]]
+      (is (false? (:qualification/accepted?
+                   (qualification/verify-governance-e4
+                    candidate governance-context)))))))

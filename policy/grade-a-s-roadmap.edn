@@ -88,6 +88,7 @@
                       :threshold-recovery :scheduled-destructive-restore
                       :measured-rto-rpo :provider-loss-drill]}
   :W6 {:name :governance-and-insider-resistance
+       :status :evidence-plane-integrated-awaiting-production-drill
        :depends-on #{:W1}
        :deliverables [:per-operation-capabilities :four-axis-abac
                       :digest-bound-independent-approval

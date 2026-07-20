@@ -51,3 +51,54 @@
      :approval/approvers (set approvers)
      :approval/roles roles
      :approval/request-digest (:request-digest context)}))
+
+(defn evaluate-break-glass
+  "Validate a closed emergency-access receipt and independent post-review."
+  [receipt {:keys [request-digest max-duration-ms review-deadline-ms
+                   verify-signature-fn verify-review-signature-fn]}]
+  (let [review (:break-glass/post-review receipt)
+        issued (:break-glass/issued-at-ms receipt)
+        used (:break-glass/used-at-ms receipt)
+        expires (:break-glass/expires-at-ms receipt)
+        reviewed (:review/completed-at-ms review)
+        signed? (and (ifn? verify-signature-fn)
+                     (try
+                       (true? (verify-signature-fn
+                               (dissoc receipt :break-glass/signature
+                                               :break-glass/post-review)
+                               (:break-glass/signature receipt)))
+                       (catch #?(:clj Exception :cljs :default) _ false)))
+        review-signed? (and (ifn? verify-review-signature-fn)
+                            (try
+                              (true? (verify-review-signature-fn
+                                      (dissoc review :review/signature)
+                                      (:review/signature review)))
+                              (catch #?(:clj Exception :cljs :default) _ false)))
+        violations
+        (cond-> []
+          (not= 1 (:break-glass/version receipt)) (conj :version)
+          (not= :closed (:break-glass/status receipt)) (conj :status)
+          (not= request-digest (:break-glass/request-digest receipt))
+          (conj :request-digest)
+          (not (and (string? (:break-glass/reason receipt))
+                    (seq (:break-glass/reason receipt)))) (conj :reason)
+          (not (string? (:break-glass/incident-id receipt))) (conj :incident-id)
+          (not (and (integer? issued) (integer? used) (integer? expires)
+                    (integer? max-duration-ms)
+                    (<= issued used expires)
+                    (<= (- expires issued) max-duration-ms)))
+          (conj :expiry)
+          (not signed?) (conj :signature)
+          (not= true (:review/completed? review)) (conj :post-review)
+          (= (:break-glass/initiator receipt) (:review/reviewer review))
+          (conj :independent-reviewer)
+          (not (and (integer? reviewed) (integer? review-deadline-ms)
+                    (integer? used)
+                    (<= used reviewed (+ used review-deadline-ms))))
+          (conj :review-deadline)
+          (not (keyword? (:review/outcome review))) (conj :review-outcome)
+          (not review-signed?) (conj :review-signature))]
+    {:break-glass/qualified? (empty? violations)
+     :break-glass/violations violations
+     :break-glass/incident-id (:break-glass/incident-id receipt)
+     :break-glass/reviewer (:review/reviewer review)}))
