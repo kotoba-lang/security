@@ -56,6 +56,7 @@
        :deliverables [:assurance-model-v2 :na-register :dual-baseline-report
                       :score-provenance-verifier]}
   :W1 {:name :production-evidence-plane
+       :status :implemented-awaiting-production-qualification
        :depends-on #{:W0}
        :deliverables [:append-only-remote-evidence-log
                       :authority-signed-e4-receipts
