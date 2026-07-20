@@ -175,6 +175,12 @@
   :grade-s-policy "policy/repo-grade-s-promotion.edn"
   :remaining-gaps "registers/remaining-operational-gaps.edn"}
 
+ :shared-security-adoption
+ {:status :complete
+  :policy "policy/shared-security-adoption.edn"
+  :register "registers/shared-security-adoption.edn"
+  :security/git-sha "65811c9d6878e881357e98f9f9fe6a60aeff7070"}
+
  :non-claims
  [:score-is-not-probability-of-safety
   :grade-is-not-release-authorization

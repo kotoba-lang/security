@@ -1,0 +1,38 @@
+{:register/type :kotoba.security/shared-security-adoption
+ :register/version 1
+ :register/as-of "2026-07-20"
+ :security/git-sha "65811c9d6878e881357e98f9f9fe6a60aeff7070"
+ :consumers
+ {:kotoba {:status :adopted
+           :pull-request "https://github.com/kotoba-lang/kotoba/pull/385"
+           :main/git-sha "c0dbe26b2598dcf9622419f9c0cce2d9c4723413"
+           :verification {:local :pass
+                          :ci :inherited-main-failure
+                          :failure :chicory-jdk-host-function-type}}
+  :kototama {:status :adopted
+             :pull-request "https://github.com/kotoba-lang/kototama/pull/43"
+             :main/git-sha "09eb7730c3c2cadc6159daa6d201a48b312e7f58"
+             :verification {:local :pass
+                            :ci :inherited-main-failure
+                            :failure :missing-local-dependency-checkout}}
+  :kotobase {:status :adopted
+             :pull-request "https://github.com/kotoba-lang/kotobase/pull/13"
+             :main/git-sha "2cdbc9b49d334013118e2aafd58a6ef3b23ddfe6"
+             :verification {:local :pass :ci :pass}}
+  :aiueos {:status :adopted
+           :pull-request "https://github.com/kotoba-lang/aiueos/pull/125"
+           :main/git-sha "ddab09f0af9cdfe0f0ce093270ac49d900198b00"
+           :verification {:local :pass
+                          :ci/core :pass
+                          :ci/uefi-smoke :running-at-merge}}
+  :compiler {:status :adopted
+             :pull-request "https://github.com/kotoba-lang/compiler/pull/140"
+             :main/git-sha "63ec2e8692100b5bd6ddbb419316442fc4215cd2"
+             :verification {:local :pass
+                            :ci/completed-jobs :pass
+                            :ci/platform-matrix :running-at-merge}}
+  :kagi {:status :adopted
+         :pull-request "https://github.com/kotoba-lang/kagi/pull/13"
+         :main/git-sha "153441e0fd0f5ff9e18424995cacc741200d4e97"
+         :verification {:local :pass :ci :pass}}}
+ :non-consumers #{:kotoba-lang :kagitaba}}
