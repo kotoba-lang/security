@@ -9,6 +9,11 @@
            :verification {:local :pass
                           :ci :inherited-main-failure
                           :failure :chicory-jdk-host-function-type}}
+  :kotoba-lang {:status :adopted
+                :pull-request "https://github.com/kotoba-lang/kotoba-lang/pull/31"
+                :main/git-sha "b7c6350a5c71e470ab6f2f01df45c2654697af3d"
+                :verification {:local :pass :ci :pass
+                               :runtime-path :release-admission}}
   :kototama {:status :adopted
              :pull-request "https://github.com/kotoba-lang/kototama/pull/43"
              :main/git-sha "09eb7730c3c2cadc6159daa6d201a48b312e7f58"
@@ -34,5 +39,10 @@
   :kagi {:status :adopted
          :pull-request "https://github.com/kotoba-lang/kagi/pull/13"
          :main/git-sha "153441e0fd0f5ff9e18424995cacc741200d4e97"
-         :verification {:local :pass :ci :pass}}}
- :non-consumers #{:kotoba-lang :kagitaba}}
+         :verification {:local :pass :ci :pass}}
+  :kagitaba {:status :adopted
+             :pull-request "https://github.com/kotoba-lang/kagitaba/pull/5"
+             :main/git-sha "c7b8702476d180de907011e957ff59622c996563"
+             :verification {:local :pass :ci :pass
+                            :runtime-path :sealed-import-admission}}}
+ :non-consumers #{}}
