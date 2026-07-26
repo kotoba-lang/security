@@ -6,7 +6,7 @@ Do not disclose sensitive vulnerability details in a public issue.
 
 Use GitHub Private Vulnerability Reporting:
 
-<https://github.com/kotoba-lang/kotoba/security/advisories/new>
+<https://github.com/kotoba-lang/security/security/advisories/new>
 
 Include affected versions, deployment profile, reproduction steps, impact,
 logs with secrets removed, and whether coordinated disclosure has timing
