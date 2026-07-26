@@ -26,6 +26,11 @@ This repository owns:
   exception register (`src/kotoba/security/release_gate.cljc`) and a FIPS/PQC
   crypto policy over envelopes and the crypto inventory
   (`src/kotoba/security/crypto_policy.cljc`, `policy/crypto-policy.edn`).
+- package admission, signed release evidence, origin assertions, sealed
+  egress, key hierarchy, threat-model and vulnerability-response executable
+  assurance. Package shape and registry semantics remain in
+  `kotoba-core-contracts`; this repository decides whether evidence is safe
+  enough to admit.
 
 This repository does not own:
 
@@ -58,10 +63,11 @@ language design alone cannot cover:
 - SBOM/SLSA release artifact requirements;
 - operational evidence packet requirements.
 
-Implementation and compliance evidence remain incomplete:
+Remaining compliance evidence is explicit:
 
-- package lock enforcement, signer revocation, key expiry, and registry
-  verification still need end-to-end implementation gates;
+- package lock enforcement, signer revocation, key expiry, registry
+  verification, and release admission have executable gates; production
+  deployment receipts are still environment-specific evidence;
 - PQC is designed as a crypto-agility and hybrid migration path, not yet
   implemented end-to-end;
 - continuous monitoring and IR drills need live deployment evidence;
