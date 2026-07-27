@@ -1,6 +1,7 @@
 (ns kotoba.security.abac-test
   (:require [clojure.test :refer [deftest is testing]]
-            [kotoba.security.abac :as abac]))
+            [kotoba.security.abac :as abac]
+            [kotoba.security.information-flow :as flow]))
 
 (def attributes
   {:subject {:id "did:owner" :signer :release :role :owner
@@ -43,3 +44,15 @@
       (let [result (abac/evaluate (assoc-in attributes path value) policy)]
         (is (false? (:abac/allowed? result)))
         (is (some #(= control (:abac/control %)) (:abac/violations result)))))))
+
+(deftest classification-lattice-is-not-duplicated
+  (testing "no-read-up (abac) and no-write-down (information-flow) rank identically"
+    ;; This namespace used to carry its own copy of the four-label lattice.
+    ;; Two copies can drift, and a drifted rank silently disagrees about which
+    ;; flows are downgrades -- abac would admit a read that information-flow
+    ;; would call an egress violation. Keep exactly one definition.
+    (is (identical? abac/classification-rank flow/ranks)
+        "abac/classification-rank must alias information-flow/ranks, not re-declare it")
+    (is (= [:public :internal :confidential :restricted]
+           (->> flow/ranks (sort-by val) (mapv key)))
+        "label order is load-bearing for both no-read-up and no-write-down")))

@@ -2,10 +2,18 @@
   "Portable, fail-closed subject/resource/action/environment policy evaluator.
   Callers normalize repository-specific manifests or requests at their trusted
   boundary and translate the returned control ids into their receipt schema."
-  (:require [clojure.set :as set]))
+  (:require [clojure.set :as set]
+            [kotoba.security.information-flow :as flow]))
 
 (def classification-rank
-  {:public 0 :internal 1 :confidential 2 :restricted 3})
+  "Alias of the one classification lattice, `kotoba.security.information-flow/ranks`.
+
+  This namespace decides no-read-up (subject clearance vs resource
+  classification); `information-flow` decides no-write-down (egress and
+  declassification). Both must rank the same labels identically, so the ranks
+  live in exactly one place. Kept as a var because it is part of this
+  namespace's public surface."
+  flow/ranks)
 
 (defn- values [x]
   (cond (nil? x) #{} (set? x) x (coll? x) (set x) :else #{x}))
