@@ -39,7 +39,7 @@
   [{:keys [component-bytes exports capabilities module-graph-digest name version]
     :or {exports [] capabilities []}}]
   (let [cid (component-cid component-bytes)]
-    (cond-> {:format :kotoba.module/v1
+    (cond-> {:format :kotoba.module/v2
              :name (or name "anonymous-guest")
              :version (or version "0.0.0")
              :component-cid cid
@@ -49,16 +49,37 @@
       (some? module-graph-digest)
       (assoc :module-graph-digest module-graph-digest))))
 
+(def module-keys
+  #{:format :name :version :component-cid :component-sha256
+    :exports :capabilities :module-graph-digest})
+
+(defn- canonical-value
+  [value]
+  (cond
+    (map? value) (into (sorted-map-by #(compare (pr-str %1) (pr-str %2)))
+                       (map (fn [[k v]] [(canonical-value k) (canonical-value v)]))
+                       value)
+    (set? value) (->> value (map canonical-value) (sort-by pr-str) vec)
+    (vector? value) (mapv canonical-value value)
+    (sequential? value) (mapv canonical-value value)
+    :else value))
+
+(defn module-digest
+  "SHA-256 over the canonical complete module record."
+  [module]
+  (sha256-hex (utf8 (pr-str (canonical-value module)))))
+
 (defn- statement-bytes
   "Canonical UTF-8 bytes signed by the publisher. Order is fixed so hosts
   recompute identically."
-  [{:keys [component-cid component-sha256 signer not-before expires name version]}]
+  [{:keys [component-cid component-sha256 module-sha256 signer not-before expires name version]}]
   (utf8
-   (str "kotoba.security.signed-module/v1\n"
+   (str "kotoba.security.signed-module/v2\n"
         "name:" name "\n"
         "version:" version "\n"
         "component-cid:" component-cid "\n"
         "component-sha256:" component-sha256 "\n"
+        "module-sha256:" module-sha256 "\n"
         "signer:" signer "\n"
         "not-before:" not-before "\n"
         "expires:" expires "\n")))
@@ -79,16 +100,17 @@
         did (ed/did-key-from-seed seed)
         now (or not-before (subs (str (Instant/now)) 0 10))
         exp (or expires "2099-01-01")
-        statement {:format :kotoba.module-statement/v1
+        statement {:format :kotoba.module-statement/v2
                    :name (:name module)
                    :version (:version module)
                    :component-cid (:component-cid module)
                    :component-sha256 (:component-sha256 module)
+                   :module-sha256 (module-digest module)
                    :signer did
                    :not-before now
                    :expires exp}
         sig (b64 (ed/sign seed (statement-bytes statement)))]
-    {:format :kotoba.security.signed-module/v1
+    {:format :kotoba.security.signed-module/v2
      :module module
      :statement statement
      :signature sig}))
@@ -112,7 +134,7 @@
            (not (map? envelope))
            (conj {:problem :signed-module/not-a-map})
 
-           (not= :kotoba.security.signed-module/v1 (:format envelope))
+           (not= :kotoba.security.signed-module/v2 (:format envelope))
            (conj {:problem :signed-module/format})
 
            (not (map? (:module envelope)))
@@ -138,6 +160,18 @@
                (catch Exception _ false))
              integrity-problems
              (cond-> []
+               (not= :kotoba.module/v2 (:format module))
+               (conj {:problem :signed-module/module-format})
+
+               (not= :kotoba.module-statement/v2 (:format statement))
+               (conj {:problem :signed-module/statement-format})
+
+               (not (every? module-keys (keys module)))
+               (conj {:problem :signed-module/unknown-module-field})
+
+               (not= (:module-sha256 statement) (module-digest module))
+               (conj {:problem :signed-module/module-digest-mismatch})
+
                (not= (:component-cid module) (:component-cid statement))
                (conj {:problem :signed-module/cid-mismatch})
 
@@ -154,7 +188,10 @@
                           (:component-sha256 module)))
                (conj {:problem :signed-module/content-sha-mismatch})
 
-               (and (seq trusted) (not (contains? trusted signer)))
+               (empty? trusted)
+               (conj {:problem :signed-module/trust-required})
+
+               (not (contains? trusted signer))
                (conj {:problem :signed-module/signer-not-trusted :signer signer})
 
                (contains? revoked signer)
