@@ -1,5 +1,5 @@
 (ns kotoba.security.information-flow-test
-  (:require [clojure.test :refer [deftest is]]
+  (:require [clojure.test :refer [deftest is testing]]
             [kotoba.security.information-flow :as flow]))
 
 (deftest labels-propagate-by-lattice-join
@@ -21,3 +21,43 @@
                  (flow/evaluate-egress
                   (assoc request :declassification-grant
                          (assoc grant :purpose :analytics))))))))
+
+;; ── the two vocabularies (2026-08-15) ────────────────────────────────────────
+
+(deftest personal-is-a-spelling-of-rank-two
+  ;; kotobase.classification names its classes
+  ;; [:public :internal :personal :restricted]. Before this, :personal reached
+  ;; join as an unknown label and was coerced to :restricted -- fail-closed,
+  ;; and therefore invisible: the composition was never wrong, it was never
+  ;; possible.
+  (is (= 2 (get flow/ranks :personal)))
+  (is (= :confidential (flow/canonical :personal)))
+  (is (= :confidential (flow/join [:personal])))
+  (testing "join returns a canonical label, so a grant's :from still matches"
+    (is (= (flow/join [:confidential]) (flow/join [:personal]))))
+  (testing "and it still joins upward, not to the synonym"
+    (is (= :restricted (flow/join [:personal :restricted])))
+    (is (= :confidential (flow/join [:public :personal])))))
+
+(deftest a-declassification-grant-matches-either-spelling
+  (let [ask (fn [label]
+              (flow/evaluate-egress
+               {:subject "s" :purpose :export :now "2026-08-15T00:00:00Z"
+                :input-classifications [label]
+                :output-classification :public
+                :declassification-grant {:subject "s" :purpose :export
+                                         :from :confidential :to :public
+                                         :expires-at "2026-09-01T00:00:00Z"}}))]
+    (is (true? (:information-flow/allowed? (ask :confidential))))
+    (is (true? (:information-flow/allowed? (ask :personal)))
+        "the same grant covers the same rank under either name")
+    (testing "and a genuinely higher label is still refused by it"
+      (is (false? (:information-flow/allowed? (ask :restricted)))))))
+
+(deftest an-unrankable-label-is-safe-and-no-longer-silent
+  (is (= :restricted (flow/join [:nonsense])) "still fail-closed")
+  (is (nil? (flow/canonical :nonsense)))
+  (is (= #{:nonsense} (flow/unknown-labels [:public :personal :nonsense])))
+  (testing "a fully understood set reports nothing, so the answer carries information"
+    (is (= #{} (flow/unknown-labels [:public :internal :confidential
+                                     :personal :restricted])))))
