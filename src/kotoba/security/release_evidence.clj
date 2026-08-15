@@ -5,10 +5,10 @@
   - package-verification receipt (verified)
   - signed guest module (S5) verified against trust
   - key-register snapshot without blocked publisher
-  - optional SBOM / provenance (required unless exception-register covers them)
+  - SBOM / provenance (mandatory for safe release)
 
-  Missing packet items fail closed. Exception-register entries require
-  :owner and :expires (ISO date); expired exceptions do not waive."
+  Missing packet items fail closed. Exceptions are governance records only;
+  they never waive cryptographic safe-release admission."
   (:require [kotoba.security.package-admission :as package-admission]
             [kotoba.security.signed-module :as signed-module])
   (:import [java.time Instant]))
@@ -16,36 +16,27 @@
 (def required-evidence-keys
   #{:package-receipt :signed-module :trust :key-register})
 
-(def optional-with-exception
+(def required-release-evidence
   #{:sbom :provenance})
 
 (defn- today []
   (subs (str (Instant/now)) 0 10))
 
-(defn- date-expired?
-  [expires now]
-  (and (string? expires) (string? now) (neg? (compare expires now))))
-
-(defn exception-covers?
-  "True when EXCEPTION-REGISTER has a live entry for KIND with owner+expiry."
-  [exception-register kind now]
-  (let [entries (or (:exceptions exception-register)
-                    (when (vector? exception-register) exception-register)
-                    [])]
-    (boolean
-     (some (fn [e]
-             (and (= kind (:kind e))
-                  (string? (:owner e))
-                  (seq (:owner e))
-                  (string? (:expires e))
-                  (not (date-expired? (:expires e) now))))
-           entries))))
-
-(defn- key-register-blocks-signer?
+(defn- key-register-authorizes-signer?
   [key-register signer]
-  (contains? (package-admission/key-register-blocked-signers
-              (or key-register {}))
-             signer))
+  (boolean
+   (some (fn [key]
+           (and (= signer (or (:key/signer key) (:key/id key)))
+                (= :active (:key/status key))))
+         (:keys key-register))))
+
+(defn- receipt-component-cids
+  [receipt]
+  (into #{}
+        (keep (fn [entry]
+                (or (:package/component-cid entry)
+                    (get-in entry [:package/build :component-cid]))))
+        (:kotoba.package/entries receipt)))
 
 (defn evaluate
   "Evaluate a release evidence packet.
@@ -57,8 +48,7 @@
    :key-register {:keys [...]}
    :sbom <map or path-identity optional>
    :provenance <map optional>
-   :exception-register {:exceptions [{:kind :sbom|:provenance :owner :expires}]}
-   :component-bytes <optional integrity>
+   :component-bytes <required integrity>
    :now \"YYYY-MM-DD\"
    :require-component-cid? true}
 
@@ -91,32 +81,32 @@
               (note! (assoc p :evidence :signed-module))))
         signer (or (:signer mod-result)
                    (get-in packet [:signed-module :statement :signer]))
+        component-cid (get-in mod-result [:module :component-cid])
+        receipt-cids (receipt-component-cids receipt)
+        _ (when-not (:component-bytes packet)
+            (note! {:problem :release/missing-component-bytes
+                    :message "component bytes required to bind release evidence"}))
+        _ (when (and component-cid (not (contains? receipt-cids component-cid)))
+            (note! {:problem :release/component-not-in-receipt
+                    :component-cid component-cid
+                    :message "signed component CID must equal an admitted receipt entry"}))
         _ (when (and signer
-                     (key-register-blocks-signer? (:key-register packet) signer))
-            (note! {:problem :release/signer-blocked
+                     (not (key-register-authorizes-signer?
+                           (:key-register packet) signer)))
+            (note! {:problem :release/signer-not-active
                     :signer signer
-                    :message "module signer is not active in key-register"}))
+                    :message "module signer must be present and active in key-register"}))
         _ (when (nil? (:key-register packet))
             (note! {:problem :release/missing-key-register
                     :message "key-register snapshot required for safe release"}))
         _ (when (nil? (:trust packet))
             (note! {:problem :release/missing-trust
                     :message "trust context required for safe release"}))
-        _ (doseq [kind optional-with-exception]
+        _ (doseq [kind required-release-evidence]
             (when (nil? (get packet kind))
-              (if (exception-covers? (:exception-register packet) kind now)
-                nil
-                (note! {:problem :release/missing-evidence
-                        :kind kind
-                        :message (str (name kind)
-                                      " required unless exception-register waives it")}))))
-        _ (when-let [ex (:exception-register packet)]
-            (doseq [e (or (:exceptions ex) (when (vector? ex) ex) [])]
-              (when-not (and (string? (:owner e)) (seq (:owner e))
-                             (string? (:expires e)))
-                (note! {:problem :release/invalid-exception
-                        :entry e
-                        :message "exception requires :owner and :expires"}))))]
+              (note! {:problem :release/missing-evidence
+                      :kind kind
+                      :message (str (name kind) " required for safe release")})))]
     {:ok? (empty? @problems)
      :problems @problems
      :evidence {:package-verified? (true? (:ok? release))
