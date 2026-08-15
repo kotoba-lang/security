@@ -53,6 +53,15 @@
     ;; would call an egress violation. Keep exactly one definition.
     (is (identical? abac/classification-rank flow/ranks)
         "abac/classification-rank must alias information-flow/ranks, not re-declare it")
-    (is (= [:public :internal :confidential :restricted]
-           (->> flow/ranks (sort-by val) (mapv key)))
-        "label order is load-bearing for both no-read-up and no-write-down")))
+    (is (= [:public :internal :confidential :restricted] flow/canonical-by-rank)
+        "label order is load-bearing for both no-read-up and no-write-down")
+    ;; `ranks` may carry a synonym (`:personal` is kotobase.classification's
+    ;; name for rank 2), so it is no longer a four-entry map. What must stay
+    ;; true is that a synonym cannot introduce a rank outside the canonical
+    ;; order -- that is what would let the two decisions disagree.
+    (is (every? #(contains? (set flow/canonical-by-rank) (flow/canonical %))
+                (keys flow/ranks))
+        "every ranked label canonicalises into the canonical order")
+    (is (= (count flow/canonical-by-rank)
+           (count (distinct (vals flow/ranks))))
+        "and introduces no rank the canonical order does not name")))
