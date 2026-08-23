@@ -7,15 +7,32 @@
 (def other-bytes (.getBytes "other-component" "UTF-8"))
 (def seed (byte-array (range 32)))
 
+;; Both ends of the validity window are pinned, and the fixture verifies at
+;; `evaluated-at`, inside it. `signed-module/sign` defaults :not-before to the
+;; wall clock, so a fixture that pins only the verification :now signs a module
+;; that is not-yet-valid the day after it is written: the test passed on
+;; 2026-08-15 and reported :signed-module/not-yet-valid every day after.
+;; Pin what is compared, on both sides.
+(def signed-not-before "2026-01-01")
+(def signed-expires "2099-01-01")
+(def evaluated-at "2026-08-15")
+
+(defn sign-opts
+  "Signing opts with an explicitly pinned validity window."
+  [not-before]
+  {:seed seed
+   :name "agent-program"
+   :version "1.0.0"
+   :exports ["run"]
+   :capabilities [:clock/read]
+   :not-before not-before
+   :expires signed-expires
+   :module-graph-digest "sha256:graph"})
+
 (defn packet
   ([] (packet component-bytes))
   ([bytes]
-   (let [envelope (signed-module/sign bytes {:seed seed
-                                             :name "agent-program"
-                                             :version "1.0.0"
-                                             :exports ["run"]
-                                             :capabilities [:clock/read]
-                                             :module-graph-digest "sha256:graph"})
+   (let [envelope (signed-module/sign bytes (sign-opts signed-not-before))
          signer (get-in envelope [:statement :signer])
          cid (signed-module/component-cid component-bytes)]
      {:package-receipt
@@ -31,7 +48,7 @@
       :key-register {:keys [{:key/id signer :key/status :active}]}
       :sbom {:digest "sha256:sbom"}
       :provenance {:digest "sha256:provenance"}
-      :now "2026-08-15"
+      :now evaluated-at
       :require-component-cid? true})))
 
 (deftest complete-release-identity-is-admitted
@@ -77,3 +94,27 @@
     (is (some #(and (= :release/missing-evidence (:problem %))
                     (= :sbom (:kind %)))
               (:problems result)))))
+
+(deftest fixture-signs-a-module-that-is-in-force-at-the-evaluation-instant
+  ;; Guards the regression that made this namespace fail from 2026-08-16 on:
+  ;; `signed-module/sign` defaults :not-before to the wall clock, so a fixture
+  ;; that pins only the verification :now signs a module whose window opens
+  ;; later than the instant it is verified at. Pin both, and prove the check
+  ;; that caught it is still live rather than merely quiet.
+  (testing "the pinned window brackets the evaluation instant"
+    (is (neg? (compare signed-not-before evaluated-at)))
+    (is (neg? (compare evaluated-at signed-expires)))
+    (is (= signed-not-before
+           (get-in (packet) [:signed-module :statement :not-before]))
+        "not-before must come from the fixture, not from the wall clock"))
+  (testing "as shipped, no validity problem is reported"
+    (is (not-any? #(= :signed-module/not-yet-valid (:problem %))
+                  (:problems (release-evidence/evaluate (packet))))))
+  (testing "a module signed into force after the evaluation instant is rejected"
+    (let [late (assoc (packet)
+                      :signed-module
+                      (signed-module/sign component-bytes (sign-opts "2098-01-01")))
+          result (release-evidence/evaluate late)]
+      (is (false? (:ok? result)))
+      (is (= [:signed-module/not-yet-valid] (mapv :problem (:problems result)))
+          "the late window must be the only thing that fails"))))
