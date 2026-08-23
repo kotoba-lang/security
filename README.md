@@ -18,6 +18,12 @@ This repository owns:
   Wasm execution, package distribution, identity, storage, and audit;
 - standards mappings for NIST CSF 2.0, selected NIST SP 800 controls, DoDAF
   2.02 architecture products, and post-quantum cryptography migration;
+- a crosswalk from SOC 2 Trust Services Criteria and ISO/IEC 27001:2022
+  Annex A onto the evidence this repository actually holds
+  ([control-crosswalk.edn](policy/control-crosswalk.edn),
+  `src/kotoba/security/crosswalk.cljc`), which separates design evidence from
+  operating evidence so that a Type I claim cannot be mistaken for a Type II
+  one;
 - control evidence checklists that point back to implementation tests,
   conformance fixtures, ADRs, and run receipts;
 - security acceptance gates for safe Kotoba, package locks, aiueos manifests,
@@ -96,8 +102,50 @@ Remaining compliance evidence is explicit:
 - [ADR: Shared Security Adoption v3](docs/ADR-shared-security-adoption-v3.md)
 - [Hybrid Envelope Test Vectors](docs/hybrid-envelope-vectors.md)
 
+## Attestation and certification readiness
+
+`policy/control-crosswalk.edn` maps SOC 2 TSC common criteria (CC1-CC9, 33
+criteria encoded) and a subset of ISO/IEC 27001:2022 Annex A onto the claims in
+`registers/evidence-index.edn`. It holds clause numbers and **our own
+descriptors** -- no requirement text from either standard is reproduced, and
+`:control/descriptor` must not be quoted as if it were.
+
+```sh
+nbb --classpath src scripts/check-crosswalk.cljs          # position
+nbb --classpath src scripts/check-crosswalk.cljs --gaps   # the controls that are short
+```
+
+Measured 2026-08-23:
+
+| Framework | Encoded | Evidenced | Not mapped | design / impl / operating |
+|---|---|---|---|---|
+| SOC 2 TSC (Security) | 33 | 24 | 9 | 13 / 11 / **0** |
+| ISO/IEC 27001:2022 Annex A | 13 of 93 | 8 | 5 | 2 / 6 / **0** |
+
+Neither is ready, for two different reasons that must not be conflated:
+
+- **Type I / Stage 1** is short because 9 TSC criteria have no evidence assigned
+  at all -- control environment (CC1.1, CC1.4), external communication (CC2.3),
+  fraud risk (CC3.3), human user provisioning (CC6.2), physical access to the
+  mac-mini fleet (CC6.4), media disposal (CC6.5), recovery (CC7.5), and business
+  continuity (CC9.1). These are documents and procedures, not code.
+- **Type II / Stage 2** is short because **no claim in this repository carries
+  operating strength**. Every workstream in
+  `registers/remaining-operational-gaps.edn` is `:external-operation-required`
+  and `:operational/readiness` is `:not-qualified`. `type-ii-readiness` reads
+  that register directly and cannot be talked out of it by filling in the
+  crosswalk -- `crosswalk_test.clj` proves this with a control that grants every
+  claim operating strength and still gets `ready? false`.
+
+`:unevidenced` is 0 today, and that is a property of how the first crosswalk was
+written (only claims that exist in the evidence index were mapped), not a
+statement that 24 criteria would satisfy an auditor. Extending the crosswalk
+will make `:unevidenced` rise; that is the gap becoming visible, not a
+regression.
+
 ## Registers
 
+- [Control Crosswalk](policy/control-crosswalk.edn) (SOC 2 TSC / ISO 27001 Annex A)
 - [Risk Register](registers/risk-register.edn)
 - [Exception Register](registers/exception-register.edn)
 - [Key Register](registers/key-register.edn)
