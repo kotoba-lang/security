@@ -304,8 +304,15 @@
    :control/descriptor "構成の逸脱と新たな脆弱性の検知手段の整備"
    :control/csf [:detect] :control/nist-800-53 [:CM :RA :SI]
    :control/requires-claims #{:crypto-inventory-checked}
-   :control/gap "**脆弱性スキャンが 1 本も存在しない。** SBOM は設計文書のみで
-                 生成器が無く、CVE 照合も走っていない。CC7.1 で最初に問われる。"}
+   :control/gap "SBOM と CVE 照合の **モデルは存在する** —— `kotoba-lang/app-sbom`
+                 が component(purl) / OSV からの CVE 取り込み / VulnMatch /
+                 severity 別 SLA / blast radius を 1,823 行 + テストで持つ。
+                 欠けているのは 2 つ: (1) `sbom.etzhayyim.com` が名前解決せず
+                 **未デプロイ**、(2) このワークスペースの実依存を component として
+                 投入するものが無い。つまり『仕組みが無い』のではなく
+                 **自分たちの依存を一度も測っていない**。初版のこの gap 欄は
+                 『脆弱性スキャンが 1 本も存在しない』と書いていたが誤りで、
+                 索引を引かずに不在を結論した（2026-08-23 訂正）。"}
   {:control/framework :soc2-tsc-2017 :control/id "CC7.2"
    :control/descriptor "異常・セキュリティ事象の監視と分析"
    :control/csf [:detect] :control/nist-800-53 [:AU :SI :IR]
@@ -401,8 +408,10 @@
    :control/descriptor "技術的脆弱性の管理"
    :control/csf [:identify :protect]
    :control/requires-claims #{}
-   :control/gap "**脆弱性評価の仕組みが 1 本も無い。** CC7.1 と同じ穴で、
-                 SOC 2 と ISO 27001 の双方で最初に問われる。"}
+   :control/gap "CC7.1 と同じ穴。`kotoba-lang/app-sbom` にモデルは在るが未デプロイで、
+                 自分たちの依存が 1 件も component として登録されていない。
+                 A.8.8 が問うのは仕組みの有無ではなく **脆弱性を実際に把握し
+                 対処しているか** なので、モデルの存在は答えにならない。"}
   {:control/framework :iso-27001-2022 :control/id "A.8.9"
    :control/descriptor "構成管理"
    :control/csf [:protect]
