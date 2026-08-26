@@ -127,13 +127,17 @@
 
 ;; ── 現在地の記録（数値が動いたら読み直させる） ─────────────────────────
 
-(deftest measured-position-2026-08-23
+(deftest measured-position-2026-08-26
   (let [tsc (cw/framework-report crosswalk evidence :soc2-tsc-2017)
         iso (cw/framework-report crosswalk evidence :iso-27001-2022)]
     (is (= 33 (:total tsc)))
-    (is (= 13 (:total iso)))
+    ;; 14 since 2026-08-26: A.8.7 (protection against malware) was added.
+    ;; It arrives :not-mapped, so the register got *worse-looking* and truer —
+    ;; the control was previously absent, which is the one state in which a gap
+    ;; cannot be reported at all.
+    (is (= 14 (:total iso)))
     (is (zero? (get (:strengths tsc) :operating 0)))
     (is (zero? (get (:strengths iso) :operating 0)))
     (is (= {:not-mapped 9 :evidenced 24} (:counts tsc)))
     (is (= {:design 13 :implementation 11} (:strengths tsc)))
-    (is (= {:not-mapped 5 :evidenced 8} (:counts iso)))))
+    (is (= {:not-mapped 6 :evidenced 8} (:counts iso)))))
