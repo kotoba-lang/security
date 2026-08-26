@@ -1,6 +1,6 @@
 {:register/type :kotoba.security/control-crosswalk
  :register/version 1
- :crosswalk/as-of "2026-08-23"
+ :crosswalk/as-of "2026-08-26"
 
  ;; ── なぜこの register が要るのか ──────────────────────────────────────────
  ;;
@@ -404,6 +404,36 @@
    :control/csf [:recover]
    :control/requires-claims #{}
    :control/gap "CC9.1 と同じ穴。"}
+  ;; A.8.7 was absent from this register until 2026-08-26. The reason it was
+  ;; absent is worth keeping: CC6.8 (prevention of unauthorised software
+  ;; execution) is mapped here to the package admission gate and signature
+  ;; verification, and that mapping is correct — it is genuinely how this
+  ;; workspace answers "how do you stop hostile code running". Having answered
+  ;; that once, nobody noticed that A.8.7 asks a wider question: detection,
+  ;; prevention, **recovery**, and user awareness. An admission gate is one
+  ;; quarter of that, and a register that omits the control cannot show which
+  ;; three quarters are missing.
+  {:control/framework :iso-27001-2022 :control/id "A.8.7"
+   :control/descriptor "マルウェアからの保護（検出・防止・復旧・利用者の認識）"
+   :control/csf [:protect :detect :recover]
+   :control/nist-800-53 [:SI :CM :AT]
+   :control/requires-claims #{}
+   :control/gap "**防止**は CC6.8 と同じ証拠が当たる（admission gate + 署名検証 +
+                 失効署名者の拒否）。残る 3 つは未達で、しかも別々の理由で未達である。
+                 **検出**: 2026-08-26 に `cloud-itonami/aratame`（ADR-2608262300）が
+                 判定面として着地した —— 証拠から verdict を出し、独立した governor が
+                 admission を決める。ただし検出エンジンは持たず、常駐監視も content
+                 inspection も無い。実機の検出は macOS の XProtect が担っており、
+                 `aratame doctor` はその版を報告するが、**版を報告することと
+                 統制を運用することは別**である。
+                 **復旧**: `kotoba-lang/quarantine` が可逆隔離（delete opcode を持たない）
+                 と restore を実装しているが、マルウェア事象からの復旧手順として
+                 演習された receipt は無い。
+                 **利用者の認識**: 対応する仕組みが 1 つも無い（教育・周知の register が
+                 存在しない）。A.5.30 / W 系 workstream と同じ外部運用待ちですらない。
+                 したがって `:requires-claims` は空のままにする —— ここに CC6.8 の
+                 claim を写すと、4 分の 1 の証拠で統制が満たされたように見える。
+                 evidenced ではなく **not-mapped** が今日の正しい状態である。"}
   {:control/framework :iso-27001-2022 :control/id "A.8.8"
    :control/descriptor "技術的脆弱性の管理"
    :control/csf [:identify :protect]
