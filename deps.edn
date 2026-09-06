@@ -17,12 +17,19 @@
         ;; tools.deps dedupes by the coordinate SYMBOL, so a closure that
         ;; reaches this repository under both spellings gets two cbor.core, at
         ;; two shas -- two answers to what the canonical bytes of a manifest
-        ;; are, in the file that checks manifests against them. The :git/url is
-        ;; dropped rather than corrected: io.github.<org>/<name> derives it, and
-        ;; a separate URL is what let the coordinate and the repository drift
-        ;; apart without anything failing.
+        ;; are, in the file that checks manifests against them.
+        ;;
+        ;; The :git/url is corrected and KEPT, not dropped. Dropping it and
+        ;; letting io.github.<org>/<name> derive the URL is tempting -- it makes
+        ;; the two impossible to disagree again -- but measured: it also removes
+        ;; this dependency from what scripts/verify-repository-roles.cljs can
+        ;; see. Its production-deps reads `(:git/url coordinate)` and keeps
+        ;; nothing else, so a URL-less entry is not merely renamed there, it
+        ;; disappears, and the :depends-on list in resources/repository-rules.edn
+        ;; -- which that check asserts equal -- silently stops covering it.
         io.github.kotoba-lang/org-ietf-cbor
-        {:git/sha "58144e81ccdf7a82367085c66ea21ca84a1a7ddb"}
+        {:git/url "https://github.com/kotoba-lang/org-ietf-cbor.git"
+         :git/sha "58144e81ccdf7a82367085c66ea21ca84a1a7ddb"}
         io.github.kotoba-lang/org-ietf-ed25519
         {:git/url "https://github.com/kotoba-lang/org-ietf-ed25519.git"
          :git/sha "c1ba8322a33b668da1311ca69a8cdde3c7981b52"}
