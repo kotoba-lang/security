@@ -1,8 +1,13 @@
 {:paths ["src" "."]
  :deps {org.clojure/clojure {:mvn/version "1.12.4"}
+        ;; 34767203 is a FLOOR: it is the first commit carrying
+        ;; `manifest-without-self-cid` / `compute-manifest-cid` /
+        ;; `manifest-integrity-error` in the portable kernel. This namespace
+        ;; delegates to them, so an older pin does not weaken a check here --
+        ;; it fails to load.
         io.github.kotoba-lang/kotoba-core-contracts
         {:git/url "https://github.com/kotoba-lang/kotoba-core-contracts.git"
-         :git/sha "1b7fb7907990746f681b8ccab7ee549ee78a625b"}
+         :git/sha "34767203dd67cee59f705f096278b9c831547b9d"}
         io.github.kotoba-lang/dag-cbor
         {:git/url "https://github.com/kotoba-lang/dag-cbor.git"
          :git/sha "58144e81ccdf7a82367085c66ea21ca84a1a7ddb"}
