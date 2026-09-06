@@ -19,8 +19,7 @@
   copied from a different package entirely -- is rejected here, where the
   previous shape-only check would have silently accepted it as long as the
   string merely looked CID-shaped."
-  (:require [cbor.core :as cbor]
-            [clojure.edn :as edn]
+  (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.pprint :as pprint]
             [clojure.set :as set]
@@ -203,64 +202,30 @@
                     (:kotoba.package/capabilities manifest)
                     [])))))
 
-(defn manifest-without-self-cid
-  "MANIFEST with its own self-declared :manifest-cid removed, AND its
-  :kotoba.package/signatures removed -- both are content a manifest's CID
-  must be computed OVER TOP OF, never included IN. :manifest-cid's exclusion
-  is the obvious case (the same reason a git commit's hash never covers its
-  own hash, or an IPFS DAG node's CID never covers its own CID field).
-  :signatures' exclusion is required for the SAME reason once
-  `kotoba.lang.package-contract/signatures-error` does real Ed25519
-  verification (kotoba-lang PR #16, 2607131500): a signer's :sig attests to
-  this manifest's :manifest-cid (`(signed-bytes manifest-cid)`), so if
-  :manifest-cid's own hash also covered :signatures, producing a
-  self-consistent manifest+signature pair would require solving a circular
-  fixed point (the signature depends on the CID, and -- had :signatures not
-  been excluded here -- the CID would depend on the signature) with no
-  general closed-form solution. Excluding :signatures from the hashed
-  content breaks the cycle: the CID is a pure function of the manifest's
-  substantive fields, computed once, then signed, and the signature can be
-  attached/rotated/added afterward without ever changing what the CID
-  covers.
+(def manifest-without-self-cid
+  "Delegated to `kotoba.lang.package-contract`, which is `.cljc`.
 
-  KNOWN LIMITATION (independent review of PR #305, 2607131600): since
-  :manifest-cid no longer covers :signatures, the CID cannot bind WHICH or
-  HOW MANY signers vouched for this content -- `signatures-error` verifies
-  every signature entry PRESENT is individually valid, but nothing requires
-  a minimum count, a quorum, or membership in an authorized-signer set,
-  so a manifest with one legitimate co-signer's entry silently removed (CID
-  untouched) still passes admission today. Not currently exploitable
-  because no policy in this codebase relies on that binding yet (this repo's
-  only signer-list logic, :dep/signers in LOCK entries, is unrelated -- it
-  gates dependencies against a revoked/expired/compromised denylist, not a
-  manifest's own signer set). An n-of-m or quorum signing policy, if ever
-  built, needs its own binding mechanism independent of :manifest-cid."
-  [manifest]
-  (-> manifest
-      (update :kotoba.package/source dissoc :manifest-cid)
-      (dissoc :kotoba.package/signatures)))
+  This namespace carried its own copy until 2026-09-06, and had to: the
+  contract kernel had no `cbor.core` dependency and this was the only layer
+  that could compute a manifest CID. That stopped being true when
+  `kotoba.compiler.nbb.package-lock` needed the same check on Node -- amu
+  cannot load a `.clj` namespace -- so the three functions moved into the
+  kernel and this file now points at them.
 
-(defn compute-manifest-cid
-  "The real CIDv1 (canonical DAG-CBOR + sha2-256, `cbor.core`/
-  `multiformats.core` -- the same CID shape `kotoba.lang.package-contract/
-  cid?` now structurally validates, kotoba-lang/kotoba-lang#13) of
-  MANIFEST's actual content, excluding its own self-declared :manifest-cid."
-  [manifest]
-  (mf/cidv1-dag-cbor (cbor/encode (manifest-without-self-cid manifest))))
+  Kept as vars rather than deleted: `verify-lock`, `verify-project-lock` and
+  this repository's tests call them by these names, and two implementations of
+  one rule is the failure `scripts/check-package-contract.bb` demonstrated
+  before it was removed -- it drifted, and the drift was invisible until a
+  rule landed that the copy did not have."
+  package-contract/manifest-without-self-cid)
 
-(defn manifest-integrity-error
-  "nil if MANIFEST's self-declared :manifest-cid matches what its content
-  actually hashes to; a package-contract-shaped error otherwise. Only
-  meaningful once the shape check (`package-contract/package-manifest-error`)
-  has already confirmed :manifest-cid is CID-shaped at all -- a missing or
-  malformed field is that check's problem to report, not this one's."
-  [manifest]
-  (let [declared (get-in manifest [:kotoba.package/source :manifest-cid])]
-    (when (package-contract/cid? declared)
-      (let [computed (compute-manifest-cid manifest)]
-        (when (not= declared computed)
-          (package-contract/invalid "manifest cid does not match manifest content"
-                                    {:declared declared :computed computed}))))))
+(def compute-manifest-cid
+  "Delegated -- see `manifest-without-self-cid`."
+  package-contract/compute-manifest-cid)
+
+(def manifest-integrity-error
+  "Delegated -- see `manifest-without-self-cid`."
+  package-contract/manifest-integrity-error)
 
 (defn lock-level-error
   [lock]
