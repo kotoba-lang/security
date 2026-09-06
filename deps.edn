@@ -8,9 +8,21 @@
         io.github.kotoba-lang/kotoba-core-contracts
         {:git/url "https://github.com/kotoba-lang/kotoba-core-contracts.git"
          :git/sha "34767203dd67cee59f705f096278b9c831547b9d"}
-        io.github.kotoba-lang/dag-cbor
-        {:git/url "https://github.com/kotoba-lang/dag-cbor.git"
-         :git/sha "58144e81ccdf7a82367085c66ea21ca84a1a7ddb"}
+        ;; Renamed upstream: kotoba-lang/dag-cbor is kotoba-lang/org-ietf-cbor.
+        ;; The old name resolved only through GitHub's redirect, and a redirect
+        ;; is not a dependency declaration -- it kept the build green while this
+        ;; coordinate named no repository, which is why nothing noticed. The sha
+        ;; does not move: 58144e81 is the same commit under either name, so the
+        ;; classpath is unchanged; only the name is. It matters here because
+        ;; tools.deps dedupes by the coordinate SYMBOL, so a closure that
+        ;; reaches this repository under both spellings gets two cbor.core, at
+        ;; two shas -- two answers to what the canonical bytes of a manifest
+        ;; are, in the file that checks manifests against them. The :git/url is
+        ;; dropped rather than corrected: io.github.<org>/<name> derives it, and
+        ;; a separate URL is what let the coordinate and the repository drift
+        ;; apart without anything failing.
+        io.github.kotoba-lang/org-ietf-cbor
+        {:git/sha "58144e81ccdf7a82367085c66ea21ca84a1a7ddb"}
         io.github.kotoba-lang/org-ietf-ed25519
         {:git/url "https://github.com/kotoba-lang/org-ietf-ed25519.git"
          :git/sha "c1ba8322a33b668da1311ca69a8cdde3c7981b52"}
