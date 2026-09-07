@@ -1,6 +1,6 @@
 (ns kotoba.security.sealed-egress
   "One authenticated block envelope for every private-data egress seam."
-  (:require [clojure.edn :as edn]
+  (:require [kotoba.lang.edn :as edn]
             [kotoba.security.cold-tier-admission :as admission])
   (:import [java.nio ByteBuffer]
            [java.security SecureRandom]

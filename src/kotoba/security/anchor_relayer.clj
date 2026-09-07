@@ -1,6 +1,6 @@
 (ns kotoba.security.anchor-relayer
   "Deterministic authenticated anchor-relayer state machine."
-  (:require [clojure.edn :as edn]))
+  (:require [kotoba.lang.edn :as edn]))
 
 (def policy-path "qualification/anchor-relayer-policy.edn")
 

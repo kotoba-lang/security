@@ -1,5 +1,5 @@
 (ns kotoba.security.assurance-v2-test
-  (:require [clojure.edn :as edn]
+  (:require [kotoba.lang.edn :as edn]
             [clojure.test :refer [deftest is testing]]
             [kotoba.security.assurance :as assurance]
             [kotoba.security.score :as score]))

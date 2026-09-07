@@ -1,5 +1,5 @@
 (ns kotoba.security.shared-security-adoption-test
-  (:require [clojure.edn :as edn]
+  (:require [kotoba.lang.edn :as edn]
             [clojure.test :refer [deftest is testing]]))
 
 (def policy

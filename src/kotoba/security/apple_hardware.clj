@@ -4,7 +4,7 @@
   Apple EC signing can satisfy hardware-backed/non-export/signing controls,
   but it deliberately cannot claim ML-KEM, general HSM attestation, rotation,
   or outage qualification."
-  (:require [clojure.edn :as edn]
+  (:require [kotoba.lang.edn :as edn]
             [clojure.java.shell :as shell]))
 
 (defn probe

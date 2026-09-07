@@ -1,6 +1,6 @@
 (ns kotoba.security.key-hierarchy
   "Versioned cross-product key hierarchy qualification."
-  (:require [clojure.edn :as edn]
+  (:require [kotoba.lang.edn :as edn]
             [kotoba.lang.coll :as set]))
 
 (def policy-path "qualification/key-hierarchy.edn")

@@ -1,5 +1,5 @@
 (ns kotoba.security.adoption-v3-closure-test
-  (:require [clojure.edn :as edn]
+  (:require [kotoba.lang.edn :as edn]
             [clojure.test :refer [deftest is]]))
 
 (def closure

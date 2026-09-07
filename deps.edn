@@ -42,7 +42,12 @@
         ;; set-union/set-intersection/set-difference/subset?.
         io.github.kotoba-lang/coll
         {:git/url "https://github.com/kotoba-lang/coll.git"
-         :git/sha "9c223287998a59320f7b79a972c8198c14c6fab8"}}
+         :git/sha "9c223287998a59320f7b79a972c8198c14c6fab8"}
+        ;; Replaces ad-hoc `clojure.edn` usage with the bounded, hardened EDN
+        ;; reader (size/depth/node-count limits, dispatch forms forbidden).
+        io.github.kotoba-lang/edn
+        {:git/url "https://github.com/kotoba-lang/edn.git"
+         :git/sha "250f4dafa5f5c7fb3109703496a52866e2a62dcd"}}
  :aliases
  {:test {:extra-paths ["test"]
          :extra-deps {io.github.cognitect-labs/test-runner

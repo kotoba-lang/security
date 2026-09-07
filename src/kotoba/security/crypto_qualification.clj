@@ -1,6 +1,6 @@
 (ns kotoba.security.crypto-qualification
   "Machine validation for the Grade A cryptographic algorithm inventory."
-  (:require [clojure.edn :as edn])
+  (:require [kotoba.lang.edn :as edn])
   (:import [java.io File]
            [java.security MessageDigest]
            [javax.crypto Cipher]))
