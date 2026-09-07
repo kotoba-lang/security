@@ -3,7 +3,7 @@
 
   Receipts are accepted only when bound to an expected environment, authority,
   immutable artifact digest and verifier-supplied signature check."
-  (:require [clojure.set :as set]
+  (:require [kotoba.lang.coll :as set]
             [kotoba.security.abac :as abac]
             [kotoba.security.approval :as approval]
             [kotoba.security.capability :as capability]
@@ -201,7 +201,7 @@
          :qualification/control :unrecoverable-loss
          :qualification/evidence-level :E4
          :qualification/regions
-         (set/union (:restore-drill/sites restore-check)
+         (set/set-union (:restore-drill/sites restore-check)
                     (:threshold-recovery/regions threshold-check))
          :qualification/threshold (:threshold-recovery/threshold threshold-check)
          :qualification/rto-ms (:restore-drill/rto-ms restore-check)

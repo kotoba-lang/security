@@ -7,7 +7,7 @@
   without making ordinary development CI impossible."
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [clojure.set :as set])
+            [kotoba.lang.coll :as set])
   (:import [java.time LocalDate]))
 
 (def program-path "qualification/grade-a-program.edn")
@@ -16,7 +16,7 @@
   (set (map #(keyword (format "%s-%02d" prefix %)) (range 1 (inc n)))))
 
 (def required-gap-ids
-  (set/union (ids "K" 10)
+  (set/set-union (ids "K" 10)
              (ids "T" 8)
              (ids "A" 10)
              (ids "L" 8)
@@ -45,12 +45,12 @@
         [{:problem :unsupported-version :actual (:grade-a/version program)}])
       (when-not (= required-gap-ids gap-ids)
         [{:problem :gap-inventory-drift
-          :missing (sort (set/difference required-gap-ids gap-ids))
-          :unexpected (sort (set/difference gap-ids required-gap-ids))}])
+          :missing (sort (set/set-difference required-gap-ids gap-ids))
+          :unexpected (sort (set/set-difference gap-ids required-gap-ids))}])
       (when-not (= required-hard-gate-ids gate-ids)
         [{:problem :hard-gate-inventory-drift
-          :missing (sort (set/difference required-hard-gate-ids gate-ids))
-          :unexpected (sort (set/difference gate-ids required-hard-gate-ids))}])
+          :missing (sort (set/set-difference required-hard-gate-ids gate-ids))
+          :unexpected (sort (set/set-difference gate-ids required-hard-gate-ids))}])
       (for [[id entry] entries
             :when (not (contains? statuses (:status entry)))]
         {:problem :invalid-status :id id :status (:status entry)})

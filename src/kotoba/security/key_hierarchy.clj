@@ -1,7 +1,7 @@
 (ns kotoba.security.key-hierarchy
   "Versioned cross-product key hierarchy qualification."
   (:require [clojure.edn :as edn]
-            [clojure.set :as set]))
+            [kotoba.lang.coll :as set]))
 
 (def policy-path "qualification/key-hierarchy.edn")
 (def required-products #{:kotoba :kototama :aiueos :kotoba-lang :kotobase})
@@ -10,7 +10,7 @@
 
 (defn report [policy]
   (let [products (:products policy)
-        coverage (reduce set/union #{} (map :purposes (vals products)))
+        coverage (reduce set/set-union #{} (map :purposes (vals products)))
         product-errors
         (into {}
               (map (fn [[id entry]]

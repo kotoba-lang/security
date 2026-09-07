@@ -2,7 +2,7 @@
   (:require [clojure.test :refer [deftest is testing]]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [clojure.set :as set]
+            [kotoba.lang.coll :as set]
             [kotoba.security.crosswalk :as cw]))
 
 (def crosswalk (edn/read-string (slurp (io/file "policy/control-crosswalk.edn"))))
@@ -19,7 +19,7 @@
   (let [vocab (set (mapcat :evidence/claims (:evidence evidence)))
         required (set (mapcat #(or (:control/requires-claims %) #{})
                               (:crosswalk/controls crosswalk)))
-        unknown (set/difference required vocab)]
+        unknown (set/set-difference required vocab)]
     (is (empty? unknown)
         (str "crosswalk が evidence-index に無い claim を要求している: " unknown))))
 
@@ -27,7 +27,7 @@
   (let [classified (set (keys (:crosswalk/claim-strength crosswalk)))
         required (set (mapcat #(or (:control/requires-claims %) #{})
                               (:crosswalk/controls crosswalk)))
-        unclassified (set/difference required classified)]
+        unclassified (set/set-difference required classified)]
     (is (empty? unclassified)
         (str "強さが分類されていない claim: " unclassified
              " — 既定値で埋めると設計止まりの証拠が黙って数えられる"))))

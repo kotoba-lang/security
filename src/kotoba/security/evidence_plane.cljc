@@ -3,7 +3,7 @@
 
   Cryptography and storage are injected at the trust boundary. This namespace
   verifies their receipts; it does not claim that a local file is remote or E4."
-  (:require [clojure.set :as set]))
+  (:require [kotoba.lang.coll :as set]))
 
 (def required-entry-fields
   #{:evidence/version :evidence/id :evidence/sequence
@@ -23,7 +23,7 @@
 (defn entry-problems
   [entry {:keys [environment authority-id log-id artifact-digest control
                  now-ms max-age-ms verify-signature-fn digest-entry-fn]}]
-  (let [missing (set/difference required-entry-fields (set (keys entry)))
+  (let [missing (set/set-difference required-entry-fields (set (keys entry)))
         issued (:evidence/issued-at-ms entry)
         computed (when (ifn? digest-entry-fn)
                    (safe-call digest-entry-fn
@@ -95,7 +95,7 @@
           entry-violations chain-violations
           (cond-> []
             (not= (count nonces) (count (set nonces))) (conj :duplicate-nonce)
-            (seq (set/intersection (set seen-nonces) (set nonces)))
+            (seq (set/set-intersection (set seen-nonces) (set nonces)))
             (conj :replayed-nonce)
             (not= (:head/log-id head) (:evidence/log-id last-entry))
             (conj :head-log)

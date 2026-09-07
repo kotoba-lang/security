@@ -1,5 +1,5 @@
 (ns kotoba.security.threat-model-test
-  (:require [clojure.set :as set]
+  (:require [kotoba.lang.coll :as set]
             [clojure.test :refer [deftest is]]
             [kotoba.security.threat-model :as threat-model]))
 
