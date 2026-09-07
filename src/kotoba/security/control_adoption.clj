@@ -1,6 +1,6 @@
 (ns kotoba.security.control-adoption
   "Fail-closed cross-product adoption verifier for shared security controls."
-  (:require [clojure.edn :as edn]
+  (:require [kotoba.lang.edn :as edn]
             [kotoba.lang.coll :as set])
   (:import [java.math BigInteger]
            [java.security MessageDigest]))

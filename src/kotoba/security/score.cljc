@@ -1,5 +1,5 @@
 (ns kotoba.security.score
-  (:require [clojure.edn :as edn]
+  (:require [kotoba.lang.edn :as edn]
             [kotoba.lang.coll :as set]
             #?(:clj [clojure.java.io :as io])))
 

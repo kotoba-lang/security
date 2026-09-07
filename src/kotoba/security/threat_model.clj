@@ -1,6 +1,6 @@
 (ns kotoba.security.threat-model
   "Completeness verifier for the versioned end-to-end threat model."
-  (:require [clojure.edn :as edn]
+  (:require [kotoba.lang.edn :as edn]
             [clojure.java.io :as io]
             [kotoba.lang.coll :as set]))
 

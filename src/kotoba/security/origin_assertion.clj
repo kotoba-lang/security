@@ -1,6 +1,6 @@
 (ns kotoba.security.origin-assertion
   "Origin-side verification for short-lived edge identity assertions."
-  (:require [clojure.edn :as edn]
+  (:require [kotoba.lang.edn :as edn]
             [ed25519.core :as ed])
   (:import [java.security MessageDigest]
            [java.util Base64]))

@@ -1,5 +1,5 @@
 (ns kotoba.security.key-lifecycle-test
-  (:require [clojure.edn :as edn]
+  (:require [kotoba.lang.edn :as edn]
             [clojure.test :refer [deftest is testing]]
             [kotoba.security.key-lifecycle :as kl]))
 

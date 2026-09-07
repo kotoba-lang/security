@@ -4,7 +4,7 @@
   The manifest binds each scoped product to an immutable source revision and
   dependency descriptor digest. A release is rejected if a production
   dependency descriptor contains a workspace-only `:local/root` override."
-  (:require [clojure.edn :as edn]
+  (:require [kotoba.lang.edn :as edn]
             [clojure.java.io :as io])
   (:import [java.math BigInteger]
            [java.security MessageDigest]))
