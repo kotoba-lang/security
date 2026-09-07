@@ -1,6 +1,6 @@
 (ns kotoba.security.runtime-resilience
   "Fail-closed runtime resource, memory-safety, load, and tenant-isolation checks."
-  (:require [clojure.set :as set]))
+  (:require [kotoba.lang.coll :as set]))
 
 (defn evaluate-limits
   [profile policy]

@@ -1,6 +1,6 @@
 (ns kotoba.security.score
   (:require [clojure.edn :as edn]
-            [clojure.set :as set]
+            [kotoba.lang.coll :as set]
             #?(:clj [clojure.java.io :as io])))
 
 (def score-register "registers/stack-security-score.edn")
@@ -36,8 +36,8 @@
          (concat
           (when-not (= controls (set (keys scores)))
             [[:control-set-mismatch repo
-              {:missing (set/difference controls (set (keys scores)))
-               :extra (set/difference (set (keys scores)) controls)}]])
+              {:missing (set/set-difference controls (set (keys scores)))
+               :extra (set/set-difference (set (keys scores)) controls)}]])
           (for [[control score] scores
                 :when (not (and (integer? score) (<= 0 score 100)))]
             [:invalid-score repo control score])))

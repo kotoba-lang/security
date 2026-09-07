@@ -1,6 +1,6 @@
 (ns kotoba.security.promotion-test
   (:require [clojure.edn :as edn]
-            [clojure.set :as set]
+            [kotoba.lang.coll :as set]
             [clojure.test :refer [deftest is]]
             [kotoba.security.promotion :as promotion]
             [kotoba.security.score :as score]))
@@ -80,7 +80,7 @@
   (let [gap-register
         (edn/read-string (slurp "registers/remaining-operational-gaps.edn"))
         gap-workstreams (set (map :workstream (:gaps gap-register)))
-        policy-workstreams (apply set/union (vals required-workstreams))]
+        policy-workstreams (apply set/set-union (vals required-workstreams))]
     (is (= :not-qualified (:operational/readiness gap-register)))
     (is (= (conj policy-workstreams :E5) gap-workstreams))))
 

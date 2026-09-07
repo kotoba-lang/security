@@ -2,7 +2,7 @@
   "Fail-closed verifier for organization-wide use of the shared controls."
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [clojure.set :as set]
+            [kotoba.lang.coll :as set]
             [clojure.string :as str])
   (:import [clojure.lang ReaderConditional]
            [java.io PushbackReader]
@@ -162,7 +162,7 @@
   [root]
   (reduce
    (fn [inventory [namespace controls]]
-     (update inventory namespace (fnil set/union #{}) controls))
+     (update inventory namespace (fnil set/set-union #{}) controls))
    {}
    (for [file (filter (fn [candidate]
                        (and (.isFile candidate)
@@ -189,7 +189,7 @@
                         {:namespace namespace
                          :declared (get declared namespace)
                          :discovered (get discovered namespace)})))
-              (sort (set/intersection (set (keys declared))
+              (sort (set/set-intersection (set (keys declared))
                                       (set (keys discovered)))))]
     (cond-> []
       (seq missing) (conj {:problem :unregistered-security-importers

@@ -11,7 +11,7 @@
                       must not be :crypto/fips-status :not-claimed.
 
   See docs/fips-validation.md and docs/pqc-roadmap.md."
-  (:require [clojure.set :as set]))
+  (:require [kotoba.lang.coll :as set]))
 
 (def known-modes
   #{:crypto-agile :hybrid-required :fips-required})
@@ -51,8 +51,8 @@
 
 (defn hybrid-kem-components? [algorithms]
   (let [algorithms (set algorithms)]
-    (and (seq (set/intersection algorithms classical-kems))
-         (seq (set/intersection algorithms pq-kems)))))
+    (and (seq (set/set-intersection algorithms classical-kems))
+         (seq (set/set-intersection algorithms pq-kems)))))
 
 (defn invalid
   [message data]

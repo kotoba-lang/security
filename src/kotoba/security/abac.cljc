@@ -2,7 +2,7 @@
   "Portable, fail-closed subject/resource/action/environment policy evaluator.
   Callers normalize repository-specific manifests or requests at their trusted
   boundary and translate the returned control ids into their receipt schema."
-  (:require [clojure.set :as set]
+  (:require [kotoba.lang.coll :as set]
             [kotoba.security.information-flow :as flow]))
 
 (def classification-rank

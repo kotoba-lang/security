@@ -2,7 +2,7 @@
   "Completeness verifier for the versioned end-to-end threat model."
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [clojure.set :as set]))
+            [kotoba.lang.coll :as set]))
 
 (def model-path "qualification/threat-model.edn")
 (def required-scope
@@ -41,16 +41,16 @@
         [{:code :threat-model/scope}])
       (when-not (set/subset? required-categories categories)
         [{:code :threat-model/categories
-          :missing (set/difference required-categories categories)}])
+          :missing (set/set-difference required-categories categories)}])
       (when-not (= assets covered-assets)
         [{:code :threat-model/asset-coverage
-          :missing (set/difference assets covered-assets)}])
+          :missing (set/set-difference assets covered-assets)}])
       (when-not (= boundaries covered-boundaries)
         [{:code :threat-model/boundary-coverage
-          :missing (set/difference boundaries covered-boundaries)}])
+          :missing (set/set-difference boundaries covered-boundaries)}])
       (when-not (set/subset? used-controls controls)
         [{:code :threat-model/unknown-control
-          :controls (set/difference used-controls controls)}])
+          :controls (set/set-difference used-controls controls)}])
       (for [[id control] (:controls model)
             :when (and (not= :gap (:status control))
                        (not (evidence-present? (:evidence control)))) ]

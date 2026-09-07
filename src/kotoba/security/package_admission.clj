@@ -22,7 +22,7 @@
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.pprint :as pprint]
-            [clojure.set :as set]
+            [kotoba.lang.coll :as set]
             [clojure.string :as str]
             [kotoba.lang.package-contract :as package-contract]
             [kotoba.lang.package-registry :as package-registry]
@@ -482,8 +482,8 @@
         manifest-names (set (keys dependency-manifests))
         dep-names (set (keys deps-by-name))
         trusted (set (:trusted-signers trust))
-        missing (sort (set/difference dep-names manifest-names))
-        extra (sort (set/difference manifest-names dep-names))
+        missing (sort (set/set-difference dep-names manifest-names))
+        extra (sort (set/set-difference manifest-names dep-names))
         manifest-problems
         (vec
          (concat
@@ -518,7 +518,7 @@
                               name (:kotoba.package/dependencies manifest)
                               deps-by-name)
                              (when-let [untrusted
-                                        (seq (set/difference
+                                        (seq (set/set-difference
                                               (set (:dep/signers dep)) trusted))]
                                (package-contract/invalid
                                 "dependency signer is not explicitly trusted"
@@ -528,7 +528,7 @@
                              :kotoba.package/dependency name
                              :kotoba.package/path (get dependency-manifest-paths name)}
                             error))))
-           (sort (set/intersection dep-names manifest-names)))
+           (sort (set/set-intersection dep-names manifest-names)))
           (when-let [cycle (and (= dep-names manifest-names)
                                 (dependency-cycle dependency-manifests))]
             [(->problem

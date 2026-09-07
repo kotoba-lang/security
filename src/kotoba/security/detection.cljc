@@ -1,6 +1,6 @@
 (ns kotoba.security.detection
   "Fail-closed live detection, pager, containment, and independent retest checks."
-  (:require [clojure.set :as set]
+  (:require [kotoba.lang.coll :as set]
             [kotoba.security.resilience :as resilience]))
 
 (def required-signals

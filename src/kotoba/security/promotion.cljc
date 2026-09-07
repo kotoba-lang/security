@@ -1,7 +1,7 @@
 (ns kotoba.security.promotion
   "Repo-wide assurance promotion gate. Individual control success cannot
   promote a repository without every declared workstream and profile guard."
-  (:require [clojure.set :as set]
+  (:require [kotoba.lang.coll :as set]
             [kotoba.security.assurance :as assurance]
             [kotoba.security.continuous-verification :as continuous]))
 
@@ -30,7 +30,7 @@
    {:keys [model required-workstreams now-ms max-age-ms]}]
   (let [required (set (get required-workstreams repo))
         supplied (set (keys qualifications))
-        missing (set/difference required supplied)
+        missing (set/set-difference required supplied)
         receipt-results
         (into {} (map (fn [workstream]
                         [workstream

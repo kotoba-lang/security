@@ -1,5 +1,5 @@
 (ns kotoba.security.crypto-qualification-test
-  (:require [clojure.set :as set]
+  (:require [kotoba.lang.coll :as set]
             [clojure.test :refer [deftest is]]
             [ed25519.core :as ed]
             [kotoba.security.crypto-qualification :as qualification])
@@ -49,6 +49,6 @@
 
 (deftest forbidden-algorithms-cannot-enter-qualified-inventory
   (let [policy (qualification/read-policy)]
-    (is (empty? (set/intersection
+    (is (empty? (set/set-intersection
                  (:forbidden policy)
                  (set (keys (:algorithms policy))))))))

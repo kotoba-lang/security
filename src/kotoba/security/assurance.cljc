@@ -1,5 +1,5 @@
 (ns kotoba.security.assurance
-  (:require [clojure.set :as set]))
+  (:require [kotoba.lang.coll :as set]))
 
 (def required-profile-fields
   #{:assurance/score :assurance/maturity :assurance/grade
@@ -85,7 +85,7 @@
     (conj :report-fields))))
 
 (defn profile-problems [model profile]
-  (let [missing (set/difference required-profile-fields (set (keys profile)))
+  (let [missing (set/set-difference required-profile-fields (set (keys profile)))
         maturity (set (map :id (:maturity model)))
         evidence (set (map :id (:evidence model)))
         grades (set (map :id (:grades model)))

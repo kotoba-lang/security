@@ -26,7 +26,7 @@
    3 つを 1 つの『未達』に畳むと、**写像を書き忘れた規準が、証拠が無い規準と
    同じ顔になる**。`:not-mapped` を 0 件に近づける作業と、証拠を作る作業は
    別の仕事である。"
-  (:require [clojure.set :as set]
+  (:require [kotoba.lang.coll :as set]
             [clojure.string :as str]))
 
 (def strengths [:design :implementation :operating])
@@ -61,9 +61,9 @@
   [crosswalk claims control]
   (let [required (or (:control/requires-claims control) #{})
         known (set (keys (:crosswalk/claim-strength crosswalk)))
-        stale (set/difference required known)
-        satisfied (set/intersection required claims)
-        missing (set/difference required claims stale)
+        stale (set/set-difference required known)
+        satisfied (set/set-intersection required claims)
+        missing (set/set-difference required claims stale)
         ss (keep #(claim-strength crosswalk %) satisfied)]
     (cond-> {:control/id (:control/id control)
              :control/framework (:control/framework control)

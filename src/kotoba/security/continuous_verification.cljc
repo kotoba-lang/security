@@ -2,7 +2,7 @@
   "Independent continuous-verification checks for E5 evidence.
 
   A periodic red-team report or internal CI run is intentionally insufficient."
-  (:require [clojure.set :as set]))
+  (:require [kotoba.lang.coll :as set]))
 
 (defn evaluate
   [receipt {:keys [operations-organization-id artifact-digest
