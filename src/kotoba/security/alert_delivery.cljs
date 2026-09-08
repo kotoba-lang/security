@@ -18,7 +18,7 @@
             ["node:http" :as http]
             ["node:path" :as path]
             ["node:url" :as url]
-            [clojure.string :as str]
+            [kotoba.lang.text :as str]
             [kotoba.security.alert-adapters :as aa]
             [kotoba.security.key-lifecycle :as kl]))
 

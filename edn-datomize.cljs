@@ -53,7 +53,7 @@
 ;; com-junkawasaki/root の manifest/edn-datomize.nbb と同一。
 
 (require '[clojure.edn :as edn]
-         '         '         '[clojure.string :as str])
+         '         '         '[kotoba.lang.text :as str])
 
 (def root (str/trim (:out (shell/sh "git" "rev-parse" "--show-toplevel"))))
 

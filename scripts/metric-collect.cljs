@@ -11,7 +11,7 @@
 (ns kotoba.security.scripts.metric-collect
   (:require ["node:fs" :as fs]
             ["node:path" :as path]
-            [clojure.string :as str]
+            [kotoba.lang.text :as str]
             [kotoba.security.host-denial-telemetry :as hdt]))
 
 (def script-file (or *file* (first (.-argv js/process))))

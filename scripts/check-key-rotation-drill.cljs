@@ -14,7 +14,7 @@
 (ns kotoba.security.scripts.check-key-rotation-drill
   (:require ["node:fs" :as fs]
             ["node:path" :as path]
-            [clojure.string :as str]
+            [kotoba.lang.text :as str]
             [kotoba.security.key-status :as key-status]
             [kotoba.security.key-lifecycle :as kl]))
 

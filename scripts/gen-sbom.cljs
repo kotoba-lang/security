@@ -40,7 +40,7 @@
 ;; are included with :scope = the alias keyword (:test, :vectors, ...).
 (require '[clojure.edn :as edn]
          '         '[clojure.pprint :as pprint]
-         '[clojure.string :as str]
+         '[kotoba.lang.text :as str]
          '])
 
 (defn fail! [msg]
