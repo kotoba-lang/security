@@ -17,7 +17,7 @@
   4. `(retire-key old-key now verify-until)` so historical verify still works.
   5. `check-key-register --require-active` then consumers use
      `package verify --key-register`."
-  (:require [clojure.string :as str]))
+  (:require [kotoba.lang.text :as str]))
 
 (def allowed-for-new-artifacts
   #{:active})

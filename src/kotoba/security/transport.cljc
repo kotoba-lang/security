@@ -1,6 +1,6 @@
 (ns kotoba.security.transport
   "Fail-closed deployment transport profile checks shared by host adapters."
-  (:require [clojure.string :as str]))
+  (:require [kotoba.lang.text :as str]))
 
 (defn evaluate-workload-identity
   [{:keys [workload-id issuer audience issued-at-ms expires-at-ms

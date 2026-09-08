@@ -4,7 +4,7 @@
   the raw-byte <-> JDK-key DER wrapping (X25519/Ed25519) and the HKDF/AEAD
   parameterization against the standards, so a JDK behavior change or an
   encoding regression fails CI rather than silently producing wrong bytes."
-  (:require [clojure.string :as str]
+  (:require [kotoba.lang.text :as str]
             [clojure.test :refer [deftest is]]
             [kotoba.security.sha256 :as sha256]
             [kotoba.security.hkdf :as hkdf]

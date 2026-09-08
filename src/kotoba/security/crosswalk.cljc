@@ -27,7 +27,7 @@
    同じ顔になる**。`:not-mapped` を 0 件に近づける作業と、証拠を作る作業は
    別の仕事である。"
   (:require [kotoba.lang.coll :as set]
-            [clojure.string :as str]))
+            [kotoba.lang.text :as str]))
 
 (def strengths [:design :implementation :operating])
 
