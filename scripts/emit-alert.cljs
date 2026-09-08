@@ -18,7 +18,7 @@
   (:require ["node:fs" :as fs]
             ["node:path" :as path]
             [clojure.edn :as edn]
-            [clojure.string :as str]
+            [kotoba.lang.text :as str]
             [kotoba.security.alert-delivery :as ad]
             [kotoba.security.key-lifecycle :as kl]))
 

@@ -14,7 +14,7 @@
 (ns check-crosswalk
   (:require ["fs" :as fs]
             [clojure.edn :as edn]
-            [clojure.string :as str]
+            [kotoba.lang.text :as str]
             [kotoba.security.crosswalk :as cw]))
 
 (defn- read-edn [f]

@@ -15,7 +15,7 @@
 (ns kotoba.security.scripts.aggregate-host-denial
   (:require ["node:fs" :as fs]
             ["node:path" :as path]
-            [clojure.string :as str]
+            [kotoba.lang.text :as str]
             [kotoba.security.host-denial-telemetry :as hdt]
             [kotoba.security.alert-delivery :as ad]))
 

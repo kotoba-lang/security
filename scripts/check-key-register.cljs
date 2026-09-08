@@ -14,7 +14,7 @@
   (:require ["node:fs" :as fs]
             ["node:path" :as path]
             [clojure.edn :as edn]
-            [clojure.string :as str]
+            [kotoba.lang.text :as str]
             [kotoba.security.key-status :as key-status]))
 
 (def script-file (or *file* (first (.-argv js/process))))
