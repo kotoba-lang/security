@@ -18,7 +18,7 @@
 ;;                     info = 4-byte big-endian epoch) -> 32 bytes
 (ns gen-hybrid-vectors
   (:require [clojure.java.io :as io]
-            [clojure.string :as str])
+            [kotoba.lang.text :as str])
   (:import [java.security MessageDigest SecureRandom]
            [java.nio ByteBuffer]
            [javax.crypto Mac]

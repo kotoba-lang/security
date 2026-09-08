@@ -23,7 +23,7 @@
             [clojure.java.io :as io]
             [clojure.pprint :as pprint]
             [kotoba.lang.coll :as set]
-            [clojure.string :as str]
+            [kotoba.lang.text :as str]
             [kotoba.lang.package-contract :as package-contract]
             [kotoba.lang.package-registry :as package-registry]
             [kotoba.lang.package-registry-network :as package-registry-network]

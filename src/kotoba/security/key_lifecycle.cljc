@@ -3,7 +3,7 @@
 
   Production public keys may be recorded; private material must never appear
   in the register or evidence tree (docs/key-lifecycle.md, docs/key-ops-kagi.md)."
-  (:require [clojure.string :as str]
+  (:require [kotoba.lang.text :as str]
             [kotoba.security.crypto-policy :as policy]))
 
 (def known-statuses

@@ -9,7 +9,7 @@
   Deployment profiles (docs/deployment-profiles.md) tighten required claims:
   when `:profile` is `:regulated`, `:deployment-profile` is hard-required
   and a key-register with at least one `:active` key must be supplied."
-  (:require [clojure.string :as str]
+  (:require [kotoba.lang.text :as str]
             [kotoba.security.key-status :as key-status]))
 
 (def required-claims

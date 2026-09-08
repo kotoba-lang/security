@@ -1,7 +1,7 @@
 (ns kotoba.security.redaction
   "Deterministic structured-log redaction. This reduces accidental disclosure;
   it is not a claim of covert-channel elimination."
-  (:require [clojure.string :as str]))
+  (:require [kotoba.lang.text :as str]))
 
 (def redacted "[REDACTED]")
 
@@ -10,7 +10,7 @@
     "private-key" "private_key" "seed" "plaintext" "credential"})
 
 (defn sensitive-key? [k]
-  (contains? sensitive-key-names (str/lower-case (name k))))
+  (contains? sensitive-key-names (str/lower (name k))))
 
 (defn redact-text [s]
   (if-not (string? s)

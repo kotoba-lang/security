@@ -12,7 +12,7 @@
 
   Never invents tokens/routing keys. PagerDuty payloads omit routing_key when
   unset so callers can inject from env at delivery time."
-  (:require [clojure.string :as str]))
+  (:require [kotoba.lang.text :as str]))
 
 (def known-sinks
   #{:slack :pagerduty :generic :file})
@@ -23,7 +23,7 @@
   (when (some? x)
     (let [k (cond
               (keyword? x) x
-              (string? x) (keyword (str/lower-case (str/trim x)))
+              (string? x) (keyword (str/lower (str/trim x)))
               :else nil)]
       (when (contains? known-sinks k) k))))
 
@@ -31,7 +31,7 @@
   "Heuristic vendor detection from webhook URL host/path."
   [url]
   (when (string? url)
-    (let [u (str/lower-case url)]
+    (let [u (str/lower url)]
       (cond
         (or (str/includes? u "hooks.slack.com")
             (str/includes? u "slack.com/services/"))
@@ -71,7 +71,7 @@
 (defn- severity->pagerduty
   "Map Kotoba SEV-* to PagerDuty Events API v2 severity."
   [sev]
-  (case (str/upper-case (str sev))
+  (case (str/upper (str sev))
     ("SEV-1" "CRITICAL") "critical"
     ("SEV-2" "ERROR" "HIGH") "error"
     ("SEV-3" "WARNING" "MEDIUM") "warning"

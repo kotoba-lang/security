@@ -15,7 +15,7 @@
   then KEK = HKDF-SHA256(ss1 || ss2, salt = \"kotoba.hybrid.v1\",
   info = 4-byte big-endian epoch) must equal :vector/expected :kek."
   (:require [clojure.edn :as edn]
-            [clojure.string :as str]
+            [kotoba.lang.text :as str]
             [clojure.test :refer [deftest is testing]])
   (:import [java.nio ByteBuffer]
            [javax.crypto Mac]

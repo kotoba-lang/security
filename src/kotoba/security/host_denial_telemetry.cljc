@@ -9,7 +9,7 @@
 
   Pure data transforms — no network, no secrets. File IO lives in the
   nbb scripts (aggregate-host-denial.cljs / metric-collect.cljs)."
-  (:require [clojure.string :as str]
+  (:require [kotoba.lang.text :as str]
             [kotoba.security.key-lifecycle :as kl]
             #?(:clj [clojure.edn :as edn]
                :cljs [cljs.reader :as edn])))

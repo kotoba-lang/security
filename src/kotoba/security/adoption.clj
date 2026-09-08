@@ -3,7 +3,7 @@
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [kotoba.lang.coll :as set]
-            [clojure.string :as str])
+            [kotoba.lang.text :as str])
   (:import [clojure.lang ReaderConditional]
            [java.io PushbackReader]
            [java.time LocalDate]))
