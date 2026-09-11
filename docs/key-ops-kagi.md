@@ -104,7 +104,7 @@ Residual until HSM: custody is kagi + OS-Keychain unlock, not a FIPS HSM module.
    - `:key/public` and/or `:key/did`
 3. Run key-register gates:
    ```sh
-   nbb --classpath src scripts/check-key-register.cljs --require-active
+   nbb --classpath src scripts/check-key-register.cljk --require-active
    bb scripts/check-key-register.bb   # shape + no private PEM (key_lifecycle)
    ```
 4. Refresh `evidence/<date>/key-status-snapshot.edn` and evidence-index.
@@ -113,14 +113,14 @@ Residual until HSM: custody is kagi + OS-Keychain unlock, not a FIPS HSM module.
 ## Dry-run validation
 
 ```sh
-nbb --classpath src scripts/check-key-register.cljs --require-active
+nbb --classpath src scripts/check-key-register.cljk --require-active
 bb scripts/check-key-register.bb
 clojure -M:test -n kotoba.security.key-lifecycle-test
 ```
 
 Expected shape invariants are enforced by
-`src/kotoba/security/key_lifecycle.cljc` and
-`src/kotoba/security/key_status.cljc`.
+`src/kotoba/security/key_lifecycle.cljk` and
+`src/kotoba/security/key_status.cljk`.
 
 ## One-time identity migration
 
@@ -137,8 +137,8 @@ Planned rotation (not incident):
 1. Mint new private material → kagi item `security-package-signing-2026-07-18-rot`.
 2. Register public only; promote new to `:active`.
 3. Retire old `security-package-signing-2026-07-18` with `:key/verify-until "2033-07-18"`.
-4. Pure drill: `nbb --classpath src scripts/check-key-rotation-drill.cljs --write`.
-5. `nbb --classpath src scripts/check-key-register.cljs --require-active`.
+4. Pure drill: `nbb --classpath src scripts/check-key-rotation-drill.cljk --write`.
+5. `nbb --classpath src scripts/check-key-register.cljk --require-active`.
 
 Evidence: EV-0014, `evidence/2026-07-18/key-lifecycle-rotation-drill.edn`.
 

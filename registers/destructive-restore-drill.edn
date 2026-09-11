@@ -10,6 +10,6 @@
  :restore-drill/rto-limit-ms 100
  :restore-drill/rpo-limit-ms 60
  :restore-drill/telemetry-chain-verified? true
- :restore-drill/implementation "src/kotoba/security/resilience.cljc"
+ :restore-drill/implementation "src/kotoba/security/resilience.cljk"
  :restore-drill/qualification :in-memory-independent-region-simulation
  :restore-drill/non-claim "This receipt does not prove independent production regions or storage authorities."}

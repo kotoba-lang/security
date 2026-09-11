@@ -2,14 +2,14 @@
 ;; Key-register status gate (R-002).
 ;;
 ;; Usage (run from the repo root):
-;;   nbb --classpath src scripts/check-key-register.cljs
+;;   nbb --classpath src scripts/check-key-register.cljk
 ;;       Print blocked / active / problems for registers/key-register.edn.
 ;;       Exit 0 even when no active keys (research default).
 ;;
-;;   nbb --classpath src scripts/check-key-register.cljs --require-active
+;;   nbb --classpath src scripts/check-key-register.cljk --require-active
 ;;       Exit 1 when there is no active signing key (regulated releases).
 ;;
-;;   nbb --classpath src scripts/check-key-register.cljs [path] [--require-active]
+;;   nbb --classpath src scripts/check-key-register.cljk [path] [--require-active]
 (ns kotoba.security.scripts.check-key-register
   (:require ["node:fs" :as fs]
             ["node:path" :as path]

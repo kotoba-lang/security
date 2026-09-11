@@ -21,7 +21,7 @@ This repository owns:
 - a crosswalk from SOC 2 Trust Services Criteria and ISO/IEC 27001:2022
   Annex A onto the evidence this repository actually holds
   ([control-crosswalk.edn](policy/control-crosswalk.edn),
-  `src/kotoba/security/crosswalk.cljc`), which separates design evidence from
+  `src/kotoba/security/crosswalk.cljk`), which separates design evidence from
   operating evidence so that a Type I claim cannot be mistaken for a Type II
   one;
 - control evidence checklists that point back to implementation tests,
@@ -29,9 +29,9 @@ This repository owns:
 - security acceptance gates for safe Kotoba, package locks, aiueos manifests,
   cryptographic envelopes, and release evidence packets;
 - executable gates: a safe-release evidence gate over the evidence index and
-  exception register (`src/kotoba/security/release_gate.cljc`) and a FIPS/PQC
+  exception register (`src/kotoba/security/release_gate.cljk`) and a FIPS/PQC
   crypto policy over envelopes and the crypto inventory
-  (`src/kotoba/security/crypto_policy.cljc`, `policy/crypto-policy.edn`).
+  (`src/kotoba/security/crypto_policy.cljk`, `policy/crypto-policy.edn`).
 - package admission, signed release evidence, origin assertions, sealed
   egress, key hierarchy, threat-model and vulnerability-response executable
   assurance. Package shape and registry semantics remain in
@@ -111,8 +111,8 @@ descriptors** -- no requirement text from either standard is reproduced, and
 `:control/descriptor` must not be quoted as if it were.
 
 ```sh
-nbb --classpath src scripts/check-crosswalk.cljs          # position
-nbb --classpath src scripts/check-crosswalk.cljs --gaps   # the controls that are short
+nbb --classpath src scripts/check-crosswalk.cljk          # position
+nbb --classpath src scripts/check-crosswalk.cljk --gaps   # the controls that are short
 ```
 
 Measured 2026-08-23:
@@ -159,16 +159,16 @@ Run the tests and gates from the repo root (CI runs the same commands):
 
 ```sh
 clojure -M:test                       # release-gate, crypto-policy, key-lifecycle, hybrid gate, adapters
-nbb --classpath src scripts/check-safe-release.cljs
-nbb --classpath src scripts/check-crypto-inventory.cljs
-nbb --classpath src scripts/check-hybrid-admit.cljs
-nbb --classpath src scripts/check-key-register.cljs --require-active
+nbb --classpath src scripts/check-safe-release.cljk
+nbb --classpath src scripts/check-crypto-inventory.cljk
+nbb --classpath src scripts/check-hybrid-admit.cljk
+nbb --classpath src scripts/check-key-register.cljk --require-active
 bb scripts/check-key-register.bb      # shape + forbid private PEM (key_lifecycle)
-nbb --classpath src scripts/check-key-lifecycle-drill.cljs
-nbb --classpath src scripts/check-key-rotation-drill.cljs --write
-nbb --classpath src scripts/simulate-revoked-signer.cljs --write --deliver
-nbb --classpath src scripts/emit-alert.cljs --smoke
-nbb --classpath src scripts/monitoring-heartbeat.cljs
+nbb --classpath src scripts/check-key-lifecycle-drill.cljk
+nbb --classpath src scripts/check-key-rotation-drill.cljk --write
+nbb --classpath src scripts/simulate-revoked-signer.cljk --write --deliver
+nbb --classpath src scripts/emit-alert.cljk --smoke
+nbb --classpath src scripts/monitoring-heartbeat.cljk
 ```
 
 ### Pager webhook (optional real sink)
@@ -181,18 +181,18 @@ bodies (Slack Incoming Webhook / PagerDuty Events API v2 / generic) selected by
 
 ```sh
 # Local mock (no secrets)
-nbb --classpath src scripts/mock-webhook-sink.cljs --port 9876
+nbb --classpath src scripts/mock-webhook-sink.cljk --port 9876
 export KOTOBA_SECURITY_ALERT_WEBHOOK='http://127.0.0.1:9876/alert'
 # optional: force Slack shape against mock
 export KOTOBA_SECURITY_ALERT_SINK=slack
-nbb --classpath src scripts/emit-alert.cljs --smoke
+nbb --classpath src scripts/emit-alert.cljk --smoke
 
 # Production vendor (only if URL exists in kagi/Keychain — never invent)
 export KOTOBA_SECURITY_ALERT_WEBHOOK='https://hooks.slack.com/services/...'
 # or PagerDuty:
 # export KOTOBA_SECURITY_ALERT_WEBHOOK='https://events.pagerduty.com/v2/enqueue'
 # export KOTOBA_SECURITY_PAGERDUTY_ROUTING_KEY='…'
-nbb --classpath src scripts/emit-alert.cljs --smoke
+nbb --classpath src scripts/emit-alert.cljk --smoke
 ```
 
 Env template (empty values only): [`.env.pager.example`](.env.pager.example).

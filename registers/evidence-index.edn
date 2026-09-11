@@ -61,8 +61,8 @@
    :evidence/type :implementation
    :evidence/created-at "2026-07-02"
    :evidence/producer "kotoba-lang/security"
-   :evidence/artifacts [{:kind :code :path "src/kotoba/security/release_gate.cljc"}
-                        {:kind :code :path "src/kotoba/security/crypto_policy.cljc"}
+   :evidence/artifacts [{:kind :code :path "src/kotoba/security/release_gate.cljk"}
+                        {:kind :code :path "src/kotoba/security/crypto_policy.cljk"}
                         {:kind :gate :path "scripts/check-safe-release.bb"}
                         {:kind :gate :path "scripts/check-crypto-inventory.bb"}
                         {:kind :policy :path "policy/crypto-policy.edn"}
@@ -79,8 +79,8 @@
    :evidence/created-at "2026-07-02"
    :evidence/producer "kotoba-lang/security + kotoba-lang/crypto"
    :evidence/artifacts [{:kind :vectors :path "conformance/crypto/vectors/hybrid-x25519-mlkem768.edn"}
-                        {:kind :code :path "scripts/gen-hybrid-vectors.clj"}
-                        {:kind :test :path "test-vectors/kotoba/security/hybrid_vectors_test.clj"}
+                        {:kind :code :path "scripts/gen-hybrid-vectors.cljk"}
+                        {:kind :test :path "test-vectors/kotoba/security/hybrid_vectors_test.cljk"}
                         {:kind :code :path "kotoba-lang/crypto:src/kotoba/lang/crypto.cljc"}]
    :evidence/claims [:hybrid-kem-vectors-real
                      :envelope-provider-metadata-emitted]
@@ -147,9 +147,9 @@
                         {:kind :alert :path "evidence/2026-07-17/alert-compromised-signer.json"}
                         {:kind :alert :path "evidence/2026-07-17/alert-host-denial-spike.edn"}
                         {:kind :alert :path "evidence/2026-07-17/alert-host-denial-spike.json"}
-                        {:kind :code :path "src/kotoba/security/key_lifecycle.cljc"}
+                        {:kind :code :path "src/kotoba/security/key_lifecycle.cljk"}
                         {:kind :gate :path "scripts/simulate-revoked-signer.bb"}
-                        {:kind :test :path "test/kotoba/security/key_lifecycle_test.clj"}]
+                        {:kind :test :path "test/kotoba/security/key_lifecycle_test.cljk"}]
    :evidence/claims [:technical-alert-sample
                      :revoked-signer-denied
                      :monitoring-alert-schema]
@@ -177,7 +177,7 @@
    :evidence/created-at "2026-07-17"
    :evidence/producer "kotoba-lang/security"
    :evidence/artifacts [{:kind :policy :path "policy/crypto-policy.edn"}
-                        {:kind :code :path "src/kotoba/security/crypto_policy.cljc"}
+                        {:kind :code :path "src/kotoba/security/crypto_policy.cljk"}
                         {:kind :gate :path "scripts/check-crypto-inventory.bb"}
                         {:kind :vectors :path "conformance/crypto/vectors/hybrid-x25519-mlkem768.edn"}
                         {:kind :doc :path "docs/fips-validation.md"}
@@ -196,9 +196,9 @@
    :evidence/created-at "2026-07-18"
    :evidence/producer "kotoba-lang/security"
    :evidence/artifacts [{:kind :smoke :path "evidence/2026-07-18/pager-wiring-smoke.edn"}
-                        {:kind :code :path "scripts/emit-alert.cljs"}
-                        {:kind :code :path "src/kotoba/security/alert_delivery.cljs"}
-                        {:kind :gate :path "scripts/simulate-revoked-signer.cljs"}
+                        {:kind :code :path "scripts/emit-alert.cljk"}
+                        {:kind :code :path "src/kotoba/security/alert_delivery.cljk"}
+                        {:kind :gate :path "scripts/simulate-revoked-signer.cljk"}
                         {:kind :doc :path "docs/continuous-monitoring.md"}]
    :evidence/claims [:monitoring-alert-schema
                      :technical-alert-sample]
@@ -213,7 +213,7 @@
    :evidence/artifacts [{:kind :register :path "registers/key-register.edn"}
                         {:kind :snapshot :path "evidence/2026-07-18/key-status-snapshot.edn"}
                         {:kind :doc :path "docs/key-ops-kagi.md"}
-                        {:kind :gate :path "scripts/check-key-register.cljs"}
+                        {:kind :gate :path "scripts/check-key-register.cljk"}
                         {:kind :gate :path "scripts/check-key-register.bb"}]
    :evidence/claims [:key-status-snapshot
                      :production-public-keys-registered
@@ -227,9 +227,9 @@
    :evidence/created-at "2026-07-18"
    :evidence/producer "kotoba-lang/security"
    :evidence/artifacts [{:kind :simulation :path "evidence/2026-07-18/key-lifecycle-rotation-drill.edn"}
-                        {:kind :code :path "src/kotoba/security/key_status.cljc"}
-                        {:kind :gate :path "scripts/check-key-rotation-drill.cljs"}
-                        {:kind :test :path "test/kotoba/security/key_lifecycle_rotation_drill_test.clj"}
+                        {:kind :code :path "src/kotoba/security/key_status.cljk"}
+                        {:kind :gate :path "scripts/check-key-rotation-drill.cljk"}
+                        {:kind :test :path "test/kotoba/security/key_lifecycle_rotation_drill_test.cljk"}
                         {:kind :doc :path "docs/key-ops-production.md"}]
    :evidence/claims [:key-lifecycle-rotation-drill
                      :package-signing-rotation-pure]
@@ -241,10 +241,10 @@
    :evidence/type :policy-enforcement
    :evidence/created-at "2026-07-18"
    :evidence/producer "kotoba-lang/security"
-   :evidence/artifacts [{:kind :code :path "src/kotoba/security/object_encryption_gate.cljc"}
-                        {:kind :test :path "test/kotoba/security/object_encryption_gate_test.clj"}
+   :evidence/artifacts [{:kind :code :path "src/kotoba/security/object_encryption_gate.cljk"}
+                        {:kind :test :path "test/kotoba/security/object_encryption_gate_test.cljk"}
                         {:kind :policy :path "policy/crypto-policy.edn"}
-                        {:kind :code :path "src/kotoba/security/crypto_policy.cljc"}
+                        {:kind :code :path "src/kotoba/security/crypto_policy.cljk"}
                         {:kind :doc :path "docs/hybrid-envelope-vectors.md"}
                         {:kind :doc :path "docs/pqc-roadmap.md"}
                         {:kind :smoke :path "evidence/2026-07-18/object-encryption-hybrid-gate.edn"}]
@@ -262,7 +262,7 @@
                         {:kind :doc :path "docs/fips-validation.md"}
                         {:kind :doc :path "docs/on-call-pager.md"}
                         {:kind :fixture :path ".env.pager.example"}
-                        {:kind :gate :path "scripts/mock-webhook-sink.cljs"}]
+                        {:kind :gate :path "scripts/mock-webhook-sink.cljk"}]
    :evidence/claims [:fips-non-claim-defined
                      :on-call-runbook
                      :pager-local-fixture]
@@ -274,13 +274,13 @@
    :evidence/type :implementation
    :evidence/created-at "2026-07-18"
    :evidence/producer "kotoba-lang/security"
-   :evidence/artifacts [{:kind :code :path "src/kotoba/security/alert_adapters.cljc"}
-                        {:kind :code :path "src/kotoba/security/alert_delivery.cljs"}
-                        {:kind :test :path "test/kotoba/security/alert_adapters_test.clj"}
+   :evidence/artifacts [{:kind :code :path "src/kotoba/security/alert_adapters.cljk"}
+                        {:kind :code :path "src/kotoba/security/alert_delivery.cljk"}
+                        {:kind :test :path "test/kotoba/security/alert_adapters_test.cljk"}
                         {:kind :register :path "registers/on-call-roster.edn"}
                         {:kind :doc :path "docs/on-call-pager.md"}
-                        {:kind :gate :path "scripts/check-hybrid-admit.cljs"}
-                        {:kind :gate :path "scripts/monitoring-heartbeat.cljs"}
+                        {:kind :gate :path "scripts/check-hybrid-admit.cljk"}
+                        {:kind :gate :path "scripts/monitoring-heartbeat.cljk"}
                         {:kind :smoke :path "evidence/2026-07-18/hybrid-admit-check.edn"}
                         {:kind :smoke :path "evidence/2026-07-18/monitoring-heartbeat.edn"}
                         {:kind :doc :path "evidence/2026-07-18/collector-stub-note.md"}
@@ -297,10 +297,10 @@
    :evidence/type :implementation
    :evidence/created-at "2026-07-18"
    :evidence/producer "kotoba-lang/security"
-   :evidence/artifacts [{:kind :code :path "src/kotoba/security/host_denial_telemetry.cljc"}
-                        {:kind :gate :path "scripts/aggregate-host-denial.cljs"}
-                        {:kind :gate :path "scripts/metric-collect.cljs"}
-                        {:kind :test :path "test/kotoba/security/host_denial_telemetry_test.clj"}
+   :evidence/artifacts [{:kind :code :path "src/kotoba/security/host_denial_telemetry.cljk"}
+                        {:kind :gate :path "scripts/aggregate-host-denial.cljk"}
+                        {:kind :gate :path "scripts/metric-collect.cljk"}
+                        {:kind :test :path "test/kotoba/security/host_denial_telemetry_test.cljk"}
                         {:kind :fixture :path "test/fixtures/alerts/"}
                         {:kind :summary :path "evidence/2026-07-18/host-denial-summary.edn"}
                         {:kind :summary :path "evidence/2026-07-18/metric-collect.edn"}

@@ -58,7 +58,7 @@
    :risk/evidence ["docs/fips-non-claim.md"
                    "docs/fips-validation.md"
                    "policy/crypto-policy.edn"
-                   "src/kotoba/security/crypto_policy.cljc"]
+                   "src/kotoba/security/crypto_policy.cljk"]
    :risk/review-by "2026-10-01"}
   {:risk/id "R-004"
    :risk/title "PQC migration is a design target, not implemented"
@@ -79,8 +79,8 @@
    :risk/evidence ["docs/pqc-roadmap.md"
                    "docs/hybrid-envelope-vectors.md"
                    "conformance/crypto/vectors/hybrid-x25519-mlkem768.edn"
-                   "src/kotoba/security/object_encryption_gate.cljc"
-                   "scripts/check-hybrid-admit.cljs"
+                   "src/kotoba/security/object_encryption_gate.cljk"
+                   "scripts/check-hybrid-admit.cljk"
                    "evidence/2026-07-18/object-encryption-hybrid-gate.edn"]
    :risk/review-by "2026-10-01"}
   {:risk/id "R-005"
@@ -96,7 +96,7 @@
                       "incident playbooks defined"
                       "2026-07-17 tabletop compromised-signer postmortem (EV-0008)"
                       "technical revoked-signer simulation + SEV-1/SEV-2 structured alert samples EDN/JSON (EV-0009)"
-                      "pager delivery path: file sink + optional webhook via scripts/emit-alert.cljs (EV-0012)"
+                      "pager delivery path: file sink + optional webhook via scripts/emit-alert.cljk (EV-0012)"
                       "local mock webhook transport returned HTTP 200 for pager smoke and revoked-signer SEV-1 delivery (EV-0012)"
                       "on-call runbook + example roster @example.invalid + severity→channel + escalation minutes (registers/on-call-roster.edn, EV-0017)"
                       "vendor webhook adapters Slack Incoming + PagerDuty Events API v2 + generic auto-select (EV-0017)"
@@ -106,8 +106,8 @@
                    "docs/incident-response.md"
                    "docs/on-call-pager.md"
                    "registers/on-call-roster.edn"
-                   "src/kotoba/security/alert_adapters.cljc"
-                   "scripts/monitoring-heartbeat.cljs"
+                   "src/kotoba/security/alert_adapters.cljk"
+                   "scripts/monitoring-heartbeat.cljk"
                    "evidence/2026-07-17/tabletop-compromised-signer.md"
                    "evidence/2026-07-17/alert-compromised-signer.edn"
                    "evidence/2026-07-17/revoked-signer-simulation.edn"

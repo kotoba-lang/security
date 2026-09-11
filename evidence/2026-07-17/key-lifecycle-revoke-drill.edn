@@ -42,8 +42,8 @@
    :assert [:evaluate-not-ok?
             :problem-no-active-signing-key]}]
  :drill/artifacts
- [{:kind :test :path "test/kotoba/security/key_lifecycle_drill_test.clj"}
-  {:kind :gate :path "scripts/check-key-lifecycle-drill.cljs"}
-  {:kind :code :path "src/kotoba/security/key_status.cljc"}]
+ [{:kind :test :path "test/kotoba/security/key_lifecycle_drill_test.cljk"}
+  {:kind :gate :path "scripts/check-key-lifecycle-drill.cljk"}
+  {:kind :code :path "src/kotoba/security/key_status.cljk"}]
  :drill/related-risks ["R-002"]
  :drill/related-evidence ["EV-0009"]}

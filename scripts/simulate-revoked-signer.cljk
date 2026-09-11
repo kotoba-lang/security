@@ -6,11 +6,11 @@
 ;; and delivers them via alert sinks (file + optional webhook).
 ;;
 ;; Usage (repo root):
-;;   nbb --classpath src scripts/simulate-revoked-signer.cljs
-;;   nbb --classpath src scripts/simulate-revoked-signer.cljs --write
-;;   nbb --classpath src scripts/simulate-revoked-signer.cljs --write --deliver
-;;   nbb --classpath src scripts/simulate-revoked-signer.cljs --deliver --dir evidence/2026-07-18
-;;   nbb --classpath src scripts/simulate-revoked-signer.cljs --write evidence/2026-07-18
+;;   nbb --classpath src scripts/simulate-revoked-signer.cljk
+;;   nbb --classpath src scripts/simulate-revoked-signer.cljk --write
+;;   nbb --classpath src scripts/simulate-revoked-signer.cljk --write --deliver
+;;   nbb --classpath src scripts/simulate-revoked-signer.cljk --deliver --dir evidence/2026-07-18
+;;   nbb --classpath src scripts/simulate-revoked-signer.cljk --write evidence/2026-07-18
 (ns kotoba.security.scripts.simulate-revoked-signer
   (:require ["node:fs" :as fs]
             ["node:path" :as path]
@@ -95,7 +95,7 @@
    {:alert "trusted-signer-verification-failure"
     :severity :SEV-1
     :signal :package-verification
-    :source "scripts/simulate-revoked-signer.cljs"
+    :source "scripts/simulate-revoked-signer.cljk"
     :run-id run-id
     :component "kotoba-lang/security"
     :package "sim.example/package@bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi"
@@ -114,7 +114,7 @@
    {:alert "host-capability-denial-spike"
     :severity :SEV-2
     :signal :capability-denial
-    :source "scripts/simulate-revoked-signer.cljs"
+    :source "scripts/simulate-revoked-signer.cljk"
     :run-id (str run-id "-host-denial")
     :component "aiueos/sim-component"
     :package nil

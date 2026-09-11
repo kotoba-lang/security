@@ -9,8 +9,8 @@
 ;; classical, and denies classical-only KEM for new epochs. No ML-KEM crypto.
 ;;
 ;; Usage (repo root):
-;;   nbb --classpath src scripts/check-hybrid-admit.cljs
-;;   nbb --classpath src scripts/check-hybrid-admit.cljs --write
+;;   nbb --classpath src scripts/check-hybrid-admit.cljk
+;;   nbb --classpath src scripts/check-hybrid-admit.cljk --write
 (ns kotoba.security.scripts.check-hybrid-admit
   (:require ["node:fs" :as fs]
             ["node:path" :as path]

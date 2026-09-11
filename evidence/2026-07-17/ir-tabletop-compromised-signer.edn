@@ -61,5 +61,5 @@
  :drill/artifacts
  [{:kind :playbook :path "docs/incident-response.md"}
   {:kind :runbook :path "docs/key-ops-production.md"}
-  {:kind :code :path "src/kotoba/security/key_status.cljc"}
+  {:kind :code :path "src/kotoba/security/key_status.cljk"}
   {:kind :drill :path "evidence/2026-07-17/ir-technical-key-revoke-drill.edn"}]}

@@ -689,8 +689,8 @@ Mutual TLS with peer verification, automatic revocation checks, certificate rota
  :evidence/type :implementation
  :evidence/created-at "2026-07-20"
  :evidence/producer "kotoba-lang/security"
- :evidence/artifacts [{:kind :code :path "src/kotoba/security/transport.cljc"}
-                      {:kind :test :path "test/kotoba/security/transport_test.cljc"}
+ :evidence/artifacts [{:kind :code :path "src/kotoba/security/transport.cljk"}
+                      {:kind :test :path "test/kotoba/security/transport_test.cljk"}
                       {:kind :register :path "registers/certificate-rotation-drill-receipt.edn"}
                       {:kind :doc :path "docs/tls-policy.md"}]
  :evidence/claims [:mtls-enforcement
@@ -987,7 +987,7 @@ Immutable hash-chained telemetry, ordered containment upon compromise, incident 
  :evidence/type :operational
  :evidence/created-at "2026-07-20"
  :evidence/producer "kotoba-lang/security"
- :evidence/artifacts [{:kind :code :path "src/kotoba/security/resilience.cljc"}
+ :evidence/artifacts [{:kind :code :path "src/kotoba/security/resilience.cljk"}
                       {:kind :register :path "registers/ir-containment-receipt.edn"}
                       {:kind :postmortem :path "evidence/ir-tabletop-postmortem.md"}
                       {:kind :register :path "registers/destructive-restore-drill-receipt.edn"}]
@@ -1306,7 +1306,7 @@ Independent encrypted backups in 2+ regions, threshold-key recovery (M-of-N), de
  :evidence/type :operational
  :evidence/created-at "2026-07-20"
  :evidence/producer "kotoba-lang/security"
- :evidence/artifacts [{:kind :code :path "src/kotoba/security/resilience.cljc"}
+ :evidence/artifacts [{:kind :code :path "src/kotoba/security/resilience.cljk"}
                       {:kind :register :path "registers/destructive-restore-drill-receipt.edn"}
                       {:kind :register :path "registers/backup-replication-drill-receipt.edn"}
                       {:kind :doc :path "docs/disaster-recovery-plan.md"}]

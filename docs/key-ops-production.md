@@ -10,7 +10,7 @@ End-to-end operator procedure for package-signing (and related) keys:
 1. Provision private material **out-of-band** (never in git).
 2. Register **public** material only in `registers/key-register.edn`.
 3. Promote, retire, revoke, and rotate via pure helpers in
-   `src/kotoba/security/key_status.cljc`.
+   `src/kotoba/security/key_status.cljk`.
 4. Gate releases with `check-key-register` / regulated safe-release.
 5. Consumers fold the register into package admission with
    `kotoba package verify --key-register`.
@@ -89,7 +89,7 @@ Optional `:key/signer` may carry the DID used in lockfiles
 Validate structure:
 
 ```sh
-nbb --classpath src scripts/check-key-register.cljs
+nbb --classpath src scripts/check-key-register.cljk
 ```
 
 ## 3. Promote to active
@@ -107,7 +107,7 @@ exists:
 Then:
 
 ```sh
-nbb --classpath src scripts/check-key-register.cljs --require-active
+nbb --classpath src scripts/check-key-register.cljk --require-active
 ```
 
 ## 4. Rotate (new active + old retired with verify-until)
@@ -155,13 +155,13 @@ if you still need regulated releases.
 
 ```sh
 # Research / CI default — may pass with only template pre-active keys
-nbb --classpath src scripts/check-key-register.cljs
+nbb --classpath src scripts/check-key-register.cljk
 
 # Regulated packaging — requires >=1 :active key and no register problems
-nbb --classpath src scripts/check-key-register.cljs --require-active
+nbb --classpath src scripts/check-key-register.cljk --require-active
 
 # Full safe-release under regulated profile
-nbb --classpath src scripts/check-safe-release.cljs --release --profile regulated
+nbb --classpath src scripts/check-safe-release.cljk --release --profile regulated
 ```
 
 ## 7. Consumer: package verify --key-register
@@ -205,8 +205,8 @@ keys fail with `:package/signer-not-trusted`.
 - [Key Lifecycle](key-lifecycle.md) — states, periods, separation
 - [Incident Response](incident-response.md) — compromised signer playbook
 - [Deployment Profiles](deployment-profiles.md) — research vs regulated
-- `src/kotoba/security/key_status.cljc` — pure helpers
-- `scripts/check-key-register.cljs` — register gate
-- `scripts/check-key-lifecycle-drill.cljs` — synthetic revoke drill
+- `src/kotoba/security/key_status.cljk` — pure helpers
+- `scripts/check-key-register.cljk` — register gate
+- `scripts/check-key-lifecycle-drill.cljk` — synthetic revoke drill
 - Evidence: EV-0009 (demo activation), EV-0010 (technical revoke drill),
   EV-0011 (tabletop), EV-0012 (technical IR drill alias)

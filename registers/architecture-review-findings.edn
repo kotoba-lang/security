@@ -23,7 +23,7 @@
    :finding/evidence ["docs/architecture-review-2026-07-01.md"
                       "docs/key-lifecycle.md"
                       "docs/key-ops-kagi.md"
-                      "src/kotoba/security/key_lifecycle.cljc"
+                      "src/kotoba/security/key_lifecycle.cljk"
                       "evidence/2026-07-17/key-status-snapshot.edn"]
    :finding/status :mitigated
    :finding/residual "Package-signing production key not issued; rotation/expiry not drilled on package path."}
@@ -60,8 +60,8 @@
                       "docs/pqc-roadmap.md"
                       "policy/crypto-policy.edn"
                       "conformance/crypto/vectors/hybrid-x25519-mlkem768.edn"
-                      "src/kotoba/security/object_encryption_gate.cljc"
-                      "scripts/check-hybrid-admit.cljs"]
+                      "src/kotoba/security/object_encryption_gate.cljk"
+                      "scripts/check-hybrid-admit.cljk"]
    :finding/status :partial
    :finding/residual "R-003 open (no FIPS module). R-004 mitigated at gate/CI admit boundary; production long-retention hybrid re-encrypt not deployed."}
   {:finding/id "F-006"

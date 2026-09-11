@@ -2,7 +2,7 @@
 ;; Pure key-lifecycle revocation drill (R-002).
 ;;
 ;; Usage (run from the repo root):
-;;   nbb --classpath src scripts/check-key-lifecycle-drill.cljs
+;;   nbb --classpath src scripts/check-key-lifecycle-drill.cljk
 ;;
 ;; Synthetic register only — never mutates registers/key-register.edn.
 ;; Exit 0 on pass, 1 on fail. No private keys involved.

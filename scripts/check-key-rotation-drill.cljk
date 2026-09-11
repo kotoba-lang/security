@@ -9,8 +9,8 @@
 ;; Exit 0 on pass, 1 on fail. No private keys involved.
 ;;
 ;; Usage (repo root):
-;;   nbb --classpath src scripts/check-key-rotation-drill.cljs
-;;   nbb --classpath src scripts/check-key-rotation-drill.cljs --write [evidence/YYYY-MM-DD]
+;;   nbb --classpath src scripts/check-key-rotation-drill.cljk
+;;   nbb --classpath src scripts/check-key-rotation-drill.cljk --write [evidence/YYYY-MM-DD]
 (ns kotoba.security.scripts.check-key-rotation-drill
   (:require ["node:fs" :as fs]
             ["node:path" :as path]

@@ -491,7 +491,7 @@
    ["../kotobase/qualification/recovery-policy.edn"
     "../kotobase/src/kotobase/recovery_qualification.clj"
     "../kotobase/test/kotobase/recovery_qualification_test.clj"
-    "../security/src/kotoba/security/resilience.cljc"]}
+    "../security/src/kotoba/security/resilience.cljk"]}
   :B-08
   {:owner "kotoba-stack/kotobase-data-plane"
    :status :in-progress

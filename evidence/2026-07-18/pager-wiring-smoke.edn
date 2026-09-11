@@ -2,11 +2,11 @@
  :smoke/date "2026-07-18"
  :smoke/kind :pager-delivery
  :smoke/schema "kotoba.security.continuous-monitoring/v1"
- :smoke/command "KOTOBA_SECURITY_ALERT_WEBHOOK=http://127.0.0.1:18766/security-alert nbb --classpath src scripts/emit-alert.cljs --smoke --dir evidence/2026-07-18"
+ :smoke/command "KOTOBA_SECURITY_ALERT_WEBHOOK=http://127.0.0.1:18766/security-alert nbb --classpath src scripts/emit-alert.cljk --smoke --dir evidence/2026-07-18"
  :smoke/related
- ["scripts/emit-alert.cljs"
-  "src/kotoba/security/alert_delivery.cljs"
-  "scripts/simulate-revoked-signer.cljs"
+ ["scripts/emit-alert.cljk"
+  "src/kotoba/security/alert_delivery.cljk"
+  "scripts/simulate-revoked-signer.cljk"
   "evidence/2026-07-18/alerts/"]
  :smoke/sinks
  [{:sink :file
@@ -23,7 +23,7 @@
   {:sink :stdout
    :result :not-requested}]
  :smoke/revoked-signer-deliver
- {:command "KOTOBA_SECURITY_ALERT_WEBHOOK=http://127.0.0.1:18766/security-alert nbb --classpath src scripts/simulate-revoked-signer.cljs --deliver --dir evidence/2026-07-18"
+ {:command "KOTOBA_SECURITY_ALERT_WEBHOOK=http://127.0.0.1:18766/security-alert nbb --classpath src scripts/simulate-revoked-signer.cljk --deliver --dir evidence/2026-07-18"
   :result :succeeded
   :webhook-status 200
   :notes "SEV-1 trusted-signer-verification-failure delivered to file and local mock webhook sinks on denial path."}

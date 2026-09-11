@@ -3,7 +3,7 @@
   "package": null,
   "observed-at": "2026-07-17T23:51:32.659Z",
   "run-id": "pager-smoke-2026-07-18",
-  "source": "scripts/emit-alert.cljs",
+  "source": "scripts/emit-alert.cljk",
   "decision": "notify",
   "component": "kotoba-lang/security",
   "related-rule": "continuous-monitoring.md#alert-rules",

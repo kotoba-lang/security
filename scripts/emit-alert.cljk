@@ -2,11 +2,11 @@
 ;; Deliver continuous-monitoring v1 alerts to pluggable sinks (R-005 pager).
 ;;
 ;; Usage (repo root):
-;;   nbb --classpath src scripts/emit-alert.cljs --smoke
-;;   nbb --classpath src scripts/emit-alert.cljs --edn path/to/alert.edn
-;;   nbb --classpath src scripts/emit-alert.cljs --smoke --stdout
+;;   nbb --classpath src scripts/emit-alert.cljk --smoke
+;;   nbb --classpath src scripts/emit-alert.cljk --edn path/to/alert.edn
+;;   nbb --classpath src scripts/emit-alert.cljk --smoke --stdout
 ;;   KOTOBA_SECURITY_ALERT_WEBHOOK=https://hooks.example/x \
-;;     nbb --classpath src scripts/emit-alert.cljs --smoke
+;;     nbb --classpath src scripts/emit-alert.cljk --smoke
 ;;
 ;; Sinks:
 ;;   file:    evidence/<date>/alerts/ (or --dir PATH; falls back to /tmp/...)
@@ -51,7 +51,7 @@
    {:alert "pager-wiring-smoke"
     :severity :SEV-3
     :signal :ci-evidence
-    :source "scripts/emit-alert.cljs"
+    :source "scripts/emit-alert.cljk"
     :run-id (str "pager-smoke-" date)
     :component "kotoba-lang/security"
     :package nil

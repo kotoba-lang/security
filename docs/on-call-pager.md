@@ -11,12 +11,12 @@ none is provisioned.
 
 Executable delivery:
 
-- `src/kotoba/security/alert_adapters.cljc` — Slack / PagerDuty / generic payload shapes
-- `src/kotoba/security/alert_delivery.cljs` — file / webhook / stdout sinks
-- `scripts/emit-alert.cljs` — CLI smoke + EDN replay
-- `scripts/monitoring-heartbeat.cljs` — collector-stub heartbeat sample
-- `scripts/simulate-revoked-signer.cljs --write --deliver` — SEV-1 technical path
-- `scripts/mock-webhook-sink.cljs` — local HTTP 200 fixture
+- `src/kotoba/security/alert_adapters.cljk` — Slack / PagerDuty / generic payload shapes
+- `src/kotoba/security/alert_delivery.cljk` — file / webhook / stdout sinks
+- `scripts/emit-alert.cljk` — CLI smoke + EDN replay
+- `scripts/monitoring-heartbeat.cljk` — collector-stub heartbeat sample
+- `scripts/simulate-revoked-signer.cljk --write --deliver` — SEV-1 technical path
+- `scripts/mock-webhook-sink.cljk` — local HTTP 200 fixture
 
 Machine-readable roster (example contacts only):
 [`registers/on-call-roster.edn`](../registers/on-call-roster.edn).
@@ -94,22 +94,22 @@ webhook skipped (KOTOBA_SECURITY_ALERT_WEBHOOK unset)
 
 ```sh
 # Terminal A — mock receiver
-nbb --classpath src scripts/mock-webhook-sink.cljs --port 9876
+nbb --classpath src scripts/mock-webhook-sink.cljk --port 9876
 
 # Terminal B — smoke (generic body to mock)
 export KOTOBA_SECURITY_ALERT_WEBHOOK='http://127.0.0.1:9876/alert'
-nbb --classpath src scripts/emit-alert.cljs --smoke --dir /tmp/kotoba-security-pager-smoke
+nbb --classpath src scripts/emit-alert.cljk --smoke --dir /tmp/kotoba-security-pager-smoke
 
 # Force Slack shape against mock (still no secrets)
 export KOTOBA_SECURITY_ALERT_SINK=slack
-nbb --classpath src scripts/emit-alert.cljs --smoke
+nbb --classpath src scripts/emit-alert.cljk --smoke
 ```
 
 ## Heartbeat / collector stub
 
 ```sh
-nbb --classpath src scripts/monitoring-heartbeat.cljs
-nbb --classpath src scripts/monitoring-heartbeat.cljs --deliver
+nbb --classpath src scripts/monitoring-heartbeat.cljk
+nbb --classpath src scripts/monitoring-heartbeat.cljk --deliver
 ```
 
 Writes `evidence/<date>/monitoring-heartbeat.edn` + `collector-stub-note.md`.

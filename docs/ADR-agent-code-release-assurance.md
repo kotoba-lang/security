@@ -68,6 +68,6 @@ or “ready for medical, financial or military use”.
 
 ## Verification
 
-`test/kotoba/security/release_evidence_test.clj` is the executable negative
+`test/kotoba/security/release_evidence_test.cljk` is the executable negative
 contract for the implemented decision. Removing any binding above must make at
 least one test fail.

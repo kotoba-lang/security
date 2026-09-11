@@ -20,9 +20,9 @@ safe-release gate when `--profile regulated`).
 | `regulated` | **required** for that evaluation | **required**; must have ≥1 `:active` key |
 
 ```sh
-nbb --classpath src scripts/check-safe-release.cljs --release --profile research
-nbb --classpath src scripts/check-safe-release.cljs --release --profile regulated
-nbb --classpath src scripts/check-key-register.cljs --require-active
+nbb --classpath src scripts/check-safe-release.cljk --release --profile research
+nbb --classpath src scripts/check-safe-release.cljk --release --profile regulated
+nbb --classpath src scripts/check-key-register.cljk --require-active
 ```
 
 ## Operator checklist
