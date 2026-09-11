@@ -75,9 +75,9 @@ conformance gate is a security signal, not just an application log.
 | Vendor payload adapters | `alert_adapters.cljc` (Slack / PagerDuty / generic) | done |
 | Delivery sinks | `alert_delivery.cljs` (file + optional webhook + stdout) | done |
 | On-call roster (example) | `registers/on-call-roster.edn` | example-only contacts |
-| Heartbeat collector stub | `scripts/monitoring-heartbeat.cljs` | stub (no live scrape) |
+| Heartbeat collector stub | `scripts/monitoring-heartbeat.cljk` | stub (no live scrape) |
 | Host-denial telemetry aggregate | `host_denial_telemetry.cljc`, `aggregate-host-denial.cljs` | file-backed (EV-0018) |
-| Metric collector mini | `scripts/metric-collect.cljs` | counts by severity/type over alert EDN |
+| Metric collector mini | `scripts/metric-collect.cljk` | counts by severity/type over alert EDN |
 | Live host runtime scrapers | — | **not implemented** (alerts/receipts only) |
 | Production Slack/PD credentials | env / kagi only | **unset** (no secret in git) |
 
@@ -94,16 +94,16 @@ Structured alerts use schema `kotoba.security.continuous-monitoring/v1`
 
 ```sh
 # smoke (file sink; webhook skipped if env unset — honest)
-nbb --classpath src scripts/emit-alert.cljs --smoke
+nbb --classpath src scripts/emit-alert.cljk --smoke
 
 # point webhook at PagerDuty Events v2 / Slack incoming webhook / etc.
 export KOTOBA_SECURITY_ALERT_WEBHOOK='https://hooks.slack.com/services/...'
 # or: https://events.pagerduty.com/v2/enqueue  (map fields at the receiver)
 
-nbb --classpath src scripts/emit-alert.cljs --smoke
+nbb --classpath src scripts/emit-alert.cljk --smoke
 
 # revoked-signer drill delivers SEV-1 on the failure path:
-nbb --classpath src scripts/simulate-revoked-signer.cljs --write --deliver
+nbb --classpath src scripts/simulate-revoked-signer.cljk --write --deliver
 ```
 
 Residual: configuring a live human on-call roster and vendor-specific payload

@@ -3,7 +3,7 @@
   "package": "sim.example/package@bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi",
   "observed-at": "2026-07-18T00:00:00Z",
   "run-id": "sim-revoked-signer-2026-07-18",
-  "source": "scripts/simulate-revoked-signer.cljs",
+  "source": "scripts/simulate-revoked-signer.cljk",
   "decision": "deny",
   "component": "kotoba-lang/security",
   "related-rule": "continuous-monitoring.md#alert-rules",

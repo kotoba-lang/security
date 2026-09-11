@@ -66,5 +66,5 @@ release security note.
 
 - Detailed strategy: [fips-validation.md](fips-validation.md)
 - Risk register R-003: `registers/risk-register.edn`
-- Policy modes: `policy/crypto-policy.edn`, `src/kotoba/security/crypto_policy.cljc`
+- Policy modes: `policy/crypto-policy.edn`, `src/kotoba/security/crypto_policy.cljk`
 - Evidence: EV-0004, EV-0011 (policy readiness — not validation)

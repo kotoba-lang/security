@@ -4,7 +4,7 @@
   "observed-at": "2026-07-18T00:00:00Z",
   "run-id": "sim-revoked-signer-2026-07-18-host-denial",
   "window-seconds": 60,
-  "source": "scripts/simulate-revoked-signer.cljs",
+  "source": "scripts/simulate-revoked-signer.cljk",
   "decision": "deny",
   "component": "aiueos/sim-component",
   "related-rule": "continuous-monitoring.md#alert-rules",

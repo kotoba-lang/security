@@ -4,8 +4,8 @@
  :gate/hybrid-epoch-floor 1
  :gate/observed-at "2026-07-18T12:00:00Z"
  :gate/evidence-id "EV-0015"
- :gate/implementation "src/kotoba/security/object_encryption_gate.cljc"
- :gate/tests "test/kotoba/security/object_encryption_gate_test.clj"
+ :gate/implementation "src/kotoba/security/object_encryption_gate.cljk"
+ :gate/tests "test/kotoba/security/object_encryption_gate_test.cljk"
  :gate/cases
  [{:case "classical-kem-epoch-1" :expected :deny :result :deny
    :message "hybrid kem required for new epochs"}

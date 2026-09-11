@@ -6,9 +6,9 @@
 ;; are crossed.
 ;;
 ;; Usage (repo root):
-;;   nbb --classpath src scripts/aggregate-host-denial.cljs
-;;   nbb --classpath src scripts/aggregate-host-denial.cljs --dir evidence/2026-07-18
-;;   nbb --classpath src scripts/aggregate-host-denial.cljs --dir test/fixtures/alerts \\
+;;   nbb --classpath src scripts/aggregate-host-denial.cljk
+;;   nbb --classpath src scripts/aggregate-host-denial.cljk --dir evidence/2026-07-18
+;;   nbb --classpath src scripts/aggregate-host-denial.cljk --dir test/fixtures/alerts \\
 ;;       --spike-threshold 1 --denial-sum-threshold 50 --emit-alert
 ;;
 ;; Evidence: evidence/<date>/host-denial-summary.edn (+ optional spike alert)

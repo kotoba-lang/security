@@ -3,9 +3,9 @@
 ;; Extends monitoring-heartbeat beyond the stub (R-005).
 ;;
 ;; Usage (repo root):
-;;   nbb --classpath src scripts/metric-collect.cljs
-;;   nbb --classpath src scripts/metric-collect.cljs --dir evidence/2026-07-18
-;;   nbb --classpath src scripts/metric-collect.cljs --dir evidence/2026-07-18/alerts --edn
+;;   nbb --classpath src scripts/metric-collect.cljk
+;;   nbb --classpath src scripts/metric-collect.cljk --dir evidence/2026-07-18
+;;   nbb --classpath src scripts/metric-collect.cljk --dir evidence/2026-07-18/alerts --edn
 ;;
 ;; Does not invent webhooks or live host scrapes; reads structured alert EDN only.
 (ns kotoba.security.scripts.metric-collect

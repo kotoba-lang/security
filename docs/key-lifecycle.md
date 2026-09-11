@@ -41,7 +41,7 @@ State rules:
 - `revoked`: explicit operator revocation; reject new artifacts.
 - `expired`: crypto period ended; reject new artifacts.
 
-Executable evaluation lives in `src/kotoba/security/key_status.cljc`:
+Executable evaluation lives in `src/kotoba/security/key_status.cljk`:
 
 - **blocked for new artifacts**: `:revoked` `:expired` `:compromised` `:retired` `:pre-active`
 - **active for new artifacts**: `:active` only
@@ -71,8 +71,8 @@ Illegal transitions return the key map unchanged with
 ### Inspect the register
 
 ```sh
-nbb --classpath src scripts/check-key-register.cljs
-nbb --classpath src scripts/check-key-register.cljs --require-active
+nbb --classpath src scripts/check-key-register.cljk
+nbb --classpath src scripts/check-key-register.cljk --require-active
 ```
 
 - Default: print `active` / `blocked` / `problems`; exit 0 even when only
@@ -104,10 +104,10 @@ outside git.
 
 ```sh
 # research / default — deployment-profile is recommended, not hard-required
-nbb --classpath src scripts/check-safe-release.cljs --release --profile research
+nbb --classpath src scripts/check-safe-release.cljk --release --profile research
 
 # regulated — hard-require :deployment-profile claim + active key-register
-nbb --classpath src scripts/check-safe-release.cljs --release --profile regulated
+nbb --classpath src scripts/check-safe-release.cljk --release --profile regulated
 ```
 
 See [deployment-profiles.md](deployment-profiles.md).

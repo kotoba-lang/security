@@ -12,7 +12,7 @@
     or URL heuristics (hooks.slack.com / events.pagerduty.com)
     else generic (raw continuous-monitoring v1 map).
 
-  nbb/node helpers. CLI exit policy lives in scripts/emit-alert.cljs."
+  nbb/node helpers. CLI exit policy lives in scripts/emit-alert.cljk."
   (:require ["node:fs" :as fs]
             ["node:https" :as https]
             ["node:http" :as http]

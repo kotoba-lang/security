@@ -2,7 +2,7 @@
 ;; Crypto inventory gate (kotoba-lang/kotoba#264).
 ;;
 ;; Usage (run from the repo root):
-;;   nbb --classpath src scripts/check-crypto-inventory.cljs
+;;   nbb --classpath src scripts/check-crypto-inventory.cljk
 ;;       [crypto-policy.edn crypto-inventory.edn]
 ;;
 ;; Validates registers/crypto-inventory.edn against policy/crypto-policy.edn:

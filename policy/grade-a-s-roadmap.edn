@@ -39,7 +39,7 @@
   :selected-option :exclude-and-renormalize
   :evidence ["policy/security-assurance-model-v2.edn"
              "registers/stack-security-dual-baseline.edn"
-             "test/kotoba/security/assurance_v2_test.clj"]
+             "test/kotoba/security/assurance_v2_test.cljk"]
   :options
   [{:id :exclude-and-renormalize
     :rule "exclude explicitly accepted N/A controls and renormalize remaining declared weights"

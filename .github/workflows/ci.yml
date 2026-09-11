@@ -35,22 +35,22 @@ jobs:
         run: clojure -M:lint
 
       - name: Safe-release evidence gate (fixtures)
-        run: nbb --classpath src scripts/check-safe-release.cljs
+        run: nbb --classpath src scripts/check-safe-release.cljk
 
       - name: Safe-release evidence gate (strict release enforcement)
-        run: nbb --classpath src scripts/check-safe-release.cljs --release --profile research
+        run: nbb --classpath src scripts/check-safe-release.cljk --release --profile research
 
       - name: Key-register status (advisory)
-        run: nbb --classpath src scripts/check-key-register.cljs
+        run: nbb --classpath src scripts/check-key-register.cljk
 
       - name: Crypto inventory gate
-        run: nbb --classpath src scripts/check-crypto-inventory.cljs
+        run: nbb --classpath src scripts/check-crypto-inventory.cljk
 
       - name: Hybrid object-encryption admit gate
-        run: nbb --classpath src scripts/check-hybrid-admit.cljs
+        run: nbb --classpath src scripts/check-hybrid-admit.cljk
 
       - name: Monitoring heartbeat (collector stub, file only)
-        run: nbb --classpath src scripts/monitoring-heartbeat.cljs
+        run: nbb --classpath src scripts/monitoring-heartbeat.cljk
 
       - name: Public-only key register gate
         run: bb scripts/check-key-register.bb

@@ -3,7 +3,7 @@
 ;; Accepts POST JSON, responds 200, prints body summary. No secrets.
 ;;
 ;; Usage:
-;;   nbb --classpath src scripts/mock-webhook-sink.cljs --port 9876
+;;   nbb --classpath src scripts/mock-webhook-sink.cljk --port 9876
 (ns kotoba.security.scripts.mock-webhook-sink
   (:require ["node:http" :as http]))
 
@@ -52,4 +52,4 @@
          (fn []
            (println "mock-webhook-sink listening on http://127.0.0.1:" port)
            (println "export KOTOBA_SECURITY_ALERT_WEBHOOK=http://127.0.0.1:" port "/alert")
-           (println "then: nbb --classpath src scripts/emit-alert.cljs --smoke")))
+           (println "then: nbb --classpath src scripts/emit-alert.cljk --smoke")))

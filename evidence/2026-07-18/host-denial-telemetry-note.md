@@ -2,11 +2,11 @@
 
 ## What landed
 
-- `src/kotoba/security/host_denial_telemetry.cljc` — pure aggregate + threshold
+- `src/kotoba/security/host_denial_telemetry.cljk` — pure aggregate + threshold
   evaluation over continuous-monitoring v1 alert maps.
-- `scripts/aggregate-host-denial.cljs` — nbb scanner for `evidence/*/alerts`
+- `scripts/aggregate-host-denial.cljk` — nbb scanner for `evidence/*/alerts`
   (or `--dir`), writes `host-denial-summary.edn`, optional spike alert emit.
-- `scripts/metric-collect.cljs` — mini collector: counts by severity / name /
+- `scripts/metric-collect.cljk` — mini collector: counts by severity / name /
   signal / decision (extends heartbeat beyond stub).
 - Unit tests + `test/fixtures/alerts/*` fixture EDN.
 
@@ -23,7 +23,7 @@
 ## Commands
 
 ```sh
-nbb --classpath src scripts/aggregate-host-denial.cljs --dir evidence/2026-07-18
-nbb --classpath src scripts/metric-collect.cljs --dir evidence/2026-07-18 --write
+nbb --classpath src scripts/aggregate-host-denial.cljk --dir evidence/2026-07-18
+nbb --classpath src scripts/metric-collect.cljk --dir evidence/2026-07-18 --write
 clojure -M:test -n kotoba.security.host-denial-telemetry-test
 ```
