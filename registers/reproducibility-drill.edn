@@ -11,5 +11,5 @@
    :published-ref "refs/heads/pins/kotoba-3689b12"
    :exact-fetch :passed}]
  :checks [{:command "clojure -P -M:test" :local-overrides false :result :passed}
-          {:command "clojure -M:test" :local-overrides false :result :passed}]
+          {:command "kbb -M:test" :local-overrides false :result :passed}]
  :non-claims ["This receipt does not make every build bit-for-bit reproducible; it proves the previously missing immutable inputs are publicly fetchable and the non-development dependency/test path resolves them."]}

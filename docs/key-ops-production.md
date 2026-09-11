@@ -89,7 +89,7 @@ Optional `:key/signer` may carry the DID used in lockfiles
 Validate structure:
 
 ```sh
-nbb --classpath src scripts/check-key-register.cljk
+kbb --backend sci --classpath src scripts/check-key-register.cljk
 ```
 
 ## 3. Promote to active
@@ -107,7 +107,7 @@ exists:
 Then:
 
 ```sh
-nbb --classpath src scripts/check-key-register.cljk --require-active
+kbb --backend sci --classpath src scripts/check-key-register.cljk --require-active
 ```
 
 ## 4. Rotate (new active + old retired with verify-until)
@@ -155,13 +155,13 @@ if you still need regulated releases.
 
 ```sh
 # Research / CI default — may pass with only template pre-active keys
-nbb --classpath src scripts/check-key-register.cljk
+kbb --backend sci --classpath src scripts/check-key-register.cljk
 
 # Regulated packaging — requires >=1 :active key and no register problems
-nbb --classpath src scripts/check-key-register.cljk --require-active
+kbb --backend sci --classpath src scripts/check-key-register.cljk --require-active
 
 # Full safe-release under regulated profile
-nbb --classpath src scripts/check-safe-release.cljk --release --profile regulated
+kbb --backend sci --classpath src scripts/check-safe-release.cljk --release --profile regulated
 ```
 
 ## 7. Consumer: package verify --key-register

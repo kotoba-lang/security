@@ -2,7 +2,7 @@
   "BC-free structural gate over the hybrid KEM vector file, plus the
   cross-check that the envelope shape emitted by kotoba.lang.crypto/seal
   passes crypto policy (kotoba-lang/kotoba#264). Cryptographic recomputation
-  of the vectors runs separately: clojure -M:vectors:vectors-test."
+  of the vectors runs separately: kbb -M:vectors:vectors-test."
   (:require [clojure.edn :as edn]
             [clojure.test :refer [deftest is testing]]
             [kotoba.security.crypto-policy :as policy]

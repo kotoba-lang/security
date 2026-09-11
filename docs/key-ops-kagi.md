@@ -43,7 +43,7 @@ uses for `--kagi`). Vault data lives under `orgs/kotoba-lang/kagi/.kagi/`
 
 # Fetch private material only into a signing tool stdin — never into git
 # or chat. Prefer fleet --kagi rather than printing PEM:
-FLEET_ROOT=$FLEET_ROOT nbb --classpath orgs/kotoba-lang/kagami/src \
+FLEET_ROOT=$FLEET_ROOT kbb --backend sci --classpath orgs/kotoba-lang/kagami/src \
   orgs/kotoba-lang/kagami/bin/fleet.cljs pin-advance \
   --db manifest/fleet-db.edn --repo security --new <sha> \
   --kagi fleet-owner-key
@@ -104,7 +104,7 @@ Residual until HSM: custody is kagi + OS-Keychain unlock, not a FIPS HSM module.
    - `:key/public` and/or `:key/did`
 3. Run key-register gates:
    ```sh
-   nbb --classpath src scripts/check-key-register.cljk --require-active
+   kbb --backend sci --classpath src scripts/check-key-register.cljk --require-active
    bb scripts/check-key-register.bb   # shape + no private PEM (key_lifecycle)
    ```
 4. Refresh `evidence/<date>/key-status-snapshot.edn` and evidence-index.
@@ -113,9 +113,9 @@ Residual until HSM: custody is kagi + OS-Keychain unlock, not a FIPS HSM module.
 ## Dry-run validation
 
 ```sh
-nbb --classpath src scripts/check-key-register.cljk --require-active
+kbb --backend sci --classpath src scripts/check-key-register.cljk --require-active
 bb scripts/check-key-register.bb
-clojure -M:test -n kotoba.security.key-lifecycle-test
+kbb -M:test -n kotoba.security.key-lifecycle-test
 ```
 
 Expected shape invariants are enforced by
@@ -137,8 +137,8 @@ Planned rotation (not incident):
 1. Mint new private material → kagi item `security-package-signing-2026-07-18-rot`.
 2. Register public only; promote new to `:active`.
 3. Retire old `security-package-signing-2026-07-18` with `:key/verify-until "2033-07-18"`.
-4. Pure drill: `nbb --classpath src scripts/check-key-rotation-drill.cljk --write`.
-5. `nbb --classpath src scripts/check-key-register.cljk --require-active`.
+4. Pure drill: `kbb --backend sci --classpath src scripts/check-key-rotation-drill.cljk --write`.
+5. `kbb --backend sci --classpath src scripts/check-key-register.cljk --require-active`.
 
 Evidence: EV-0014, `evidence/2026-07-18/key-lifecycle-rotation-drill.edn`.
 

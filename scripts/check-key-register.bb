@@ -1,4 +1,4 @@
-#!/usr/bin/env bb
+#!/usr/bin/env kbb
 ;; Key-register shape + no-private-material gate (R-002 residual).
 ;;
 ;; Usage (repo root):

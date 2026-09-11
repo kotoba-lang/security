@@ -103,7 +103,7 @@ available **only** under the `:vectors` deps.edn alias — the default paths
 and default `:test` alias stay BC-free:
 
 ```bash
-clojure -M:vectors scripts/gen-hybrid-vectors.cljk
+kbb -M:vectors scripts/gen-hybrid-vectors.cljk
 ```
 
 All randomness (X25519 secrets, ML-KEM keygen d/z, ML-KEM encapsulation
@@ -115,14 +115,14 @@ so regeneration is byte-for-byte reproducible.
 ## Verification Evidence
 
 - **Cryptographic recomputation** (Bouncy Castle, `:vectors` alias only):
-  `clojure -M:vectors:vectors-test` runs
+  `kbb -M:vectors:vectors-test` runs
   `test-vectors/kotoba/security/hybrid_vectors_test.cljk`, which recomputes
   `ss1` in both directions (encapsulation and decapsulation), decapsulates
   the recorded ML-KEM ciphertext, re-derives the KEK, and asserts it matches
   `:vector/expected :kek`. CI runs this in the dedicated `vectors` job.
 - **Structural gate** (BC-free, default suite + babashka):
   `kotoba.security.hybrid-vectors/check-vector-file` validates fields, the
-  kem list, and hex shapes/lengths; it runs in the default `clojure -M:test`
+  kem list, and hex shapes/lengths; it runs in the default `kbb -M:test`
   suite (`hybrid_vectors_structure_test.clj`) and in
   `scripts/check-crypto-inventory.bb`, so every CI run validates the vector
   file without Bouncy Castle.

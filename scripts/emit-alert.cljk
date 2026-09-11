@@ -1,12 +1,12 @@
-#!/usr/bin/env nbb
+#!/usr/bin/env kbb
 ;; Deliver continuous-monitoring v1 alerts to pluggable sinks (R-005 pager).
 ;;
 ;; Usage (repo root):
-;;   nbb --classpath src scripts/emit-alert.cljk --smoke
-;;   nbb --classpath src scripts/emit-alert.cljk --edn path/to/alert.edn
-;;   nbb --classpath src scripts/emit-alert.cljk --smoke --stdout
+;;   kbb --backend sci --classpath src scripts/emit-alert.cljk --smoke
+;;   kbb --backend sci --classpath src scripts/emit-alert.cljk --edn path/to/alert.edn
+;;   kbb --backend sci --classpath src scripts/emit-alert.cljk --smoke --stdout
 ;;   KOTOBA_SECURITY_ALERT_WEBHOOK=https://hooks.example/x \
-;;     nbb --classpath src scripts/emit-alert.cljk --smoke
+;;     kbb --backend sci --classpath src scripts/emit-alert.cljk --smoke
 ;;
 ;; Sinks:
 ;;   file:    evidence/<date>/alerts/ (or --dir PATH; falls back to /tmp/...)

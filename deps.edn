@@ -63,8 +63,8 @@
   ;; Hybrid KEM test-vector generation/verification (docs/hybrid-envelope-vectors.md).
   ;; Bouncy Castle is confined to this alias: the default paths and the
   ;; default :test alias stay BC-free (CI validates vector structure without BC).
-  ;;   generate: clojure -M:vectors scripts/gen-hybrid-vectors.cljk
-  ;;   verify:   clojure -M:vectors:vectors-test
+  ;;   generate: kbb -M:vectors scripts/gen-hybrid-vectors.cljk
+  ;;   verify:   kbb -M:vectors:vectors-test
   :vectors {:extra-paths ["test-vectors"]
             :extra-deps {org.bouncycastle/bcprov-jdk18on {:mvn/version "1.81"}}}
   :vectors-test {:extra-deps {io.github.cognitect-labs/test-runner

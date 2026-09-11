@@ -111,8 +111,8 @@ descriptors** -- no requirement text from either standard is reproduced, and
 `:control/descriptor` must not be quoted as if it were.
 
 ```sh
-nbb --classpath src scripts/check-crosswalk.cljk          # position
-nbb --classpath src scripts/check-crosswalk.cljk --gaps   # the controls that are short
+kbb --backend sci --classpath src scripts/check-crosswalk.cljk          # position
+kbb --backend sci --classpath src scripts/check-crosswalk.cljk --gaps   # the controls that are short
 ```
 
 Measured 2026-08-23:
@@ -158,17 +158,17 @@ regression.
 Run the tests and gates from the repo root (CI runs the same commands):
 
 ```sh
-clojure -M:test                       # release-gate, crypto-policy, key-lifecycle, hybrid gate, adapters
-nbb --classpath src scripts/check-safe-release.cljk
-nbb --classpath src scripts/check-crypto-inventory.cljk
-nbb --classpath src scripts/check-hybrid-admit.cljk
-nbb --classpath src scripts/check-key-register.cljk --require-active
+kbb -M:test                       # release-gate, crypto-policy, key-lifecycle, hybrid gate, adapters
+kbb --backend sci --classpath src scripts/check-safe-release.cljk
+kbb --backend sci --classpath src scripts/check-crypto-inventory.cljk
+kbb --backend sci --classpath src scripts/check-hybrid-admit.cljk
+kbb --backend sci --classpath src scripts/check-key-register.cljk --require-active
 bb scripts/check-key-register.bb      # shape + forbid private PEM (key_lifecycle)
-nbb --classpath src scripts/check-key-lifecycle-drill.cljk
-nbb --classpath src scripts/check-key-rotation-drill.cljk --write
-nbb --classpath src scripts/simulate-revoked-signer.cljk --write --deliver
-nbb --classpath src scripts/emit-alert.cljk --smoke
-nbb --classpath src scripts/monitoring-heartbeat.cljk
+kbb --backend sci --classpath src scripts/check-key-lifecycle-drill.cljk
+kbb --backend sci --classpath src scripts/check-key-rotation-drill.cljk --write
+kbb --backend sci --classpath src scripts/simulate-revoked-signer.cljk --write --deliver
+kbb --backend sci --classpath src scripts/emit-alert.cljk --smoke
+kbb --backend sci --classpath src scripts/monitoring-heartbeat.cljk
 ```
 
 ### Pager webhook (optional real sink)
@@ -181,18 +181,18 @@ bodies (Slack Incoming Webhook / PagerDuty Events API v2 / generic) selected by
 
 ```sh
 # Local mock (no secrets)
-nbb --classpath src scripts/mock-webhook-sink.cljk --port 9876
+kbb --backend sci --classpath src scripts/mock-webhook-sink.cljk --port 9876
 export KOTOBA_SECURITY_ALERT_WEBHOOK='http://127.0.0.1:9876/alert'
 # optional: force Slack shape against mock
 export KOTOBA_SECURITY_ALERT_SINK=slack
-nbb --classpath src scripts/emit-alert.cljk --smoke
+kbb --backend sci --classpath src scripts/emit-alert.cljk --smoke
 
 # Production vendor (only if URL exists in kagi/Keychain — never invent)
 export KOTOBA_SECURITY_ALERT_WEBHOOK='https://hooks.slack.com/services/...'
 # or PagerDuty:
 # export KOTOBA_SECURITY_ALERT_WEBHOOK='https://events.pagerduty.com/v2/enqueue'
 # export KOTOBA_SECURITY_PAGERDUTY_ROUTING_KEY='…'
-nbb --classpath src scripts/emit-alert.cljk --smoke
+kbb --backend sci --classpath src scripts/emit-alert.cljk --smoke
 ```
 
 Env template (empty values only): [`.env.pager.example`](.env.pager.example).
