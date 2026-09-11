@@ -1,4 +1,4 @@
-#!/usr/bin/env nbb
+#!/usr/bin/env kbb
 ;; Technical monitoring simulation: compromised/revoked signer (R-005 / R-002).
 ;;
 ;; Builds a synthetic register with a revoked package-signing key, runs the
@@ -6,11 +6,11 @@
 ;; and delivers them via alert sinks (file + optional webhook).
 ;;
 ;; Usage (repo root):
-;;   nbb --classpath src scripts/simulate-revoked-signer.cljk
-;;   nbb --classpath src scripts/simulate-revoked-signer.cljk --write
-;;   nbb --classpath src scripts/simulate-revoked-signer.cljk --write --deliver
-;;   nbb --classpath src scripts/simulate-revoked-signer.cljk --deliver --dir evidence/2026-07-18
-;;   nbb --classpath src scripts/simulate-revoked-signer.cljk --write evidence/2026-07-18
+;;   kbb --backend sci --classpath src scripts/simulate-revoked-signer.cljk
+;;   kbb --backend sci --classpath src scripts/simulate-revoked-signer.cljk --write
+;;   kbb --backend sci --classpath src scripts/simulate-revoked-signer.cljk --write --deliver
+;;   kbb --backend sci --classpath src scripts/simulate-revoked-signer.cljk --deliver --dir evidence/2026-07-18
+;;   kbb --backend sci --classpath src scripts/simulate-revoked-signer.cljk --write evidence/2026-07-18
 (ns kotoba.security.scripts.simulate-revoked-signer
   (:require ["node:fs" :as fs]
             ["node:path" :as path]

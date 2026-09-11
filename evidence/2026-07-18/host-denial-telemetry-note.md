@@ -23,7 +23,7 @@
 ## Commands
 
 ```sh
-nbb --classpath src scripts/aggregate-host-denial.cljk --dir evidence/2026-07-18
-nbb --classpath src scripts/metric-collect.cljk --dir evidence/2026-07-18 --write
-clojure -M:test -n kotoba.security.host-denial-telemetry-test
+kbb --backend sci --classpath src scripts/aggregate-host-denial.cljk --dir evidence/2026-07-18
+kbb --backend sci --classpath src scripts/metric-collect.cljk --dir evidence/2026-07-18 --write
+kbb -M:test -n kotoba.security.host-denial-telemetry-test
 ```

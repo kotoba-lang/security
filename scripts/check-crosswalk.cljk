@@ -1,9 +1,9 @@
-#!/usr/bin/env nbb
+#!/usr/bin/env kbb
 ;; SOC 2 TSC / ISO 27001 Annex A に対する現在地を、この repo の証拠から計算して
 ;; 印字する。判定そのものは `kotoba.security.crosswalk`（純関数）が持つ。
 ;;
-;;   nbb --classpath src scripts/check-crosswalk.cljk
-;;   nbb --classpath src scripts/check-crosswalk.cljk --gaps    # 未達の統制を並べる
+;;   kbb --backend sci --classpath src scripts/check-crosswalk.cljk
+;;   kbb --backend sci --classpath src scripts/check-crosswalk.cljk --gaps    # 未達の統制を並べる
 ;;
 ;; ## この script が答えない問い
 ;;

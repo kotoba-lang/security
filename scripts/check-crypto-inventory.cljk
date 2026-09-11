@@ -1,8 +1,8 @@
-#!/usr/bin/env nbb
+#!/usr/bin/env kbb
 ;; Crypto inventory gate (kotoba-lang/kotoba#264).
 ;;
 ;; Usage (run from the repo root):
-;;   nbb --classpath src scripts/check-crypto-inventory.cljk
+;;   kbb --backend sci --classpath src scripts/check-crypto-inventory.cljk
 ;;       [crypto-policy.edn crypto-inventory.edn]
 ;;
 ;; Validates registers/crypto-inventory.edn against policy/crypto-policy.edn:
@@ -10,7 +10,7 @@
 ;; :not-claimed entries) only when the policy mode is :fips-required.
 ;; Also structurally validates conformance/crypto/vectors/*.edn hybrid KEM
 ;; vector files (fields, kem list, hex shapes) — BC-free; cryptographic
-;; recomputation runs under `clojure -M:vectors:vectors-test`.
+;; recomputation runs under `kbb -M:vectors:vectors-test`.
 ;; Exit 1 on failure.
 (ns kotoba.security.scripts.check-crypto-inventory
   (:require ["node:fs" :as fs]

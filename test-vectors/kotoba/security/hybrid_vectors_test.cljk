@@ -2,7 +2,7 @@
   "Recomputes the hybrid X25519 + ML-KEM-768 wrapping vectors with Bouncy
   Castle and asserts the recorded KEKs match (kotoba-lang/kotoba#264).
 
-  Runs ONLY under the :vectors alias (clojure -M:vectors:vectors-test) so the
+  Runs ONLY under the :vectors alias (kbb -M:vectors:vectors-test) so the
   default test suite stays Bouncy-Castle-free. Verification exercises both
   directions:
 

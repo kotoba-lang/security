@@ -94,16 +94,16 @@ Structured alerts use schema `kotoba.security.continuous-monitoring/v1`
 
 ```sh
 # smoke (file sink; webhook skipped if env unset — honest)
-nbb --classpath src scripts/emit-alert.cljk --smoke
+kbb --backend sci --classpath src scripts/emit-alert.cljk --smoke
 
 # point webhook at PagerDuty Events v2 / Slack incoming webhook / etc.
 export KOTOBA_SECURITY_ALERT_WEBHOOK='https://hooks.slack.com/services/...'
 # or: https://events.pagerduty.com/v2/enqueue  (map fields at the receiver)
 
-nbb --classpath src scripts/emit-alert.cljk --smoke
+kbb --backend sci --classpath src scripts/emit-alert.cljk --smoke
 
 # revoked-signer drill delivers SEV-1 on the failure path:
-nbb --classpath src scripts/simulate-revoked-signer.cljk --write --deliver
+kbb --backend sci --classpath src scripts/simulate-revoked-signer.cljk --write --deliver
 ```
 
 Residual: configuring a live human on-call roster and vendor-specific payload

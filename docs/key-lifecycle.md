@@ -71,8 +71,8 @@ Illegal transitions return the key map unchanged with
 ### Inspect the register
 
 ```sh
-nbb --classpath src scripts/check-key-register.cljk
-nbb --classpath src scripts/check-key-register.cljk --require-active
+kbb --backend sci --classpath src scripts/check-key-register.cljk
+kbb --backend sci --classpath src scripts/check-key-register.cljk --require-active
 ```
 
 - Default: print `active` / `blocked` / `problems`; exit 0 even when only
@@ -104,10 +104,10 @@ outside git.
 
 ```sh
 # research / default — deployment-profile is recommended, not hard-required
-nbb --classpath src scripts/check-safe-release.cljk --release --profile research
+kbb --backend sci --classpath src scripts/check-safe-release.cljk --release --profile research
 
 # regulated — hard-require :deployment-profile claim + active key-register
-nbb --classpath src scripts/check-safe-release.cljk --release --profile regulated
+kbb --backend sci --classpath src scripts/check-safe-release.cljk --release --profile regulated
 ```
 
 See [deployment-profiles.md](deployment-profiles.md).

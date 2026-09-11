@@ -6,7 +6,7 @@
 - Profile: Grade A candidate
 
 This document renders the machine-checked threat model. The EDN file is the
-normative source; `clojure -M:threat-model-check` rejects uncovered assets,
+normative source; `kbb -M:threat-model-check` rejects uncovered assets,
 trust boundaries, abuse categories, unknown controls and missing evidence.
 
 ## Scope

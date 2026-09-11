@@ -48,8 +48,8 @@
             :rotate-signing-key-promotes-new-retires-old]
    :note "Covered by key_status_test retire-key + rotate-signing-key unit tests."}]
  :drill/gates
- ["nbb --classpath src scripts/check-key-lifecycle-drill.cljk"
-  "clojure -M:test (key_lifecycle_drill_test + key_status_test)"]
+ ["kbb --backend sci --classpath src scripts/check-key-lifecycle-drill.cljk"
+  "kbb -M:test (key_lifecycle_drill_test + key_status_test)"]
  :drill/artifacts
  [{:kind :drill :path "evidence/2026-07-17/key-lifecycle-revoke-drill.edn"}
   {:kind :test :path "test/kotoba/security/key_lifecycle_drill_test.cljk"}

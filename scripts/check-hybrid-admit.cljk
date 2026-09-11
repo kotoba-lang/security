@@ -1,4 +1,4 @@
-#!/usr/bin/env nbb
+#!/usr/bin/env kbb
 ;; Hybrid object-encryption admission gate for CI (R-004).
 ;;
 ;; Wraps kotoba.security.object-encryption-gate over:
@@ -9,8 +9,8 @@
 ;; classical, and denies classical-only KEM for new epochs. No ML-KEM crypto.
 ;;
 ;; Usage (repo root):
-;;   nbb --classpath src scripts/check-hybrid-admit.cljk
-;;   nbb --classpath src scripts/check-hybrid-admit.cljk --write
+;;   kbb --backend sci --classpath src scripts/check-hybrid-admit.cljk
+;;   kbb --backend sci --classpath src scripts/check-hybrid-admit.cljk --write
 (ns kotoba.security.scripts.check-hybrid-admit
   (:require ["node:fs" :as fs]
             ["node:path" :as path]

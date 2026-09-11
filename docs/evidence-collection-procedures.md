@@ -44,7 +44,7 @@ ML-KEM-768 hybrid envelope must be the default on the production data path (not 
    cd kotoba-lang/security
    # Edit deps.edn to include: org.bouncycastle/bcpqc-jdk15to18 >= 1.81
    # Version MUST be >= 1.81 (first to ship ML-KEM-768 reference vectors)
-   nbb manifest/west_manifest_validator.cljs --check
+   kbb --backend sci manifest/west_manifest_validator.cljk --check
    ```
 
 2. **Generate SBOM entry:**
@@ -60,7 +60,7 @@ ML-KEM-768 hybrid envelope must be the default on the production data path (not 
 3. **Test import and basic operations:**
    ```bash
    cd kotoba-lang/security
-   clj -M:test -n kotoba.security.crypto-test \
+   kbb -M:test -n kotoba.security.crypto-test \
      -k ml_kem_768_reference_vectors
    # PASS: All 3+ reference vectors decrypt correctly
    ```
@@ -75,7 +75,7 @@ ML-KEM-768 hybrid envelope must be the default on the production data path (not 
    grep -r "ML-KEM-768" src/ || echo "FAIL: ML-KEM-768 not found"
    
    # Test: encrypt a document with production config
-   clj -M:test -n kotoba.kotobase.integration-test \
+   kbb -M:test -n kotoba.kotobase.integration-test \
      -k encrypt_with_production_hybrid_policy
    # PASS: Encrypted output contains :envelope/provider :hybrid-required
    # PASS: Encrypted output contains :envelope/algorithm "ML-KEM-768"
@@ -85,7 +85,7 @@ ML-KEM-768 hybrid envelope must be the default on the production data path (not 
    ```bash
    # Verify each cryptographic operation emits structured metadata
    cd kotoba-lang/security
-   clj -M:test -n kotoba.security.envelope-test \
+   kbb -M:test -n kotoba.security.envelope-test \
      -k metadata_emission
    # PASS: seal() returns map with :envelope/provider :envelope/algorithm :envelope/version
    # PASS: metadata is logged to audit trail
@@ -113,7 +113,7 @@ ML-KEM-768 hybrid envelope must be the default on the production data path (not 
 2. **Downgrade attempt 2: AEAD mode downgrade**
    ```bash
    cd kotoba-lang/security
-   clj -M:test -n kotoba.security.crypto-test \
+   kbb -M:test -n kotoba.security.crypto-test \
      -k deny_aead_downgrade_from_aes_gcm_256_to_aes_128_gcm
    # PASS: Downgrade attempt denied with reason in audit log
    # FAIL: Any downgrade accepted -> test suite fails, CI blocks
@@ -125,7 +125,7 @@ ML-KEM-768 hybrid envelope must be the default on the production data path (not 
    for repo in kotobase kototama aiueos; do
      cd kotoba-lang/$repo
      echo "Testing $repo..."
-     clj -M:test -k *downgrade* 2>&1 | grep -q "PASS"
+     kbb -M:test -k *downgrade* 2>&1 | grep -q "PASS"
      [ $? -eq 0 ] && echo "✓ $repo" || echo "✗ $repo"
    done
    ```
@@ -493,14 +493,14 @@ Mutual TLS with peer verification, automatic revocation checks, certificate rota
    cd kotoba-lang/security
    
    # Start test server requiring mTLS
-   clj -M:test -n kotoba.security.transport-test \
+   kbb -M:test -n kotoba.security.transport-test \
      -k test-mtls-required-without-client-cert
    # Expected: Connection rejected with "client certificate required" or "certificate required"
    ```
 
 3. **Test: Connect with valid client certificate (positive):**
    ```bash
-   clj -M:test -n kotoba.security.transport-test \
+   kbb -M:test -n kotoba.security.transport-test \
      -k test-mtls-success-with-valid-client-cert
    # Expected: Connection accepted, handshake succeeds
    ```
@@ -752,7 +752,7 @@ Immutable hash-chained telemetry, ordered containment upon compromise, incident 
    EOF
    
    # Test: verify chain integrity
-   clj -M:test -n kotoba.security.telemetry-test \
+   kbb -M:test -n kotoba.security.telemetry-test \
      -k verify_chain_integrity
    # Expected: All tests pass
    ```

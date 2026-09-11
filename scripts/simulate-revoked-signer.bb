@@ -1,4 +1,4 @@
-#!/usr/bin/env bb
+#!/usr/bin/env kbb
 ;; Technical monitoring simulation: compromised/revoked signer (R-005 / R-002).
 ;;
 ;; Builds a synthetic register with a revoked package-signing key, runs the

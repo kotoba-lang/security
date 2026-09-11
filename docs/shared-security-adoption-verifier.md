@@ -3,7 +3,7 @@
 Each consumer stores `security-adoption.edn` at its repository root and runs:
 
 ```sh
-clojure -M -m kotoba.security.adoption
+kbb -M -m kotoba.security.adoption
 ```
 
 The version 3 command denies floating or mismatched dependency pins, missing

@@ -1,18 +1,18 @@
-#!/usr/bin/env nbb
+#!/usr/bin/env kbb
 ;; Safe-release evidence gate (kotoba-lang/kotoba#265).
 ;;
 ;; Usage (run from the repo root):
-;;   nbb --classpath src scripts/check-safe-release.cljk
+;;   kbb --backend sci --classpath src scripts/check-safe-release.cljk
 ;;       Validate the conformance/release fixture matrix (positive fixtures
 ;;       must pass, negative fixtures must fail), structurally validate the
 ;;       real registers, and report the real release-packet status as
 ;;       :advisory without failing. This is the CI mode.
 ;;
-;;   nbb --classpath src scripts/check-safe-release.cljk --release
+;;   kbb --backend sci --classpath src scripts/check-safe-release.cljk --release
 ;;       Enforce the release gate strictly against the real registers.
 ;;       Exit 1 when the release evidence packet is incomplete.
 ;;
-;;   nbb --classpath src scripts/check-safe-release.cljk --release --profile regulated
+;;   kbb --backend sci --classpath src scripts/check-safe-release.cljk --release --profile regulated
 ;;       Regulated profile: hard-require :deployment-profile claim AND a
 ;;       key-register with at least one :active key. Exit 1 on failure.
 ;;

@@ -1,4 +1,4 @@
-#!/usr/bin/env bb
+#!/usr/bin/env kbb
 ;; Emit structured continuous-monitoring alert samples (R-005).
 ;; Prefer simulate-revoked-signer.bb --write for the technical path; this
 ;; script re-emits pure samples without re-running the trust check.

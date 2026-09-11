@@ -1,4 +1,4 @@
-#!/usr/bin/env nbb
+#!/usr/bin/env kbb
 ;; Aggregate denial receipts / continuous-monitoring alerts into summary EDN.
 ;;
 ;; Scans evidence/*/alerts (or --dir) for *.edn alert files, writes a summary,
@@ -6,9 +6,9 @@
 ;; are crossed.
 ;;
 ;; Usage (repo root):
-;;   nbb --classpath src scripts/aggregate-host-denial.cljk
-;;   nbb --classpath src scripts/aggregate-host-denial.cljk --dir evidence/2026-07-18
-;;   nbb --classpath src scripts/aggregate-host-denial.cljk --dir test/fixtures/alerts \\
+;;   kbb --backend sci --classpath src scripts/aggregate-host-denial.cljk
+;;   kbb --backend sci --classpath src scripts/aggregate-host-denial.cljk --dir evidence/2026-07-18
+;;   kbb --backend sci --classpath src scripts/aggregate-host-denial.cljk --dir test/fixtures/alerts \\
 ;;       --spike-threshold 1 --denial-sum-threshold 50 --emit-alert
 ;;
 ;; Evidence: evidence/<date>/host-denial-summary.edn (+ optional spike alert)
