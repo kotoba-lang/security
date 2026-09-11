@@ -1,5 +1,6 @@
 (ns kotoba.security.release-admission
   "Fail-closed release publication admission for language/contracts artifacts."
+  {:kotoba/export [admit! evaluate]}
   (:require [kotoba.security.abac :as abac]
             [kotoba.security.approval :as approval]
             [kotoba.security.capability :as capability]

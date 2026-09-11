@@ -1,5 +1,6 @@
 (ns kotoba.security.control-adoption
   "Fail-closed cross-product adoption verifier for shared security controls."
+  {:kotoba/export [-main adoption-path catalog-path read-edn report required-products sha256-file]}
   (:require [kotoba.lang.edn :as edn]
             [kotoba.lang.coll :as set])
   (:import [java.math BigInteger]

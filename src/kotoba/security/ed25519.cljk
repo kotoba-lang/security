@@ -7,6 +7,7 @@
 
   API shape matches kototama.signal-request / signal-crypto: a 32-byte raw
   private seed, a 32-byte raw public key, and a 64-byte detached signature."
+  {:kotoba/export [generate-keypair sign verify]}
   #?(:clj (:import [java.security KeyFactory KeyPairGenerator Signature]
                    [java.security.spec PKCS8EncodedKeySpec X509EncodedKeySpec]
                    [java.util Arrays])))

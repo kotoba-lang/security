@@ -1,5 +1,6 @@
 (ns kotoba.security.compositional-negative
   "Fail-closed verifier for malicious input evidence spanning all product layers."
+  {:kotoba/export [corpus-path evaluate read-corpus]}
   (:require [kotoba.lang.edn :as edn]))
 
 (def corpus-path "qualification/compositional-negative-corpus.edn")

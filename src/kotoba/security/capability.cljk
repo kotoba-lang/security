@@ -1,5 +1,6 @@
 (ns kotoba.security.capability
-  "Fail-closed signed, attenuated operation capability admission.")
+  "Fail-closed signed, attenuated operation capability admission."
+  {:kotoba/export [evaluate]})
 
 (defn evaluate
   [token {:keys [audience subject action resource request-digest now-ms

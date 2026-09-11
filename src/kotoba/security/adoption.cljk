@@ -1,5 +1,6 @@
 (ns kotoba.security.adoption
   "Fail-closed verifier for organization-wide use of the shared controls."
+  {:kotoba/export [-main full-sha-pattern inventory-violations security-coordinate security-url sensitive-name-pattern sensitive-operation-violations source-security-inventory source-sensitive-inventory verify! violations]}
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [kotoba.lang.coll :as set]

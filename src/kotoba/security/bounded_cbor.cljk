@@ -1,6 +1,7 @@
 (ns kotoba.security.bounded-cbor
   "DAG-CBOR admission scanner that rejects attacker-declared allocations
    before handing bytes to the upstream decoder."
+  {:kotoba/export [decode default-limits]}
   (:require [cbor.core :as cbor])
   (:import [java.nio ByteBuffer]))
 

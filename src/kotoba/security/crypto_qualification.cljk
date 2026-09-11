@@ -1,5 +1,6 @@
 (ns kotoba.security.crypto-qualification
   "Machine validation for the Grade A cryptographic algorithm inventory."
+  {:kotoba/export [-main policy-path provider-report read-policy report required-algorithms validation-errors]}
   (:require [kotoba.lang.edn :as edn])
   (:import [java.io File]
            [java.security MessageDigest]

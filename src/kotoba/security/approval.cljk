@@ -1,5 +1,6 @@
 (ns kotoba.security.approval
-  "Digest-bound, time-limited, independent approval quorum admission.")
+  "Digest-bound, time-limited, independent approval quorum admission."
+  {:kotoba/export [evaluate evaluate-break-glass]})
 
 (defn- signature-valid? [verify-signature-fn approval]
   (and (ifn? verify-signature-fn)

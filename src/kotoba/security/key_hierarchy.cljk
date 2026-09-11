@@ -1,5 +1,6 @@
 (ns kotoba.security.key-hierarchy
   "Versioned cross-product key hierarchy qualification."
+  {:kotoba/export [-main policy-path read-policy report required-products]}
   (:require [kotoba.lang.edn :as edn]
             [kotoba.lang.coll :as set]))
 

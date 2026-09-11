@@ -1,5 +1,6 @@
 (ns kotoba.security.resilience
-  "Portable compromise telemetry and destructive-restore drill primitives.")
+  "Portable compromise telemetry and destructive-restore drill primitives."
+  {:kotoba/export [append-remote-telemetry! append-telemetry contain! containment-order destructive-restore-drill! evaluate-restore-receipt evaluate-threshold-recovery qualify-backup-sites telemetry-valid?]})
 
 (defn append-telemetry
   "Append one hash-linked immutable event. DIGEST-FN hashes canonical caller

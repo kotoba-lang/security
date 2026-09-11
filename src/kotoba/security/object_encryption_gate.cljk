@@ -12,6 +12,7 @@
   at the documented consumer boundary.
 
   See docs/hybrid-envelope-vectors.md, docs/pqc-roadmap.md, policy/crypto-policy.edn."
+  {:kotoba/export [admit-object-envelope admit-object-store-write! default-hybrid-policy envelope-from-seal prefer-hybrid-for-new-epoch]}
   (:require [kotoba.security.crypto-policy :as policy]))
 
 (def default-hybrid-policy

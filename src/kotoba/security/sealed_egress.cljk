@@ -1,5 +1,6 @@
 (ns kotoba.security.sealed-egress
   "One authenticated block envelope for every private-data egress seam."
+  {:kotoba/export [emit! magic open policy-path read-policy seal]}
   (:require [kotoba.lang.edn :as edn]
             [kotoba.security.cold-tier-admission :as admission])
   (:import [java.nio ByteBuffer]

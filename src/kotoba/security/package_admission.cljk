@@ -19,6 +19,7 @@
   copied from a different package entirely -- is rejected here, where the
   previous shape-only check would have silently accepted it as long as the
   string merely looked CID-shaped."
+  {:kotoba/export [->problem abac-denied-message admit admit-guest-component blocked-key-statuses checked-at cli-result compute-component-cid compute-manifest-cid dep-entry dep-error guest-package-dep key-register-blocked-signers local-path-error local-path-message local-root-keys lock-level-error manifest-integrity-error manifest-without-self-cid merge-key-register-into-trust not-readable path-checked-ref-keys path-looking? problem-code problem-codes read-edn-file receipt-digest receipt-evidence resolution-cli-result resolve-lock-with-network resolve-lock-with-registry resolve-network-cli safe-release-ready? sha256-bytes sha256-text trust-context usage verify-lock verify-project-lock write-receipt!]}
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.pprint :as pprint]

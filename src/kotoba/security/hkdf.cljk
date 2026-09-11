@@ -1,6 +1,7 @@
 (ns kotoba.security.hkdf
   "HKDF-SHA256 (RFC 5869). JVM-native: HMAC-SHA256 via javax.crypto.Mac --
   no hand-rolled MAC. `:cljs`/other runtimes fail closed."
+  {:kotoba/export [hkdf-expand hkdf-extract]}
   #?(:clj (:import [javax.crypto Mac]
                    [javax.crypto.spec SecretKeySpec])))
 

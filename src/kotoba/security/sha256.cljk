@@ -2,6 +2,7 @@
   "SHA-256 (FIPS 180-4). JVM-native via java.security.MessageDigest -- no
   hand-rolled hashing. `:cljs`/other runtimes fail closed until a vetted
   portable path exists (same JVM-first posture as kotoba-lang/ed25519)."
+  {:kotoba/export [sha256]}
   #?(:clj (:import [java.security MessageDigest])))
 
 (defn sha256

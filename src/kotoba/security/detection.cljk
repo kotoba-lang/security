@@ -1,5 +1,6 @@
 (ns kotoba.security.detection
   "Fail-closed live detection, pager, containment, and independent retest checks."
+  {:kotoba/export [evaluate-containment evaluate-monitoring evaluate-pager evaluate-red-team required-signals]}
   (:require [kotoba.lang.coll :as set]
             [kotoba.security.resilience :as resilience]))
 

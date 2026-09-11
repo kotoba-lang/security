@@ -4,6 +4,7 @@
   in the standard fixed PKCS#8 / SubjectPublicKeyInfo DER prefixes so the
   JDK's own vetted implementation does the scalar multiplication. `:cljs`/
   other runtimes fail closed."
+  {:kotoba/export [dh]}
   #?(:clj (:import [java.security KeyFactory]
                    [java.security.spec PKCS8EncodedKeySpec X509EncodedKeySpec]
                    [javax.crypto KeyAgreement])))

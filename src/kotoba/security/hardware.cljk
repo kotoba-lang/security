@@ -1,5 +1,6 @@
 (ns kotoba.security.hardware
-  "Fail-closed HSM/native-keystore qualification evidence checks.")
+  "Fail-closed HSM/native-keystore qualification evidence checks."
+  {:kotoba/export [evaluate evaluate-signing]})
 
 (defn evaluate
   [{:keys [provider-id hardware-backed? attestation-verified?

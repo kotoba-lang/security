@@ -2,6 +2,7 @@
   "ChaCha20-Poly1305 AEAD (RFC 8439). JVM-native via javax.crypto.Cipher
   \"ChaCha20-Poly1305\" (JDK 11+) -- no hand-rolled cipher/MAC. `:cljs`/other
   runtimes fail closed."
+  {:kotoba/export [chacha20-poly1305-decrypt chacha20-poly1305-encrypt]}
   #?(:clj (:import [javax.crypto Cipher]
                    [javax.crypto.spec SecretKeySpec IvParameterSpec]
                    [java.util Arrays])))

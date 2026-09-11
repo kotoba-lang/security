@@ -5,6 +5,7 @@
   `attest` additionally requires every gap and hard gate to carry :pass with
   the mandatory evidence fields. An incomplete program is therefore visible
   without making ordinary development CI impossible."
+  {:kotoba/export [-main attestation-blockers continuous-errors program-path read-program report required-gap-ids required-hard-gate-ids validation-errors]}
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [kotoba.lang.coll :as set])

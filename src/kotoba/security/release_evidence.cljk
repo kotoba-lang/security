@@ -9,6 +9,7 @@
 
   Missing packet items fail closed. Exceptions are governance records only;
   they never waive cryptographic safe-release admission."
+  {:kotoba/export [evaluate required-evidence-keys required-release-evidence safe-release-ready?]}
   (:require [kotoba.security.package-admission :as package-admission]
             [kotoba.security.signed-module :as signed-module])
   (:import [java.time Instant]))

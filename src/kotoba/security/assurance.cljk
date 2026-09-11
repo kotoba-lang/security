@@ -1,4 +1,5 @@
 (ns kotoba.security.assurance
+  {:kotoba/export [cap-grade evidence-order excluded-controls expected-gate expected-grade grade-for-score grade-order heat model-problems profile-problems required-profile-fields rounded-score semantic-profile-problems weighted-score weights-valid?]}
   (:require [kotoba.lang.coll :as set]))
 
 (def required-profile-fields
