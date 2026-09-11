@@ -1,5 +1,6 @@
 (ns kotoba.security.cold-tier-admission
   "Admission authority for private cold-tier startup and replication."
+  {:kotoba/export [decide policy-path read-policy valid-key?]}
   (:require [clojure.edn :as edn]))
 
 (def policy-path "qualification/cold-tier-policy.edn")

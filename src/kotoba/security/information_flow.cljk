@@ -15,7 +15,8 @@
   normalises it, and `join` returns canonical labels only, because a
   declassification grant is matched by `(= source (:from grant))` — a join
   that answered `:personal` sometimes and `:confidential` others would make
-  a correct grant fail to match half the time.")
+  a correct grant fail to match half the time."
+  {:kotoba/export [canonical canonical-by-rank evaluate-egress join ranks unknown-labels]})
 
 (def ranks
   "Classification → rank. Two keys share rank 2 on purpose (see the ns

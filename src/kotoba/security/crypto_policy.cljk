@@ -11,6 +11,7 @@
                       must not be :crypto/fips-status :not-claimed.
 
   See docs/fips-validation.md and docs/pqc-roadmap.md."
+  {:kotoba/export [check-envelope check-inventory check-production-envelope classical-kems envelope-error evaluate-pq-provider hybrid-kem-components? invalid inventory-entry-error inventory-entry-required inventory-error known-modes missing-key policy-error pq-kems provider-metadata-error rotate-envelope]}
   (:require [kotoba.lang.coll :as set]))
 
 (def known-modes

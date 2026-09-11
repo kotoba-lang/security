@@ -13,6 +13,7 @@
     else generic (raw continuous-monitoring v1 map).
 
   nbb/node helpers. CLI exit policy lives in scripts/emit-alert.cljk."
+  {:kotoba/export [alert->json build-alert default-file-dir deliver-all! deliver-file! deliver-stdout! deliver-sync-file-stdout! deliver-webhook! webhook-body]}
   (:require ["node:fs" :as fs]
             ["node:https" :as https]
             ["node:http" :as http]

@@ -1,6 +1,7 @@
 (ns kotoba.security.promotion
   "Repo-wide assurance promotion gate. Individual control success cannot
   promote a repository without every declared workstream and profile guard."
+  {:kotoba/export [evaluate-grade-a evaluate-grade-s evidence-rank maturity-rank receipt-problems]}
   (:require [kotoba.lang.coll :as set]
             [kotoba.security.assurance :as assurance]
             [kotoba.security.continuous-verification :as continuous]))

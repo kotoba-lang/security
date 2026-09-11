@@ -4,6 +4,7 @@
   The manifest binds each scoped product to an immutable source revision and
   dependency descriptor digest. A release is rejected if a production
   dependency descriptor contains a workspace-only `:local/root` override."
+  {:kotoba/export [-main local-root? manifest-path product-paths read-manifest report sha256 verify-product]}
   (:require [kotoba.lang.edn :as edn]
             [clojure.java.io :as io])
   (:import [java.math BigInteger]

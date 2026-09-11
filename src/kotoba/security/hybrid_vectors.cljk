@@ -6,6 +6,7 @@
   can gate the vectors while staying Bouncy-Castle-free. Cryptographic
   recomputation lives in test-vectors/ under the :vectors alias
   (docs/hybrid-envelope-vectors.md)."
+  {:kotoba/export [check-vector-file expected-hex-lengths hex-string? hybrid-kem input-hex-lengths vector-error vector-file-error]}
   (:require [kotoba.security.crypto-policy :as policy]))
 
 (def hybrid-kem [:x25519 :ml-kem-768])

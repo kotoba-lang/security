@@ -1,5 +1,6 @@
 (ns kotoba.security.effect
-  "Portable one-shot authorization binding a control decision to an effect.")
+  "Portable one-shot authorization binding a control decision to an effect."
+  {:kotoba/export [consume! guard! issue!]})
 
 (defonce ^:private grants (atom {}))
 

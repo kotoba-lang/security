@@ -1,5 +1,6 @@
 (ns kotoba.security.origin-assertion
   "Origin-side verification for short-lived edge identity assertions."
+  {:kotoba/export [canonical-body new-replay-store policy-path read-policy sha256 sign verify!]}
   (:require [kotoba.lang.edn :as edn]
             [ed25519.core :as ed])
   (:import [java.security MessageDigest]

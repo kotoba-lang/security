@@ -1,5 +1,6 @@
 (ns kotoba.security.supply-chain
   "Fail-closed reproducibility, SBOM, and provenance qualification."
+  {:kotoba/export [commit-pattern evaluate-attestations evaluate-reproducibility]}
   (:require [kotoba.lang.text :as str]))
 
 (def commit-pattern #"[0-9a-f]{40}")

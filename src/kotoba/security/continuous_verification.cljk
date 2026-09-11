@@ -2,6 +2,7 @@
   "Independent continuous-verification checks for E5 evidence.
 
   A periodic red-team report or internal CI run is intentionally insufficient."
+  {:kotoba/export [evaluate]}
   (:require [kotoba.lang.coll :as set]))
 
 (defn evaluate
