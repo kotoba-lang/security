@@ -1,5 +1,5 @@
 (ns kotoba.security.package-admission-owner-test
-  (:require [kotoba.test :refer [deftest is testing]]
+  (:require [kotoba.bytes :as kbytes] [kotoba.test :refer [deftest is testing]]
             [kotoba.security.package-admission :as admission]))
 
 (deftest receipt-evidence-is-stable-and-path-free
@@ -17,5 +17,5 @@
     (is (= "local-path dependency not allowed in safe mode"
            (:message (admission/local-path-error {:dep/ref "../ambient"})))))
   (testing "component identity is content-addressed"
-    (is (= (admission/compute-component-cid (.getBytes "component" "UTF-8"))
-           (admission/compute-component-cid (.getBytes "component" "UTF-8"))))))
+    (is (= (admission/compute-component-cid (kbytes/utf8-bytes "component"))
+           (admission/compute-component-cid (kbytes/utf8-bytes "component"))))))

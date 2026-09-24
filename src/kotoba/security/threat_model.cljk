@@ -2,7 +2,7 @@
   "Completeness verifier for the versioned end-to-end threat model."
   {:kotoba/export [-main evidence-present? model-path read-model report required-categories required-scope validation-errors]}
   (:require [kotoba.lang.edn :as edn]
-            [clojure.java.io :as io]
+            [kotoba.io :as io]
             [kotoba.lang.coll :as set]))
 
 (def model-path "qualification/threat-model.edn")
@@ -22,7 +22,7 @@
   evidence URL owned by another scoped product. CI checks out this repository
   alone, so it must not mistake a cross-repository URL for a missing file."
   [evidence]
-  (or (.isFile (io/file evidence))
+  (or (io/file? (io/file evidence))
       (boolean (re-matches #"https://github\.com/[^/]+/[^/]+/blob/[0-9a-f]{40}/.+" evidence))))
 
 (defn validation-errors [model]

@@ -17,7 +17,7 @@
 ;;                     salt = ASCII "kotoba.hybrid.v1",
 ;;                     info = 4-byte big-endian epoch) -> 32 bytes
 (ns gen-hybrid-vectors
-  (:require [clojure.java.io :as io]
+  (:require [kotoba.bytes :as kbytes] [clojure.java.io :as io]
             [kotoba.lang.text :as str])
   (:import [java.security MessageDigest SecureRandom]
            [java.nio ByteBuffer]
@@ -76,7 +76,7 @@
         (dotimes [i (alength out)]
           (when (>= ^long @pos (alength ^bytes @buf))
             (let [c (swap! counter inc)]
-              (reset! buf (hmac-sha256 seed (.getBytes (str label "." c) "UTF-8")))
+              (reset! buf (hmac-sha256 seed (kbytes/utf8-bytes (str label "." c))))
               (reset! pos 0)))
           (aset out i (aget ^bytes @buf @pos))
           (swap! pos inc))))))
@@ -88,12 +88,12 @@
 
 ;; ---------- hybrid X25519 + ML-KEM-768 ----------
 
-(def kek-salt (.getBytes "kotoba.hybrid.v1" "UTF-8"))
+(def kek-salt (kbytes/utf8-bytes "kotoba.hybrid.v1"))
 
 (defn gen-vector
   "Generates one deterministic hybrid-wrapping vector from `seed-label`."
   [id epoch ^String seed-label]
-  (let [seed (sha256 (.getBytes seed-label "UTF-8"))
+  (let [seed (sha256 (kbytes/utf8-bytes seed-label))
         ;; recipient X25519 keypair (secret drawn from the DRBG)
         rx-secret (drbg-bytes seed "x25519.recipient" 32)
         rx-priv (X25519PrivateKeyParameters. rx-secret 0)

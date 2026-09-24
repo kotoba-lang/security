@@ -5,8 +5,8 @@
   dependency descriptor digest. A release is rejected if a production
   dependency descriptor contains a workspace-only `:local/root` override."
   {:kotoba/export [-main local-root? manifest-path product-paths read-manifest report sha256 verify-product]}
-  (:require [kotoba.lang.edn :as edn]
-            [clojure.java.io :as io])
+  (:require [kotoba.bytes :as kbytes] [kotoba.lang.edn :as edn]
+            [kotoba.io :as io])
   (:import [java.math BigInteger]
            [java.security MessageDigest]))
 
@@ -18,7 +18,7 @@
 
 (defn sha256 [s]
   (format "%064x" (BigInteger. 1 (.digest (MessageDigest/getInstance "SHA-256")
-                                            (.getBytes s "UTF-8")))))
+                                            (kbytes/utf8-bytes s)))))
 
 (defn local-root? [x]
   (cond (map? x) (or (contains? x :local/root) (some local-root? (vals x)))
@@ -29,7 +29,7 @@
                       :as product}]
   (let [root (get product-paths id)
         file (io/file root file)
-        descriptor (when (.isFile file) (slurp file))
+        descriptor (when (io/file? file) (slurp file))
         deps (when descriptor (edn/read-string descriptor))
         errors (cond-> []
                  (not (re-matches #"[0-9a-f]{40}" (:source/revision product)))

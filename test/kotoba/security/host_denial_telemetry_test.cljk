@@ -1,14 +1,14 @@
 (ns kotoba.security.host-denial-telemetry-test
   (:require [clojure.edn :as edn]
-            [clojure.java.io :as io]
+            [kotoba.io :as io]
             [kotoba.test :refer [deftest is testing]]
             [kotoba.security.host-denial-telemetry :as hdt]))
 
 (defn load-fixture-alerts []
   (let [dir (io/file "test/fixtures/alerts")]
-    (->> (.listFiles dir)
-         (filter #(and (.isFile %)
-                       (.endsWith (.getName %) ".edn")))
+    (->> (io/list-files dir)
+         (filter #(and (io/file? %)
+                       (.endsWith (io/file-name %) ".edn")))
          (mapv #(edn/read-string (slurp %))))))
 
 (deftest fixture-alerts-parse

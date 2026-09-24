@@ -1,6 +1,6 @@
 (ns kotoba.security.crypto-policy-test
   (:require [clojure.edn :as edn]
-            [clojure.java.io :as io]
+            [kotoba.io :as io]
             [kotoba.lang.text :as str]
             [kotoba.test :refer [deftest is testing]]
             [kotoba.security.crypto-policy :as policy]))
@@ -42,9 +42,9 @@
 
 (defn fixture-cases
   [dir]
-  (->> (.listFiles (io/file dir))
-       (filter #(str/ends-with? (.getName %) ".edn"))
-       (sort-by #(.getName %))
+  (->> (io/list-files (io/file dir))
+       (filter #(str/ends-with? (io/file-name %) ".edn"))
+       (sort-by #(io/file-name %))
        (map #(read-tx-edn % (str/replace dir "/" ".")))))
 
 (defn run-case

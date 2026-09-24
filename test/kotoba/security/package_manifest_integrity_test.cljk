@@ -13,7 +13,7 @@
   refactor of a security check, and refactoring one that nothing tests is how a
   check becomes decoration."
   (:require [clojure.edn :as edn]
-            [clojure.java.io :as io]
+            [kotoba.io :as io]
             [kotoba.test :refer [deftest is testing]]
             [kotoba.lang.package-contract :as package-contract]
             [kotoba.security.package-admission :as admission]))

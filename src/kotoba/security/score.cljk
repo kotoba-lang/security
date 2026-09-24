@@ -2,7 +2,7 @@
   {:kotoba/export [average problems read-register repo-averages score-register valid?]}
   (:require [kotoba.lang.edn :as edn]
             [kotoba.lang.coll :as set]
-            #?(:clj [clojure.java.io :as io])))
+            #?(:clj [kotoba.io :as io])))
 
 (def score-register "registers/stack-security-score.edn")
 
