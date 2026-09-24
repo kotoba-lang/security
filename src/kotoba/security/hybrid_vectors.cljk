@@ -9,6 +9,16 @@
   {:kotoba/export [check-vector-file expected-hex-lengths hex-string? hybrid-kem input-hex-lengths vector-error vector-file-error]}
   (:require [kotoba.security.crypto-policy :as policy]))
 
+;; clojure.core/some, spelled as the loop it is. In Kotoba `some` is the
+;; option constructor and a two-argument `(some pred coll)` is refused as a
+;; name collision (kotoba-sema frontend); this is the same definition as
+;; clojure.core/some -- the first logical-true (pred x), in order, stopping
+;; there -- so the host answer is unchanged on nbb and the JVM.
+(defn- first-truthy [pred coll]
+  (loop [s (seq coll)]
+    (when s
+      (or (pred (first s)) (recur (next s))))))
+
 (def hybrid-kem [:x25519 :ml-kem-768])
 
 (def input-hex-lengths
@@ -39,7 +49,7 @@
 
 (defn- hex-field-error
   [m lengths where]
-  (some (fn [[k length]]
+  (first-truthy (fn [[k length]]
           (when-not (hex-string? (get m k) length)
             (policy/invalid "hybrid vector hex field invalid"
                             {:where where :field k :expected-length length
@@ -86,7 +96,7 @@
    (when-not (apply distinct? (map :vector/id vectors))
      (policy/invalid "hybrid vector ids must be distinct"
                      {:ids (mapv :vector/id vectors)}))
-   (some vector-error vectors)))
+   (first-truthy vector-error vectors)))
 
 (defn check-vector-file
   "Validates the parsed hybrid vector file (a vector of vector maps).

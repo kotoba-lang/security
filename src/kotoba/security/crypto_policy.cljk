@@ -14,6 +14,16 @@
   {:kotoba/export [check-envelope check-inventory check-production-envelope classical-kems envelope-error evaluate-pq-provider hybrid-kem-components? invalid inventory-entry-error inventory-entry-required inventory-error known-modes missing-key policy-error pq-kems provider-metadata-error rotate-envelope]}
   (:require [kotoba.lang.coll :as set]))
 
+;; clojure.core/some, spelled as the loop it is. In Kotoba `some` is the
+;; option constructor and a two-argument `(some pred coll)` is refused as a
+;; name collision (kotoba-sema frontend); this is the same definition as
+;; clojure.core/some -- the first logical-true (pred x), in order, stopping
+;; there -- so the host answer is unchanged on nbb and the JVM.
+(defn- first-truthy [pred coll]
+  (loop [s (seq coll)]
+    (when s
+      (or (pred (first s)) (recur (next s))))))
+
 (def known-modes
   #{:crypto-agile :hybrid-required :fips-required})
 
@@ -61,7 +71,7 @@
 
 (defn missing-key
   [m keys message]
-  (some (fn [k] (when-not (contains? m k) (invalid message {:missing k}))) keys))
+  (first-truthy (fn [k] (when-not (contains? m k) (invalid message {:missing k}))) keys))
 
 (defn policy-error
   [policy]
@@ -192,7 +202,7 @@
               {:value (:register/version register)}))
    (when-not (seq (:inventory register))
      (invalid "crypto inventory entries required" {}))
-   (some (fn [entry] (inventory-entry-error policy entry))
+   (first-truthy (fn [entry] (inventory-entry-error policy entry))
          (:inventory register))))
 
 (defn check-inventory
