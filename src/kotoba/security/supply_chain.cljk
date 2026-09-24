@@ -1,9 +1,18 @@
 (ns kotoba.security.supply-chain
   "Fail-closed reproducibility, SBOM, and provenance qualification."
-  {:kotoba/export [commit-pattern evaluate-attestations evaluate-reproducibility]}
+  {:kotoba/export [commit-sha? evaluate-attestations evaluate-reproducibility]}
   (:require [kotoba.lang.text :as str]))
 
-(def commit-pattern #"[0-9a-f]{40}")
+;; A full lowercase-hex git commit id: exactly 40 of [0-9a-f]. Spelled as a
+;; scan rather than a host regex literal, which the Kotoba project route
+;; refuses as host data.
+(defn commit-sha? [value]
+  (and (string? value)
+       (= 40 (count value))
+       (loop [i 0]
+         (cond (= i 40) true
+               (str/includes? "0123456789abcdef" (subs value i (inc i))) (recur (inc i))
+               :else false))))
 
 (defn- digest? [value]
   (and (string? value) (str/starts-with? value "sha256:")
@@ -17,8 +26,7 @@
           (not= true fresh-clone?) (conj :fresh-clone)
           (not= true hermetic?) (conj :hermetic-build)
           (not= false local-overrides?) (conj :local-overrides)
-          (not (and (string? source-commit)
-                    (re-matches commit-pattern source-commit)))
+          (not (commit-sha? source-commit))
           (conj :source-commit)
           (not (and (digest? first-artifact-digest)
                     (= first-artifact-digest second-artifact-digest)))
@@ -26,8 +34,7 @@
           (empty? dependencies) (conj :dependencies)
           (some #(not (and (string? (:dependency/repository %))
                            (str/starts-with? (:dependency/repository %) "https://")
-                           (string? (:dependency/commit %))
-                           (re-matches commit-pattern (:dependency/commit %))
+                           (commit-sha? (:dependency/commit %))
                            (= :passed (:dependency/exact-fetch %))))
                 dependencies)
           (conj :dependency-transparency))]
