@@ -1,5 +1,5 @@
 (ns kotoba.security.release-evidence-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [kotoba.security.release-evidence :as release-evidence]
             [kotoba.security.signed-module :as signed-module]))
 

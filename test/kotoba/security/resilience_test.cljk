@@ -1,5 +1,5 @@
 (ns kotoba.security.resilience-test
-  (:require [clojure.test :refer [deftest is]]
+  (:require [kotoba.test :refer [deftest is]]
             [kotoba.security.resilience :as resilience]))
 
 (defn encode [x] (.getBytes (pr-str x) "UTF-8"))

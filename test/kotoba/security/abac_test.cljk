@@ -1,5 +1,5 @@
 (ns kotoba.security.abac-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [kotoba.security.abac :as abac]
             [kotoba.security.information-flow :as flow]))
 

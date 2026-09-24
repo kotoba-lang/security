@@ -1,5 +1,5 @@
 (ns kotoba.security.cold-tier-admission-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [kotoba.security.cold-tier-admission :as admission]))
 
 (def policy (admission/read-policy))

@@ -1,5 +1,5 @@
 (ns kotoba.security.hardware-test
-  (:require [clojure.test :refer [deftest is]]
+  (:require [kotoba.test :refer [deftest is]]
             [kotoba.security.hardware :as hardware]))
 
 (def qualified

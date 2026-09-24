@@ -1,5 +1,5 @@
 (ns kotoba.security.crosswalk-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [kotoba.lang.edn :as edn]
             [clojure.java.io :as io]
             [kotoba.lang.coll :as set]

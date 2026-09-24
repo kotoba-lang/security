@@ -1,5 +1,5 @@
 (ns kotoba.security.approval-test
-  (:require [clojure.test :refer [deftest is]]
+  (:require [kotoba.test :refer [deftest is]]
             [kotoba.security.approval :as approval]))
 
 (def digest "sha256:release")

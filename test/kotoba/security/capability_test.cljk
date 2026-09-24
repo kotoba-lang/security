@@ -1,5 +1,5 @@
 (ns kotoba.security.capability-test
-  (:require [clojure.test :refer [deftest is]]
+  (:require [kotoba.test :refer [deftest is]]
             [kotoba.security.capability :as capability]))
 
 (def token

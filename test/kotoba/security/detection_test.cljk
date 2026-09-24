@@ -1,5 +1,5 @@
 (ns kotoba.security.detection-test
-  (:require [clojure.test :refer [deftest is]]
+  (:require [kotoba.test :refer [deftest is]]
             [kotoba.security.detection :as detection]
             [kotoba.security.resilience :as resilience]))
 

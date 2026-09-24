@@ -1,6 +1,6 @@
 (ns kotoba.security.threat-model-test
   (:require [kotoba.lang.coll :as set]
-            [clojure.test :refer [deftest is]]
+            [kotoba.test :refer [deftest is]]
             [kotoba.security.threat-model :as threat-model]))
 
 (deftest end-to-end-threat-model-is-complete-and-evidence-linked

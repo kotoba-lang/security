@@ -5,7 +5,7 @@
   parameterization against the standards, so a JDK behavior change or an
   encoding regression fails CI rather than silently producing wrong bytes."
   (:require [kotoba.lang.text :as str]
-            [clojure.test :refer [deftest is]]
+            [kotoba.test :refer [deftest is]]
             [kotoba.security.sha256 :as sha256]
             [kotoba.security.hkdf :as hkdf]
             [kotoba.security.aead :as aead]

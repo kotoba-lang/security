@@ -1,5 +1,5 @@
 (ns kotoba.security.qualification-e4-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [kotoba.security.qualification :as qualification]))
 
 (defn digest-entry [entry]

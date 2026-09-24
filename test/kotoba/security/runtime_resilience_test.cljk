@@ -1,5 +1,5 @@
 (ns kotoba.security.runtime-resilience-test
-  (:require [clojure.test :refer [deftest is]]
+  (:require [kotoba.test :refer [deftest is]]
             [kotoba.security.runtime-resilience :as runtime]))
 
 (def policy

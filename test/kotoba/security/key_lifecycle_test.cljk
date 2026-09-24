@@ -1,6 +1,6 @@
 (ns kotoba.security.key-lifecycle-test
   (:require [kotoba.lang.edn :as edn]
-            [clojure.test :refer [deftest is testing]]
+            [kotoba.test :refer [deftest is testing]]
             [kotoba.security.key-lifecycle :as kl]))
 
 (def sample-register

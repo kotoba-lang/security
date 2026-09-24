@@ -1,5 +1,5 @@
 (ns kotoba.security.continuous-verification-test
-  (:require [clojure.test :refer [deftest is]]
+  (:require [kotoba.test :refer [deftest is]]
             [kotoba.security.continuous-verification :as continuous]))
 
 (def receipt
