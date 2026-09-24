@@ -1,5 +1,5 @@
 (ns kotoba.security.release-supply-chain-test
-  (:require [clojure.java.io :as io]
+  (:require [kotoba.io :as io]
             [kotoba.test :refer [deftest is testing]]
             [kotoba.security.release-supply-chain :as supply]))
 
@@ -11,7 +11,7 @@
    one -- assert it only where it can actually hold."
   []
   (every? (fn [[id root]]
-            (or (= :kotoba id) (.isFile (io/file root "deps.edn"))))
+            (or (= :kotoba id) (io/file? (io/file root "deps.edn"))))
           supply/product-paths))
 
 (deftest manifest-binds-the-entire-scope-and-is-well-formed

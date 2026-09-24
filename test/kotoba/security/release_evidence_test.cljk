@@ -1,10 +1,10 @@
 (ns kotoba.security.release-evidence-test
-  (:require [kotoba.test :refer [deftest is testing]]
+  (:require [kotoba.bytes :as kbytes] [kotoba.test :refer [deftest is testing]]
             [kotoba.security.release-evidence :as release-evidence]
             [kotoba.security.signed-module :as signed-module]))
 
-(def component-bytes (.getBytes "safe-component" "UTF-8"))
-(def other-bytes (.getBytes "other-component" "UTF-8"))
+(def component-bytes (kbytes/utf8-bytes "safe-component"))
+(def other-bytes (kbytes/utf8-bytes "other-component"))
 (def seed (byte-array (range 32)))
 
 ;; Both ends of the validity window are pinned, and the fixture verifies at

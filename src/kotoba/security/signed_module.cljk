@@ -10,9 +10,9 @@
   and actor:host gen-keypair/sign). Trust is a simple DID allow/deny set
   compatible with package-admission key-register folding."
   {:kotoba/export [component-cid decoder encoder module-digest module-keys module-record sha256-hex sign verify]}
-  (:require [ed25519.core :as ed]
+  (:require [kotoba.bytes :as kbytes] [ed25519.core :as ed]
             [kotoba.security.package-admission :as package-admission])
-  (:import [java.nio.charset StandardCharsets]
+  (:import
            [java.security MessageDigest]
            [java.util Base64]
            [java.time Instant]))
@@ -23,7 +23,7 @@
 (defn- b64 ^String [^bytes b] (.encodeToString encoder b))
 (defn- unb64 ^bytes [^String s] (.decode decoder s))
 
-(defn- utf8 ^bytes [^String s] (.getBytes s StandardCharsets/UTF_8))
+(defn- utf8 ^bytes [^String s] (kbytes/utf8-bytes s))
 
 (defn sha256-hex
   [^bytes bs]

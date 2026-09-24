@@ -39,7 +39,7 @@
 ;; scope). Top-level :deps carry :scope :runtime; every alias's :extra-deps
 ;; are included with :scope = the alias keyword (:test, :vectors, ...).
 (require '[clojure.edn :as edn]
-         '         '[clojure.pprint :as pprint]
+         '         '[kotoba.pprint :as pprint]
          '[kotoba.lang.text :as str]
          '])
 
