@@ -7,6 +7,16 @@
   (:require [kotoba.lang.text :as str]
             [kotoba.security.crypto-policy :as policy]))
 
+;; clojure.core/some, spelled as the loop it is. In Kotoba `some` is the
+;; option constructor and a two-argument `(some pred coll)` is refused as a
+;; name collision (kotoba-sema frontend); this is the same definition as
+;; clojure.core/some -- the first logical-true (pred x), in order, stopping
+;; there -- so the host answer is unchanged on nbb and the JVM.
+(defn- first-truthy [pred coll]
+  (loop [s (seq coll)]
+    (when s
+      (or (pred (first s)) (recur (next s))))))
+
 (def known-statuses
   #{:pre-active :active :suspended :retired :destroyed :compromised :revoked})
 
@@ -24,7 +34,7 @@
   [s]
   (let [header #(str "BEGIN " % "PRIVATE KEY")]
     (and (string? s)
-         (some #(str/includes? s (header %))
+         (first-truthy #(str/includes? s (header %))
                ["" "OPENSSH " "EC " "RSA "]))))
 
 (defn key-entry-error
@@ -74,7 +84,7 @@
    (when-not (apply distinct? (map :key/id (:keys register)))
      (policy/invalid "key ids must be distinct"
                      {:ids (mapv :key/id (:keys register))}))
-   (some key-entry-error (:keys register))))
+   (first-truthy key-entry-error (:keys register))))
 
 (defn check-register
   "Structural + safety validation of registers/key-register.edn.
@@ -86,7 +96,7 @@
 
 (defn find-key
   [register key-id]
-  (some #(when (= key-id (:key/id %)) %) (:keys register)))
+  (first-truthy #(when (= key-id (:key/id %)) %) (:keys register)))
 
 (def untrusted-for-new-artifacts
   "Statuses that must not sign/wrap new artifacts (docs/key-lifecycle.md)."

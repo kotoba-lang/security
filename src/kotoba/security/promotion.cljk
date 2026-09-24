@@ -6,6 +6,16 @@
             [kotoba.security.assurance :as assurance]
             [kotoba.security.continuous-verification :as continuous]))
 
+;; clojure.core/some, spelled as the loop it is. In Kotoba `some` is the
+;; option constructor and a two-argument `(some pred coll)` is refused as a
+;; name collision (kotoba-sema frontend); this is the same definition as
+;; clojure.core/some -- the first logical-true (pred x), in order, stopping
+;; there -- so the host answer is unchanged on nbb and the JVM.
+(defn- first-truthy [pred coll]
+  (loop [s (seq coll)]
+    (when s
+      (or (pred (first s)) (recur (next s))))))
+
 (def maturity-rank {:L0 0 :L1 1 :L2 2 :L3 3 :L4 4})
 (def evidence-rank {:E0 0 :E1 1 :E2 2 :E3 3 :E4 4 :E5 5})
 
@@ -46,11 +56,11 @@
         (cond-> []
           (empty? required) (conj :unknown-repo)
           (seq missing) (conj [:missing-workstreams missing])
-          (some seq (vals receipt-results)) (conj :invalid-workstream-receipt)
+          (first-truthy seq (vals receipt-results)) (conj :invalid-workstream-receipt)
           (not= (count heads) (count (set heads))) (conj :reused-evidence-head)
           (not= score (:assurance/score profile)) (conj :score-provenance)
           (< score 80) (conj :score-minimum)
-          (some #(< (or % 0) 60) critical-values) (conj :critical-control-floor)
+          (first-truthy #(< (or % 0) 60) critical-values) (conj :critical-control-floor)
           (< (get maturity-rank (:assurance/maturity profile) -1)
              (maturity-rank :L4)) (conj :maturity)
           (< (get evidence-rank (:assurance/evidence profile) -1)
@@ -90,7 +100,7 @@
           (not (:continuous-verification/qualified? e5-check))
           (conj :continuous-verification)
           (< score 90) (conj :score-minimum)
-          (some #(< (or % 0) 80) critical-values) (conj :critical-control-floor)
+          (first-truthy #(< (or % 0) 80) critical-values) (conj :critical-control-floor)
           (< (get evidence-rank (:assurance/evidence profile) -1)
              (evidence-rank :E5)) (conj :evidence)
           (not= :pass (:assurance/release-gate profile)) (conj :release-gate)
