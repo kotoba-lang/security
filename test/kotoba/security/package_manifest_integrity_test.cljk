@@ -14,7 +14,7 @@
   check becomes decoration."
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [clojure.test :refer [deftest is testing]]
+            [kotoba.test :refer [deftest is testing]]
             [kotoba.lang.package-contract :as package-contract]
             [kotoba.security.package-admission :as admission]))
 

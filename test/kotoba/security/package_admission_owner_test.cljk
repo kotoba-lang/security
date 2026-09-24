@@ -1,5 +1,5 @@
 (ns kotoba.security.package-admission-owner-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [kotoba.security.package-admission :as admission]))
 
 (deftest receipt-evidence-is-stable-and-path-free

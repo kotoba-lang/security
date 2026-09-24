@@ -1,5 +1,5 @@
 (ns kotoba.security.score-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [kotoba.security.score :as score]))
 
 (deftest stack-score-register-is-complete

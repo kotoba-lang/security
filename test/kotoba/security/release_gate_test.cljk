@@ -2,7 +2,7 @@
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [kotoba.lang.text :as str]
-            [clojure.test :refer [deftest is testing]]
+            [kotoba.test :refer [deftest is testing]]
             [kotoba.security.release-gate :as gate]))
 
 ;; conformance/release/{negative,positive}/*.edn, registers/evidence-index.edn

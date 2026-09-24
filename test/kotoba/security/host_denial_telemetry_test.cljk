@@ -1,7 +1,7 @@
 (ns kotoba.security.host-denial-telemetry-test
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [clojure.test :refer [deftest is testing]]
+            [kotoba.test :refer [deftest is testing]]
             [kotoba.security.host-denial-telemetry :as hdt]))
 
 (defn load-fixture-alerts []

@@ -1,6 +1,6 @@
 (ns kotoba.security.shared-security-adoption-test
   (:require [kotoba.lang.edn :as edn]
-            [clojure.test :refer [deftest is testing]]))
+            [kotoba.test :refer [deftest is testing]]))
 
 (def policy
   (edn/read-string (slurp "policy/shared-security-adoption.edn")))

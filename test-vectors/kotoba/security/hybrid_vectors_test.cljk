@@ -16,7 +16,7 @@
   info = 4-byte big-endian epoch) must equal :vector/expected :kek."
   (:require [clojure.edn :as edn]
             [kotoba.lang.text :as str]
-            [clojure.test :refer [deftest is testing]])
+            [kotoba.test :refer [deftest is testing]])
   (:import [java.nio ByteBuffer]
            [javax.crypto Mac]
            [javax.crypto.spec SecretKeySpec]

@@ -1,7 +1,7 @@
 (ns kotoba.security.grade-roadmap-test
   (:require [kotoba.lang.edn :as edn]
             [kotoba.lang.coll :as set]
-            [clojure.test :refer [deftest is]]
+            [kotoba.test :refer [deftest is]]
             [kotoba.security.assurance :as assurance]
             [kotoba.security.score :as score]))
 

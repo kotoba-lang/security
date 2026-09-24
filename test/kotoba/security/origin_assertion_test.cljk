@@ -1,5 +1,5 @@
 (ns kotoba.security.origin-assertion-test
-  (:require [clojure.test :refer [deftest is]]
+  (:require [kotoba.test :refer [deftest is]]
             [ed25519.core :as ed]
             [kotoba.security.origin-assertion :as assertion]))
 

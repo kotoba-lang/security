@@ -1,6 +1,6 @@
 (ns kotoba.security.object-encryption-gate-test
   "Object-encryption consumer path under hybrid-required (R-004 residual)."
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [kotoba.security.object-encryption-gate :as oeg]
             [kotoba.security.crypto-policy :as policy]))
 

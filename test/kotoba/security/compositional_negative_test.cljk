@@ -1,5 +1,5 @@
 (ns kotoba.security.compositional-negative-test
-  (:require [clojure.test :refer [deftest is]]
+  (:require [kotoba.test :refer [deftest is]]
             [kotoba.security.compositional-negative :as corpus]))
 
 (def policy (corpus/read-corpus))

@@ -1,5 +1,5 @@
 (ns kotoba.security.redaction-test
-  (:require [clojure.test :refer [deftest is]]
+  (:require [kotoba.test :refer [deftest is]]
             [kotoba.security.redaction :as redaction]))
 
 (deftest structured-and-text-secrets-are-redacted

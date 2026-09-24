@@ -1,5 +1,5 @@
 (ns kotoba.security.key-status-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [kotoba.security.key-status :as key-status]))
 
 (deftest blocked-and-active-partition

@@ -1,5 +1,5 @@
 (ns kotoba.security.apple-hardware-test
-  (:require [clojure.test :refer [deftest is]]
+  (:require [kotoba.test :refer [deftest is]]
             [kotoba.security.apple-hardware :as apple]
             [kotoba.security.hardware :as hardware]))
 

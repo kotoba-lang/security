@@ -1,5 +1,5 @@
 (ns kotoba.security.adoption-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [kotoba.security.adoption :as adoption])
   (:import [java.time LocalDate]))
 

@@ -6,7 +6,7 @@
   blocked-signer-ids + evaluate-key-register to reject the revoked signer
   for new artifacts, and that revoking the last active signing key yields
   `:no-active-signing-key`."
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [kotoba.security.key-status :as key-status]))
 
 (defn- synthetic-package-key

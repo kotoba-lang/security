@@ -1,6 +1,6 @@
 (ns kotoba.security.crypto-qualification-test
   (:require [kotoba.lang.coll :as set]
-            [clojure.test :refer [deftest is]]
+            [kotoba.test :refer [deftest is]]
             [ed25519.core :as ed]
             [kotoba.security.crypto-qualification :as qualification])
   (:import [java.security MessageDigest]

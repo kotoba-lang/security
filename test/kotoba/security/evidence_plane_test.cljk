@@ -1,5 +1,5 @@
 (ns kotoba.security.evidence-plane-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [kotoba.security.evidence-plane :as plane]))
 
 (defn digest-entry [entry]

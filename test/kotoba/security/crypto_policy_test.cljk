@@ -2,7 +2,7 @@
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [kotoba.lang.text :as str]
-            [clojure.test :refer [deftest is testing]]
+            [kotoba.test :refer [deftest is testing]]
             [kotoba.security.crypto-policy :as policy]))
 
 ;; conformance/crypto/{negative,positive}/*.edn, policy/crypto-policy.edn and

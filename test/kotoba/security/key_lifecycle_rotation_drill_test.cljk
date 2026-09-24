@@ -4,7 +4,7 @@
   Synthetic register only — no private keys, no mutation of production
   registers/key-register.edn. Proves rotate-signing-key promotes new and
   retires old with verify-until; blocked-signer-ids + signer trust flip."
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [kotoba.security.key-status :as key-status]
             [kotoba.security.key-lifecycle :as kl]))
 
