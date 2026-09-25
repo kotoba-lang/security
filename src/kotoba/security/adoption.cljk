@@ -2,7 +2,7 @@
   "Fail-closed verifier for organization-wide use of the shared controls."
   {:kotoba/export [-main full-sha-pattern inventory-violations security-coordinate security-url sensitive-name-pattern sensitive-operation-violations source-security-inventory source-sensitive-inventory verify! violations]}
   (:require [kotoba.lang.edn :as edn]
-            [clojure.java.io :as io]
+            [kotoba.io :as io]
             [kotoba.lang.coll :as set]
             [kotoba.lang.text :as str])
   (:import [clojure.lang ReaderConditional]
@@ -123,9 +123,9 @@
   [root]
   (into #{}
         (for [file (filter (fn [candidate]
-                            (and (.isFile candidate)
-                                 (re-find #"\.clj[cs]?$" (.getName candidate))))
-                          (file-seq (io/file root "src")))
+                            (and (io/file? candidate)
+                                 (re-find #"\.clj[cs]?$" (io/file-name candidate))))
+                          (io/file-seq (io/file root "src")))
               :let [forms (source-forms file)
                     namespace (some #(when (and (seq? %) (= 'ns (first %)))
                                        (second %)) forms)]
@@ -166,9 +166,9 @@
      (update inventory namespace (fnil set/set-union #{}) controls))
    {}
    (for [file (filter (fn [candidate]
-                       (and (.isFile candidate)
-                            (re-find #"\.clj[cs]?$" (.getName candidate))))
-                     (file-seq (io/file root "src")))
+                       (and (io/file? candidate)
+                            (re-find #"\.clj[cs]?$" (io/file-name candidate))))
+                     (io/file-seq (io/file root "src")))
          :let [form (ns-form file)
                namespace (second form)
                controls (into #{} (filter security-symbol?)

@@ -1,5 +1,5 @@
 (ns kotoba.security.resilience-test
-  (:require [kotoba.bytes :as kbytes] [kotoba.test :refer [deftest is]]
+  (:require [kotoba.lang.error :as kerror] [kotoba.bytes :as kbytes] [kotoba.test :refer [deftest is]]
             [kotoba.security.resilience :as resilience]))
 
 (defn encode [x] (kbytes/utf8-bytes (pr-str x)))
@@ -68,7 +68,7 @@
 
 (deftest same-site-or-unencrypted-backups-fail-closed
   (is (thrown-with-msg?
-       clojure.lang.ExceptionInfo #"independent encrypted backups"
+       kerror/ExceptionInfo #"independent encrypted backups"
        (resilience/destructive-restore-drill!
         {:target (atom {:x 1})
          :backups [{:backup/site :one :backup/encrypted? false
@@ -85,11 +85,11 @@
     (is (= 1 (count (:telemetry/events
                      (resilience/append-remote-telemetry!
                       (assoc base :append-fn append))))))
-    (is (thrown? clojure.lang.ExceptionInfo
+    (is (thrown? kerror/ExceptionInfo
                  (resilience/append-remote-telemetry!
                   (assoc base :append-fn
                          #(assoc (append %) :telemetry/remote? false)))))
-    (is (thrown? clojure.lang.ExceptionInfo
+    (is (thrown? kerror/ExceptionInfo
                  (resilience/append-remote-telemetry!
                   (assoc base :append-fn #(assoc (append %) :signature :forged)))))))
 
