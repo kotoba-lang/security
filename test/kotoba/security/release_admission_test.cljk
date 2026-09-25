@@ -1,5 +1,5 @@
 (ns kotoba.security.release-admission-test
-  (:require [kotoba.test :refer [deftest is]]
+  (:require [kotoba.lang.error :as kerror] [kotoba.test :refer [deftest is]]
             [kotoba.security.release-admission :as admission]))
 
 (def digest "sha256:language-release")
@@ -138,6 +138,6 @@
                (assoc-in base [:approvals 1 :approval/approver] :alice)
                (assoc-in base [:approvals 0 :approval/signature] [:forged])]]
     (is (false? (:release/allowed? (admission/evaluate bad))))
-    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+    (is (thrown-with-msg? kerror/ExceptionInfo
                           #"secure release admission denied"
                           (admission/admit! bad)))))

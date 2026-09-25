@@ -17,7 +17,7 @@
 ;;                     salt = ASCII "kotoba.hybrid.v1",
 ;;                     info = 4-byte big-endian epoch) -> 32 bytes
 (ns gen-hybrid-vectors
-  (:require [kotoba.bytes :as kbytes] [clojure.java.io :as io]
+  (:require [kotoba.bytes :as kbytes] [kotoba.io :as io]
             [kotoba.lang.text :as str])
   (:import [java.security MessageDigest SecureRandom]
            [java.nio ByteBuffer]
