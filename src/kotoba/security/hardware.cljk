@@ -1,38 +1,80 @@
 (ns kotoba.security.hardware
   "Fail-closed HSM/native-keystore qualification evidence checks."
-  {:kotoba/export [evaluate evaluate-signing]})
+  {:kotoba/export [evaluate evaluate-signing]
+   :kotoba/schemas
+   {:hw/evidence [:record :hw/evidence
+                  [[:provider-id [:option :string]]
+                   [:hardware-backed? [:option :bool]]
+                   [:attestation-verified? [:option :bool]]
+                   [:private-exported? [:option :bool]]
+                   [:sign-verified? [:option :bool]]
+                   [:kem-verified? [:option :bool]]
+                   [:rotation-drill-passed? [:option :bool]]
+                   [:outage-failed-closed? [:option :bool]]]]
+    :hw/signing-evidence [:record :hw/signing-evidence
+                          [[:provider-id [:option :string]]
+                           [:hardware-backed? [:option :bool]]
+                           [:provider-origin-verified? [:option :bool]]
+                           [:private-exported? [:option :bool]]
+                           [:sign-verified? [:option :bool]]
+                           [:unavailable-failed-closed? [:option :bool]]]]
+    :hw/result [:record :hw/result
+                [[:hardware/qualified? :bool]
+                 [:hardware/provider-id [:option :string]]
+                 [:hardware/violations [:list :keyword]]]]
+    :hw/signing-result [:record :hw/signing-result
+                        [[:hardware-signing/qualified? :bool]
+                         [:hardware-signing/provider-id [:option :string]]
+                         [:hardware-signing/scope :keyword]
+                         [:hardware-signing/violations [:list :keyword]]
+                         [:hardware-signing/non-claims [:set :keyword]]]]}})
+
+;; ---- leaves: the only host-specific lines ----
+
+(defn- no-violations [] #?@(:kotoba [[:list :keyword]])
+  #?(:kotoba (typed-list-new [:list :keyword]) :default []))
+
+(defn- no-provider? [#?@(:kotoba [x [:option :string]] :default [x])] #?@(:kotoba [:bool])
+  #?(:kotoba (not (option-some?-of [:option :string] x)) :default (nil? x)))
+
+(defn- is-true? [#?@(:kotoba [x [:option :bool]] :default [x])] #?@(:kotoba [:bool])
+  #?(:kotoba (option-value-of [:option :bool] x false) :default (= true x)))
+
+(defn- is-false? [#?@(:kotoba [x [:option :bool]] :default [x])] #?@(:kotoba [:bool])
+  #?(:kotoba (and (option-some?-of [:option :bool] x)
+                  (not (option-value-of [:option :bool] x true)))
+     :default (= false x)))
 
 (defn evaluate
-  [{:keys [provider-id hardware-backed? attestation-verified?
-           private-exported? sign-verified? kem-verified?
-           rotation-drill-passed? outage-failed-closed?]}]
-  (let [violations
-        (cond-> []
-          (nil? provider-id) (conj :provider-id)
-          (not= true hardware-backed?) (conj :hardware-backed)
-          (not= true attestation-verified?) (conj :attestation)
-          (not= false private-exported?) (conj :private-export)
-          (not= true sign-verified?) (conj :sign-operation)
-          (not= true kem-verified?) (conj :kem-operation)
-          (not= true rotation-drill-passed?) (conj :rotation-drill)
-          (not= true outage-failed-closed?) (conj :outage-fail-closed))]
-    {:hardware/qualified? (empty? violations)
+  [#?@(:kotoba [e [:ref :hw/evidence]] :default [e])] #?@(:kotoba [[:ref :hw/result]])
+  (let [provider-id (:provider-id e)
+        violations
+        (cond-> (no-violations)
+          (no-provider? provider-id) (conj :provider-id)
+          (not (is-true? (:hardware-backed? e))) (conj :hardware-backed)
+          (not (is-true? (:attestation-verified? e))) (conj :attestation)
+          (not (is-false? (:private-exported? e))) (conj :private-export)
+          (not (is-true? (:sign-verified? e))) (conj :sign-operation)
+          (not (is-true? (:kem-verified? e))) (conj :kem-operation)
+          (not (is-true? (:rotation-drill-passed? e))) (conj :rotation-drill)
+          (not (is-true? (:outage-failed-closed? e))) (conj :outage-fail-closed))]
+    {:hardware/qualified? (= 0 (count violations))
      :hardware/provider-id provider-id
      :hardware/violations violations}))
 
 (defn evaluate-signing
   "Scoped hardware signing qualification; never claims KEM or general HSM."
-  [{:keys [provider-id hardware-backed? provider-origin-verified?
-           private-exported? sign-verified? unavailable-failed-closed?]}]
-  (let [violations
-        (cond-> []
-          (nil? provider-id) (conj :provider-id)
-          (not= true hardware-backed?) (conj :hardware-backed)
-          (not= true provider-origin-verified?) (conj :provider-origin)
-          (not= false private-exported?) (conj :private-export)
-          (not= true sign-verified?) (conj :sign-operation)
-          (not= true unavailable-failed-closed?) (conj :availability-fail-closed))]
-    {:hardware-signing/qualified? (empty? violations)
+  [#?@(:kotoba [e [:ref :hw/signing-evidence]] :default [e])] #?@(:kotoba [[:ref :hw/signing-result]])
+  (let [provider-id (:provider-id e)
+        violations
+        (cond-> (no-violations)
+          (no-provider? provider-id) (conj :provider-id)
+          (not (is-true? (:hardware-backed? e))) (conj :hardware-backed)
+          (not (is-true? (:provider-origin-verified? e))) (conj :provider-origin)
+          (not (is-false? (:private-exported? e))) (conj :private-export)
+          (not (is-true? (:sign-verified? e))) (conj :sign-operation)
+          (not (is-true? (:unavailable-failed-closed? e))) (conj :availability-fail-closed))]
+    {:hardware-signing/qualified? (= 0 (count violations))
      :hardware-signing/provider-id provider-id
      :hardware-signing/scope :non-exportable-signing
      :hardware-signing/violations violations
