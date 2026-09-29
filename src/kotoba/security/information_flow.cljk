@@ -16,26 +16,90 @@
   declassification grant is matched by `(= source (:from grant))` — a join
   that answered `:personal` sometimes and `:confidential` others would make
   a correct grant fail to match half the time."
-  {:kotoba/export [canonical canonical-by-rank evaluate-egress join ranks unknown-labels]})
+  {:kotoba/export [canonical canonical-by-rank evaluate-egress join ranks unknown-labels]
+   :kotoba/schemas
+   {:if/grant [:record :if/grant
+               [[:id [:option :document]]
+                [:subject [:option :document]]
+                [:purpose [:option :document]]
+                [:from [:option :keyword]]
+                [:to [:option :keyword]]
+                [:expires-at [:option :string]]]]
+    :if/request [:record :if/request
+                 [[:subject [:option :document]]
+                  [:purpose [:option :document]]
+                  [:now [:option :string]]
+                  [:input-classifications [:list [:option :keyword]]]
+                  [:output-classification [:option :keyword]]
+                  [:declassification-grant [:option [:ref :if/grant]]]]]
+    :if/violation [:record :if/violation
+                   [[:information-flow/control :keyword]
+                    [:information-flow/message :string]]]
+    :if/result [:record :if/result
+                [[:information-flow/allowed? :bool]
+                 [:information-flow/source :keyword]
+                 [:information-flow/target :keyword]
+                 [:information-flow/downgrade? :bool]
+                 [:information-flow/grant-id [:option :document]]
+                 [:information-flow/violations [:list [:ref :if/violation]]]]]}})
 
-(def ranks
-  "Classification → rank. Two keys share rank 2 on purpose (see the ns
+#?(:kotoba
+   (defn ranks
+     "Classification -> rank, or absent. Two keys share rank 2 on purpose (see
+  the ns docstring); `canonical` picks the one spelling anything downstream sees."
+     [label :keyword] [:option :i64]
+     (cond (= label :public) (option-some-of [:option :i64] 0)
+           (= label :internal) (option-some-of [:option :i64] 1)
+           (= label :confidential) (option-some-of [:option :i64] 2)
+           (= label :personal) (option-some-of [:option :i64] 2)
+           (= label :restricted) (option-some-of [:option :i64] 3)
+           :else (option-none-of [:option :i64])))
+   :default
+   (def ranks
+     "Classification → rank. Two keys share rank 2 on purpose (see the ns
   docstring); `canonical` picks the one spelling anything downstream sees."
-  {:public 0 :internal 1 :confidential 2 :personal 2 :restricted 3})
+     {:public 0 :internal 1 :confidential 2 :personal 2 :restricted 3}))
 
-(def canonical-by-rank
-  "The one spelling per rank, lowest first."
-  [:public :internal :confidential :restricted])
+#?(:kotoba
+   (defn canonical-by-rank
+     "The one spelling per rank, lowest first."
+     [] [:list :keyword]
+     (typed-list-new [:list :keyword] :public :internal :confidential :restricted))
+   :default
+   (def canonical-by-rank
+     "The one spelling per rank, lowest first."
+     [:public :internal :confidential :restricted]))
+
+(defn- rank-int
+  "The rank of a canonical (or known) label; 3 (restricted) when unranked."
+  [#?@(:kotoba [label :keyword] :default [label])] #?@(:kotoba [:i64])
+  #?(:kotoba (option-value-of [:option :i64] (ranks label) 3)
+     :default (ranks label)))
 
 (defn canonical
   "LABEL's canonical spelling, or nil when this lattice does not rank it.
 
   nil rather than a coerced `:restricted`, so a caller can tell `I do not
-  know this label` from `this label is restricted`. `join` still coerces —
-  that is the safe reading — but the coercion is no longer the only thing
+  know this label` from `this label is restricted`. `join` still coerces --
+  that is the safe reading -- but the coercion is no longer the only thing
   that can be observed about it (see `unknown-labels`)."
-  [label]
-  (when-let [r (get ranks label)] (nth canonical-by-rank r)))
+  [#?@(:kotoba [label [:option :keyword]] :default [label])] #?@(:kotoba [[:option :keyword]])
+  #?(:kotoba
+     (match-option label [:option :keyword]
+       (none (option-none-of [:option :keyword]))
+       (some l
+         (cond (= l :public) (option-some-of [:option :keyword] :public)
+               (= l :internal) (option-some-of [:option :keyword] :internal)
+               (= l :confidential) (option-some-of [:option :keyword] :confidential)
+               (= l :personal) (option-some-of [:option :keyword] :confidential)
+               (= l :restricted) (option-some-of [:option :keyword] :restricted)
+               :else (option-none-of [:option :keyword]))))
+     :default (when-let [r (get ranks label)] (nth canonical-by-rank r))))
+
+#?(:kotoba
+   (defn- known-label? [l :keyword] :bool
+     (or (= l :public) (= l :internal) (= l :confidential) (= l :personal)
+         (= l :restricted))))
 
 (defn unknown-labels
   "The labels this lattice cannot rank.
@@ -44,43 +108,126 @@
   safe answer accumulates: `:personal` was over-classified by exactly this
   path for as long as both vocabularies existed, and nothing reported it.
   Callers that care whether they were understood ask here."
-  [labels]
-  (into #{} (remove #(contains? ranks %)) labels))
+  [#?@(:kotoba [labels [:list :keyword]] :default [labels])] #?@(:kotoba [[:set :keyword]])
+  #?(:kotoba
+     (reduce (fn [acc l] (if (known-label? l) acc (conj acc l)))
+             (typed-set-new [:set :keyword]) labels)
+     :default (into #{} (remove #(contains? ranks %)) labels)))
+
+(defn- max-rank-label
+  [#?@(:kotoba [a :keyword b :keyword] :default [a b])] #?@(:kotoba [:keyword])
+  (if (< (rank-int a) (rank-int b)) b a))
 
 (defn join
   "The output of a computation inherits the highest input classification.
   Unknown or missing labels conservatively become :restricted. The result is
   always canonical, so it can be compared with a grant's `:from`."
-  [labels]
-  (->> labels
-       (map #(or (canonical %) :restricted))
-       (apply max-key ranks :public)))
+  [#?@(:kotoba [labels [:list [:option :keyword]]] :default [labels])] #?@(:kotoba [:keyword])
+  #?(:kotoba
+     (reduce (fn [acc l] (max-rank-label acc (option-value-of [:option :keyword] (canonical l) :restricted)))
+             :public labels)
+     :default (->> labels
+                   (map #(or (canonical %) :restricted))
+                   (apply max-key ranks :public))))
+
+;; ---- egress ----
+
+#?(:kotoba
+   (defn- doc-same? [a [:option :document] b [:option :document]] :bool
+     (match-option a [:option :document]
+       (none (not (option-some?-of [:option :document] b)))
+       (some x (match-option b [:option :document]
+                 (none false)
+                 (some y (document-equal? x y)))))))
+
+#?(:kotoba
+   (defn- kw-is? [o [:option :keyword] k :keyword] :bool
+     (and (option-some?-of [:option :keyword] o)
+          (= k (option-value-of [:option :keyword] o :public)))))
+
+;; ISO-8601 instants compare by byte order here (`string-compare`), by
+;; UTF-16 code unit on the host: the same order for BMP text.
+#?(:kotoba
+   (defn- not-after? [now [:option :string] expires [:option :string]] :bool
+     (and (option-some?-of [:option :string] now)
+          (option-some?-of [:option :string] expires)
+          (<= (string-compare (option-value-of [:option :string] now "")
+                              (option-value-of [:option :string] expires ""))
+              0))))
+
+#?(:kotoba
+   (defn- grant-valid? [g [:ref :if/grant] req [:ref :if/request] source :keyword target :keyword] :bool
+     (and (doc-same? (:subject req) (:subject g))
+          (doc-same? (:purpose req) (:purpose g))
+          (kw-is? (:from g) source)
+          (kw-is? (:to g) target)
+          (not-after? (:now req) (:expires-at g)))))
+
+#?(:kotoba
+   (defn- grant-id-of [og [:option [:ref :if/grant]]] [:option :document]
+     (match-option og [:option [:ref :if/grant]]
+       (none (option-none-of [:option :document]))
+       (some g (:id g)))))
+
+#?(:kotoba
+   (defn- grant-ok? [req [:ref :if/request] source :keyword target :keyword] :bool
+     (match-option (:declassification-grant req) [:option [:ref :if/grant]]
+       (none false)
+       (some g (grant-valid? g req source target)))))
+
+#?(:kotoba
+   (defn- egress-violations [downgrade? :bool valid-grant? :bool] [:list [:ref :if/violation]]
+     (if (and downgrade? (not valid-grant?))
+       (conj (typed-list-new [:list [:ref :if/violation]])
+             (record-new [:ref :if/violation] :declassification-required
+                         "classification downgrade requires an exact valid grant"))
+       (typed-list-new [:list [:ref :if/violation]]))))
+
+#?(:kotoba
+   (defn- no-violations [] [:list [:ref :if/violation]]
+     (typed-list-new [:list [:ref :if/violation]])))
 
 (defn evaluate-egress
   "Allow monotonic flows. A downgrade requires an exact, unexpired grant bound
   to subject, purpose, source and target classifications."
-  [{:keys [subject purpose now input-classifications output-classification
-           declassification-grant]}]
-  (let [source (join input-classifications)
-        target (or (canonical output-classification) :restricted)
-        downgrade? (< (ranks target) (ranks source))
-        grant declassification-grant
-        valid-grant? (and grant
-                          (= subject (:subject grant))
-                          (= purpose (:purpose grant))
-                          (= source (:from grant))
-                          (= target (:to grant))
-                          (string? now)
-                          (string? (:expires-at grant))
-                          (<= (compare now (:expires-at grant)) 0))
-        violations (cond-> []
-                     (and downgrade? (not valid-grant?))
-                     (conj {:information-flow/control :declassification-required
-                            :information-flow/message
-                            "classification downgrade requires an exact valid grant"}))]
-    {:information-flow/allowed? (empty? violations)
-     :information-flow/source source
-     :information-flow/target target
-     :information-flow/downgrade? downgrade?
-     :information-flow/grant-id (:id grant)
-     :information-flow/violations violations}))
+  [#?@(:kotoba [req [:ref :if/request]]
+       :default [{:keys [subject purpose now input-classifications output-classification
+                         declassification-grant]}])]
+  #?@(:kotoba [[:ref :if/result]])
+  #?(:kotoba
+     (let [source (join (:input-classifications req))
+           target (option-value-of [:option :keyword] (canonical (:output-classification req)) :restricted)
+           downgrade? (< (rank-int target) (rank-int source))
+           valid-grant? (grant-ok? req source target)
+           grant-id (grant-id-of (:declassification-grant req))
+           violations (egress-violations downgrade? valid-grant?)]
+       {:information-flow/allowed? (= 0 (count violations))
+        :information-flow/source source
+        :information-flow/target target
+        :information-flow/downgrade? downgrade?
+        :information-flow/grant-id grant-id
+        :information-flow/violations violations})
+     :default
+     (let [source (join input-classifications)
+           target (or (canonical output-classification) :restricted)
+           downgrade? (< (ranks target) (ranks source))
+           grant declassification-grant
+           valid-grant? (and grant
+                             (= subject (:subject grant))
+                             (= purpose (:purpose grant))
+                             (= source (:from grant))
+                             (= target (:to grant))
+                             (string? now)
+                             (string? (:expires-at grant))
+                             (<= (compare now (:expires-at grant)) 0))
+           violations (cond-> []
+                        (and downgrade? (not valid-grant?))
+                        (conj {:information-flow/control :declassification-required
+                               :information-flow/message
+                               "classification downgrade requires an exact valid grant"}))]
+       {:information-flow/allowed? (empty? violations)
+        :information-flow/source source
+        :information-flow/target target
+        :information-flow/downgrade? downgrade?
+        :information-flow/grant-id (:id grant)
+        :information-flow/violations violations})))
