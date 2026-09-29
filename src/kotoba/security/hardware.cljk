@@ -46,7 +46,7 @@
      :default (= false x)))
 
 (defn evaluate
-  [#?@(:kotoba [e [:ref :hw/evidence]] :default [e])] #?@(:kotoba [[:ref :hw/result]])
+  [#?@(:kotoba [e [:record :hw/evidence [[:provider-id [:option :string]] [:hardware-backed? [:option :bool]] [:attestation-verified? [:option :bool]] [:private-exported? [:option :bool]] [:sign-verified? [:option :bool]] [:kem-verified? [:option :bool]] [:rotation-drill-passed? [:option :bool]] [:outage-failed-closed? [:option :bool]]]]] :default [e])] #?@(:kotoba [[:record :hw/result [[:hardware/qualified? :bool] [:hardware/provider-id [:option :string]] [:hardware/violations [:list :keyword]]]]])
   (let [provider-id (:provider-id e)
         violations
         (cond-> (no-violations)
@@ -64,7 +64,7 @@
 
 (defn evaluate-signing
   "Scoped hardware signing qualification; never claims KEM or general HSM."
-  [#?@(:kotoba [e [:ref :hw/signing-evidence]] :default [e])] #?@(:kotoba [[:ref :hw/signing-result]])
+  [#?@(:kotoba [e [:record :hw/signing-evidence [[:provider-id [:option :string]] [:hardware-backed? [:option :bool]] [:provider-origin-verified? [:option :bool]] [:private-exported? [:option :bool]] [:sign-verified? [:option :bool]] [:unavailable-failed-closed? [:option :bool]]]]] :default [e])] #?@(:kotoba [[:record :hw/signing-result [[:hardware-signing/qualified? :bool] [:hardware-signing/provider-id [:option :string]] [:hardware-signing/scope :keyword] [:hardware-signing/violations [:list :keyword]] [:hardware-signing/non-claims [:set :keyword]]]]])
   (let [provider-id (:provider-id e)
         violations
         (cond-> (no-violations)
