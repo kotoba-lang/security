@@ -1,66 +1,180 @@
 (ns kotoba.security.runtime-resilience
   "Fail-closed runtime resource, memory-safety, load, and tenant-isolation checks."
-  {:kotoba/export [evaluate-limits evaluate-verification required-sanitizers]}
+  {:kotoba/export [evaluate-limits evaluate-verification required-sanitizers]
+   :kotoba/schemas
+   {:rr/profile [:record :rr/profile
+                 [[:runtime/memory-pages [:option :i64]]
+                  [:runtime/fuel [:option :i64]]
+                  [:runtime/timeout-ms [:option :i64]]
+                  [:runtime/concurrency [:option :i64]]
+                  [:runtime/queue-depth [:option :i64]]
+                  [:runtime/rate-per-second [:option :i64]]
+                  [:runtime/epoch-interruption? [:option :bool]]
+                  [:runtime/shared-memory? [:option :bool]]
+                  [:runtime/tenant-isolation? [:option :bool]]
+                  [:runtime/limit-traps-fail-closed? [:option :bool]]]]
+    :rr/policy [:record :rr/policy
+                [[:policy/max-memory-pages [:option :i64]]
+                 [:policy/max-fuel [:option :i64]]
+                 [:policy/max-timeout-ms [:option :i64]]
+                 [:policy/max-concurrency [:option :i64]]
+                 [:policy/max-queue-depth [:option :i64]]
+                 [:policy/max-rate-per-second [:option :i64]]]]
+    :rr/fuzz [:record :rr/fuzz [[:fuzz/cases [:option :i64]]
+                                [:fuzz/duration-ms [:option :i64]]
+                                [:fuzz/crashes [:option :i64]]]]
+    :rr/sanitizer [:record :rr/sanitizer [[:sanitizer/status [:option :keyword]]
+                                          [:sanitizer/kinds [:option [:set :keyword]]]]]
+    :rr/model-check [:record :rr/model-check [[:model-check/status [:option :keyword]]
+                                              [:model-check/states [:option :i64]]]]
+    :rr/load [:record :rr/load [[:load/status [:option :keyword]]
+                                [:load/unbounded-requests [:option :i64]]
+                                [:load/p99-ms [:option :f64]]
+                                [:load/p99-limit-ms [:option :f64]]
+                                [:load/overload-rejected? [:option :bool]]]]
+    :rr/chaos [:record :rr/chaos [[:chaos/status [:option :keyword]]
+                                  [:chaos/cross-tenant-data-observed? [:option :bool]]
+                                  [:chaos/noisy-neighbor-bounded? [:option :bool]]
+                                  [:chaos/recovery-verified? [:option :bool]]]]
+    :rr/verification [:record :rr/verification
+                      [[:fuzz [:option [:ref :rr/fuzz]]]
+                       [:sanitizer [:option [:ref :rr/sanitizer]]]
+                       [:model-check [:option [:ref :rr/model-check]]]
+                       [:load [:option [:ref :rr/load]]]
+                       [:chaos [:option [:ref :rr/chaos]]]]]
+    :rr/verification-result [:record :rr/verification-result
+                             [[:runtime-verification/qualified? :bool]
+                              [:runtime-verification/violations [:list :keyword]]]]
+    :rr/limits-result [:record :rr/limits-result
+                       [[:runtime-limits/qualified? :bool]
+                        [:runtime-limits/violations [:list :keyword]]]]}}
   (:require [kotoba.lang.coll :as set]))
 
+(defn- no-violations [] #?@(:kotoba [[:list :keyword]])
+  #?(:kotoba (typed-list-new [:list :keyword]) :default []))
+
+(defn- add-if [#?@(:kotoba [v [:list :keyword] test :bool k :keyword] :default [v test k])] #?@(:kotoba [[:list :keyword]])
+  (if test (conj v k) v))
+
+(defn- bounded? [#?@(:kotoba [value [:option :i64] maximum [:option :i64]] :default [value maximum])] #?@(:kotoba [:bool])
+  #?(:kotoba (and (option-some?-of [:option :i64] value)
+                  (option-some?-of [:option :i64] maximum)
+                  (> (option-value-of [:option :i64] value 0) 0)
+                  (> (option-value-of [:option :i64] maximum 0) 0)
+                  (<= (option-value-of [:option :i64] value 0)
+                      (option-value-of [:option :i64] maximum 0)))
+     :default (and (pos-int? value) (pos-int? maximum) (<= value maximum))))
+
+(defn- is-true? [#?@(:kotoba [x [:option :bool]] :default [x])] #?@(:kotoba [:bool])
+  #?(:kotoba (option-value-of [:option :bool] x false) :default (= true x)))
+
+(defn- is-false? [#?@(:kotoba [x [:option :bool]] :default [x])] #?@(:kotoba [:bool])
+  #?(:kotoba (and (option-some?-of [:option :bool] x)
+                  (not (option-value-of [:option :bool] x true)))
+     :default (= false x)))
+
 (defn evaluate-limits
-  [profile policy]
-  (let [bounded? (fn [key maximum-key]
-                   (let [value (get profile key) maximum (get policy maximum-key)]
-                     (and (pos-int? value) (pos-int? maximum)
-                          (<= value maximum))))
-        violations
-        (cond-> []
-          (not (bounded? :runtime/memory-pages :policy/max-memory-pages))
-          (conj :memory-pages)
-          (not (bounded? :runtime/fuel :policy/max-fuel)) (conj :fuel)
-          (not (bounded? :runtime/timeout-ms :policy/max-timeout-ms))
-          (conj :timeout)
-          (not (bounded? :runtime/concurrency :policy/max-concurrency))
-          (conj :concurrency)
-          (not (bounded? :runtime/queue-depth :policy/max-queue-depth))
-          (conj :queue-depth)
-          (not (bounded? :runtime/rate-per-second :policy/max-rate-per-second))
-          (conj :rate-limit)
-          (not= true (:runtime/epoch-interruption? profile))
-          (conj :epoch-interruption)
-          (not= false (:runtime/shared-memory? profile)) (conj :shared-memory)
-          (not= true (:runtime/tenant-isolation? profile))
-          (conj :tenant-isolation)
-          (not= true (:runtime/limit-traps-fail-closed? profile))
-          (conj :limit-trap))]
-    {:runtime-limits/qualified? (empty? violations)
+  [#?@(:kotoba [profile [:ref :rr/profile] policy [:ref :rr/policy]] :default [profile policy])] #?@(:kotoba [[:ref :rr/limits-result]])
+  (let [violations
+        (-> (no-violations)
+            (add-if (not (bounded? (:runtime/memory-pages profile) (:policy/max-memory-pages policy))) :memory-pages)
+            (add-if (not (bounded? (:runtime/fuel profile) (:policy/max-fuel policy))) :fuel)
+            (add-if (not (bounded? (:runtime/timeout-ms profile) (:policy/max-timeout-ms policy))) :timeout)
+            (add-if (not (bounded? (:runtime/concurrency profile) (:policy/max-concurrency policy))) :concurrency)
+            (add-if (not (bounded? (:runtime/queue-depth profile) (:policy/max-queue-depth policy))) :queue-depth)
+            (add-if (not (bounded? (:runtime/rate-per-second profile) (:policy/max-rate-per-second policy))) :rate-limit)
+            (add-if (not (is-true? (:runtime/epoch-interruption? profile))) :epoch-interruption)
+            (add-if (not (is-false? (:runtime/shared-memory? profile))) :shared-memory)
+            (add-if (not (is-true? (:runtime/tenant-isolation? profile))) :tenant-isolation)
+            (add-if (not (is-true? (:runtime/limit-traps-fail-closed? profile))) :limit-trap))]
+    {:runtime-limits/qualified? (= 0 (count violations))
      :runtime-limits/violations violations}))
 
-(def required-sanitizers #{:address :undefined-behavior :thread})
+#?(:kotoba (defn required-sanitizers [] [:set :keyword] #{:address :undefined-behavior :thread})
+   :default (def required-sanitizers #{:address :undefined-behavior :thread}))
+
+
+(defn- pos-opt? [#?@(:kotoba [x [:option :i64]] :default [x])] #?@(:kotoba [:bool])
+  #?(:kotoba (and (option-some?-of [:option :i64] x) (> (option-value-of [:option :i64] x 0) 0))
+     :default (pos-int? x)))
+
+(defn- ge? [#?@(:kotoba [x [:option :i64] floor :i64] :default [x floor])] #?@(:kotoba [:bool])
+  #?(:kotoba (and (option-some?-of [:option :i64] x) (>= (option-value-of [:option :i64] x 0) floor))
+     :default (>= x floor)))
+
+(defn- zero-opt? [#?@(:kotoba [x [:option :i64]] :default [x])] #?@(:kotoba [:bool])
+  #?(:kotoba (and (option-some?-of [:option :i64] x) (= 0 (option-value-of [:option :i64] x 1)))
+     :default (= 0 x)))
+
+(defn- passed? [#?@(:kotoba [x [:option :keyword]] :default [x])] #?@(:kotoba [:bool])
+  #?(:kotoba (and (option-some?-of [:option :keyword] x) (= :passed (option-value-of [:option :keyword] x :none)))
+     :default (= :passed x)))
+
+(defn- number-opt? [#?@(:kotoba [x [:option :f64]] :default [x])] #?@(:kotoba [:bool])
+  #?(:kotoba (option-some?-of [:option :f64] x) :default (number? x)))
+
+(defn- le-opt? [#?@(:kotoba [a [:option :f64] b [:option :f64]] :default [a b])] #?@(:kotoba [:bool])
+  #?(:kotoba (<= (option-value-of [:option :f64] a 0.0) (option-value-of [:option :f64] b 0.0))
+     :default (<= a b)))
+
+(defn- sanitizers-cover? [#?@(:kotoba [x [:option [:set :keyword]]] :default [x])] #?@(:kotoba [:bool])
+  #?(:kotoba (and (option-some?-of [:option [:set :keyword]] x)
+                  (let [kinds (option-value-of [:option [:set :keyword]] x #{})]
+                    (and (contains? kinds :address) (contains? kinds :undefined-behavior) (contains? kinds :thread))))
+     :default (set/subset? required-sanitizers (set x))))
+
+(defn- fuzz-rec-ok? [#?@(:kotoba [f [:ref :rr/fuzz]] :default [f])] #?@(:kotoba [:bool])
+  (and (pos-opt? (:fuzz/cases f)) (ge? (:fuzz/cases f) 100000)
+         (pos-opt? (:fuzz/duration-ms f)) (zero-opt? (:fuzz/crashes f))))
+
+(defn- fuzz-ok? [#?@(:kotoba [f [:option [:ref :rr/fuzz]]] :default [f])] #?@(:kotoba [:bool])
+  #?(:kotoba (match-option f [:option [:ref :rr/fuzz]] (none false) (some g (fuzz-rec-ok? g)))
+     :default (fuzz-rec-ok? f)))
+
+(defn- sanitizer-rec-ok? [#?@(:kotoba [s [:ref :rr/sanitizer]] :default [s])] #?@(:kotoba [:bool])
+  (and (passed? (:sanitizer/status s)) (sanitizers-cover? (:sanitizer/kinds s))))
+
+(defn- sanitizer-ok? [#?@(:kotoba [s [:option [:ref :rr/sanitizer]]] :default [s])] #?@(:kotoba [:bool])
+  #?(:kotoba (match-option s [:option [:ref :rr/sanitizer]] (none false) (some g (sanitizer-rec-ok? g)))
+     :default (sanitizer-rec-ok? s)))
+
+(defn- model-check-rec-ok? [#?@(:kotoba [m [:ref :rr/model-check]] :default [m])] #?@(:kotoba [:bool])
+  (and (passed? (:model-check/status m)) (pos-opt? (:model-check/states m))))
+
+(defn- model-check-ok? [#?@(:kotoba [m [:option [:ref :rr/model-check]]] :default [m])] #?@(:kotoba [:bool])
+  #?(:kotoba (match-option m [:option [:ref :rr/model-check]] (none false) (some g (model-check-rec-ok? g)))
+     :default (model-check-rec-ok? m)))
+
+(defn- load-rec-ok? [#?@(:kotoba [l [:ref :rr/load]] :default [l])] #?@(:kotoba [:bool])
+  (and (passed? (:load/status l))
+         (zero-opt? (:load/unbounded-requests l))
+         (number-opt? (:load/p99-ms l))
+         (number-opt? (:load/p99-limit-ms l))
+         (le-opt? (:load/p99-ms l) (:load/p99-limit-ms l))
+         (is-true? (:load/overload-rejected? l))))
+
+(defn- load-ok? [#?@(:kotoba [l [:option [:ref :rr/load]]] :default [l])] #?@(:kotoba [:bool])
+  #?(:kotoba (match-option l [:option [:ref :rr/load]] (none false) (some g (load-rec-ok? g)))
+     :default (load-rec-ok? l)))
+
+(defn- chaos-rec-ok? [#?@(:kotoba [c [:ref :rr/chaos]] :default [c])] #?@(:kotoba [:bool])
+  (and (passed? (:chaos/status c))
+         (is-false? (:chaos/cross-tenant-data-observed? c))
+         (is-true? (:chaos/noisy-neighbor-bounded? c))
+         (is-true? (:chaos/recovery-verified? c))))
+
+(defn- chaos-ok? [#?@(:kotoba [c [:option [:ref :rr/chaos]]] :default [c])] #?@(:kotoba [:bool])
+  #?(:kotoba (match-option c [:option [:ref :rr/chaos]] (none false) (some g (chaos-rec-ok? g)))
+     :default (chaos-rec-ok? c)))
 
 (defn evaluate-verification
-  [{:keys [fuzz sanitizer model-check load chaos]}]
+  [#?@(:kotoba [e [:ref :rr/verification]] :default [{:keys [fuzz sanitizer model-check load chaos] :as e}])] #?@(:kotoba [[:ref :rr/verification-result]])
   (let [violations
-        (cond-> []
-          (not (and (pos-int? (:fuzz/cases fuzz))
-                    (>= (:fuzz/cases fuzz) 100000)
-                    (pos-int? (:fuzz/duration-ms fuzz))
-                    (= 0 (:fuzz/crashes fuzz))))
-          (conj :coverage-guided-fuzzing)
-          (not (and (= :passed (:sanitizer/status sanitizer))
-                    (set/subset? required-sanitizers
-                                 (set (:sanitizer/kinds sanitizer)))))
-          (conj :sanitizers)
-          (not (and (= :passed (:model-check/status model-check))
-                    (pos-int? (:model-check/states model-check))))
-          (conj :model-check)
-          (not (and (= :passed (:load/status load))
-                    (= 0 (:load/unbounded-requests load))
-                    (number? (:load/p99-ms load))
-                    (number? (:load/p99-limit-ms load))
-                    (<= (:load/p99-ms load) (:load/p99-limit-ms load))
-                    (= true (:load/overload-rejected? load))))
-          (conj :adversarial-load)
-          (not (and (= :passed (:chaos/status chaos))
-                    (= false (:chaos/cross-tenant-data-observed? chaos))
-                    (= true (:chaos/noisy-neighbor-bounded? chaos))
-                    (= true (:chaos/recovery-verified? chaos))))
-          (conj :multi-tenant-chaos))]
-    {:runtime-verification/qualified? (empty? violations)
+        (-> (no-violations)
+            (add-if (not (fuzz-ok? (:fuzz e))) :coverage-guided-fuzzing)
+            (add-if (not (sanitizer-ok? (:sanitizer e))) :sanitizers)
+            (add-if (not (model-check-ok? (:model-check e))) :model-check)
+            (add-if (not (load-ok? (:load e))) :adversarial-load)
+            (add-if (not (chaos-ok? (:chaos e))) :multi-tenant-chaos))]
+    {:runtime-verification/qualified? (= 0 (count violations))
      :runtime-verification/violations violations}))
