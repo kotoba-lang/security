@@ -346,7 +346,7 @@
    :control/requires-claims #{:release-evidence-gate-executable :provenance :sbom}
    :control/gap "**この workspace で最も脆い規準。** GitHub Actions は org 単位で
                  停止済みで、CI の正本は murakumo fleet に移った。ところが
-                 CLAUDE.md 自身の実測で、fleet gate のうち 6 本は landing 以来
+                 AGENTS.md 自身の実測で、fleet gate のうち 6 本は landing 以来
                  一度も緑になっていない。『変更は必ず検査を通る』を期間分の
                  証拠で示す経路が今は無い。"}
 
