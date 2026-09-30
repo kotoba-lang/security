@@ -6,37 +6,152 @@
   (:require [kotoba.lang.coll :as set]
             [kotoba.security.information-flow :as flow]))
 
-(def classification-rank
-  "Alias of the one classification lattice, `kotoba.security.information-flow/ranks`.
+#?(:kotoba
+   (defn classification-rank
+     "Alias of the one classification lattice, `kotoba.security.information-flow/ranks`.
 
-  This namespace decides no-read-up (subject clearance vs resource
-  classification); `information-flow` decides no-write-down (egress and
-  declassification). Both must rank the same labels identically, so the ranks
-  live in exactly one place. Kept as a var because it is part of this
-  namespace's public surface."
-  flow/ranks)
+  On the Kotoba route the lattice is a function (label -> [:option :i64]); the
+  host keeps the map, so `(get classification-rank label)` still works there."
+     [label :keyword] [:option :i64]
+     (flow/ranks label))
+   :default
+   (def classification-rank
+     "Alias of the one classification lattice, `kotoba.security.information-flow/ranks`.
+   
+     This namespace decides no-read-up (subject clearance vs resource
+     classification); `information-flow` decides no-write-down (egress and
+     declassification). Both must rank the same labels identically, so the ranks
+     live in exactly one place. Kept as a var because it is part of this
+     namespace's public surface."
+     flow/ranks))
 
+#?(:kotoba
+   (defn- g [m :document k :keyword] :document
+     (if (map? m) (get m k (document-null)) (document-null)))
+   :default
 (defn- values [x]
-  (cond (nil? x) #{} (set? x) x (coll? x) (set x) :else #{x}))
+  (cond (nil? x) #{} (set? x) x (coll? x) (set x) :else #{x})))
 
+#?(:kotoba
+   (defn- truthy? [d :document] :bool
+     (not (or (nil? d) (document-equal? d (document-bool false)))))
+   :default
 (defn- denied [control message]
-  {:abac/control control :abac/message message})
+  {:abac/control control :abac/message message}))
 
+#?(:kotoba
+   (defn- vals-of [x :document] :document
+     (cond (nil? x) (document-vector)
+           (coll? x) x
+           :else (document-vector-conj (document-vector) x)))
+   :default
 (defn- allowlist-denial [policy-key actual control message policy]
   (let [allowed (values (get policy policy-key))]
     (when (and (seq allowed) (not (contains? allowed actual)))
-      (denied control message))))
+      (denied control message)))))
 
+#?(:kotoba
+   (defn- member? [xs :document x :document] :bool
+     (loop [i 0]
+       (if (>= i (count xs))
+         false
+         (if (document-equal? (nth xs i) x) true (recur (+ i 1))))))
+   :default
 (defn- subset-denial [policy-key actual control message policy]
   (when (and (contains? policy policy-key)
              (not (set/subset? (values actual) (values (get policy policy-key)))))
-    (denied control message)))
+    (denied control message))))
 
+#?(:kotoba
+   (defn- all-in? [xs :document allowed :document] :bool
+     (loop [i 0]
+       (if (>= i (count xs))
+         true
+         (if (member? allowed (nth xs i)) (recur (+ i 1)) false))))
+   :default
 (defn- temporal-denial [control now boundary pred]
   (when (and boundary
              (or (not (string? now)) (not (string? boundary))
                  (not (pred (compare now boundary) 0))))
-    (denied control "trusted time is missing or outside policy validity")))
+    (denied control "trusted time is missing or outside policy validity"))))
+
+#?(:kotoba
+   (defn- allow-denied? [pk :keyword actual :document policy :document] :bool
+     (let [allowed (vals-of (g policy pk))]
+       (and (< 0 (count allowed)) (not (member? allowed actual))))))
+
+#?(:kotoba
+   (defn- subset-denied? [pk :keyword actual :document policy :document] :bool
+     (and (map? policy)
+          (contains? policy pk)
+          (not (all-in? (vals-of actual) (vals-of (g policy pk)))))))
+
+#?(:kotoba
+   (defn- str-of [d :document] :string
+     (match-option (document-string-value d) [:option :string]
+       (none "")
+       (some s s))))
+
+#?(:kotoba
+   (defn- time-ok? [now :document boundary :document ge? :bool] :bool
+     (let [c (string-compare (str-of now) (str-of boundary))]
+       (if ge? (>= c 0) (<= c 0)))))
+
+#?(:kotoba
+   (defn- temporal-denied? [now :document boundary :document ge? :bool] :bool
+     (and (truthy? boundary)
+          (or (not (string? now)) (not (string? boundary))
+              (not (time-ok? now boundary ge?))))))
+
+#?(:kotoba
+   (defn- i64-or [d :document dflt :i64] :i64
+     (match-option (document-i64-value d) [:option :i64]
+       (none dflt)
+       (some n n))))
+
+#?(:kotoba
+   (defn- nat-doc? [d :document] :bool
+     (match-option (document-i64-value d) [:option :i64]
+       (none false)
+       (some n (>= n 0)))))
+
+#?(:kotoba
+   (defn- disclosure-denied? [bytes :document mx :document] :bool
+     (and (truthy? mx)
+          (or (not (nat-doc? bytes))
+              (> (i64-or bytes 0) (i64-or mx -1))))))
+
+#?(:kotoba
+   (defn- rank-of-kw [k :keyword] :i64
+     (match-option (classification-rank k) [:option :i64]
+       (none -1)
+       (some r r))))
+
+#?(:kotoba
+   (defn- rank-of [d :document] :i64
+     (match-option (document-keyword-value d) [:option :keyword]
+       (none -1)
+       (some k (rank-of-kw k)))))
+
+#?(:kotoba
+   (defn- tenant-denied? [subject :document resource :document policy :document] :bool
+     (and (truthy? (g policy :tenant/isolation?))
+          (or (nil? (g subject :tenant)) (nil? (g resource :tenant))
+              (not (document-equal? (g subject :tenant) (g resource :tenant)))))))
+
+#?(:kotoba
+   (defn- device-denied? [environment :document policy :document] :bool
+     (and (truthy? (g policy :environment/require-device-trust?))
+          (not (document-equal? (g environment :device-trusted?) (document-bool true))))))
+
+#?(:kotoba
+   (defn- add [v :document bad? :bool control :keyword message :string] :document
+     (if bad?
+       (document-vector-conj
+        v
+        (document-map (document-keyword :abac/control) (document-keyword control)
+                      (document-keyword :abac/message) (document-string message)))
+       v)))
 
 (defn evaluate
   "Return `{:abac/allowed? boolean :abac/policy-id ... :abac/violations [...]}`.
@@ -45,8 +160,49 @@
   :environment. A policy condition is optional, but once declared a missing
   attribute denies. This lets language/runtime repositories share semantics
   without sharing their manifest schemas."
-  [{:keys [subject resource action environment purpose disclosure-bytes]} policy]
-  (let [policy (or policy {})
+  [#?@(:kotoba [req :document policy :document]
+       :default [{:keys [subject resource action environment purpose disclosure-bytes]} policy])]
+  #?@(:kotoba [:document])
+  #?(:kotoba
+     (let [subject (g req :subject)
+           resource (g req :resource)
+           action (g req :action)
+           environment (g req :environment)
+           purpose (g req :purpose)
+           bytes (g req :disclosure-bytes)
+           required (rank-of (g resource :classification))
+           clearance (rank-of (g subject :clearance))
+           v0 (document-vector)
+           v1 (add v0 (allow-denied? :subject/ids (g subject :id) policy) :subject-id "subject identity is not allowed")
+           v2 (add v1 (allow-denied? :subject/signers (g subject :signer) policy) :subject-signer "subject signer is not allowed")
+           v3 (add v2 (allow-denied? :subject/roles (g subject :role) policy) :subject-role "subject role is not allowed")
+           v4 (add v3 (allow-denied? :resource/ids (g resource :id) policy) :resource-id "resource identity is not allowed")
+           v5 (add v4 (allow-denied? :resource/tenants (g resource :tenant) policy) :resource-tenant "resource tenant is not allowed")
+           v6 (add v5 (allow-denied? :resource/trust (g resource :trust) policy) :resource-trust "resource trust class is not allowed")
+           v7 (add v6 (subset-denied? :resource/effects (g resource :effects) policy) :resource-effects "resource effects exceed policy")
+           v8 (add v7 (allow-denied? :action/ids (g action :id) policy) :action-id "action is not allowed")
+           v9 (add v8 (subset-denied? :action/capabilities (g action :capabilities) policy) :action-capabilities "action capabilities exceed policy")
+           v10 (add v9 (allow-denied? :environment/surfaces (g environment :surface) policy) :environment-surface "execution surface is not allowed")
+           v11 (add v10 (allow-denied? :environment/network-zones (g environment :network-zone) policy) :environment-network-zone "network zone is not allowed")
+           v12 (add v11 (device-denied? environment policy) :environment-device "trusted device is required")
+           v13 (add v12 (allow-denied? :purpose/allowed purpose policy) :purpose "purpose is not allowed")
+           v14 (add v13 (tenant-denied? subject resource policy) :tenant-isolation "subject and resource tenant differ")
+           v15 (add v14 (and (>= required 0) (or (< clearance 0) (< clearance required))) :classification "subject clearance is below resource classification")
+           v16 (add v15 (temporal-denied? (g environment :now) (g policy :valid/not-before) true) :not-before "trusted time is missing or outside policy validity")
+           v17 (add v16 (temporal-denied? (g environment :now) (g policy :valid/expires-at) false) :expired "trusted time is missing or outside policy validity")
+           v18 (add v17 (disclosure-denied? bytes (g policy :disclosure/max-bytes)) :disclosure-size "disclosure exceeds policy bound")]
+       (document-map (document-keyword :abac/allowed?) (document-bool (= 0 (count v18)))
+                     (document-keyword :abac/policy-id) (g policy :policy/id)
+                     (document-keyword :abac/violations) v18
+                     (document-keyword :abac/attributes)
+                     (document-map (document-keyword :subject) subject
+                                   (document-keyword :resource) resource
+                                   (document-keyword :action) action
+                                   (document-keyword :environment) environment
+                                   (document-keyword :purpose) purpose
+                                   (document-keyword :disclosure-bytes) bytes)))
+     :default
+     (let [policy (or policy {})
         required-rank (get classification-rank (:classification resource))
         clearance-rank (get classification-rank (:clearance subject))
         violations
@@ -98,4 +254,4 @@
      :abac/violations violations
      :abac/attributes {:subject subject :resource resource :action action
                        :environment environment :purpose purpose
-                       :disclosure-bytes disclosure-bytes}}))
+                       :disclosure-bytes disclosure-bytes}})))
