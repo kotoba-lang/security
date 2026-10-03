@@ -201,12 +201,10 @@
            valid-grant? (grant-ok? req source target)
            grant-id (grant-id-of (:declassification-grant req))
            violations (egress-violations downgrade? valid-grant?)]
-       {:information-flow/allowed? (= 0 (count violations))
-        :information-flow/source source
-        :information-flow/target target
-        :information-flow/downgrade? downgrade?
-        :information-flow/grant-id grant-id
-        :information-flow/violations violations})
+       ;; positional (field order of :if/result): the seed reads a namespaced-key
+       ;; map literal's keys as types (E2105)
+       (record-new [:ref :if/result] (= 0 (count violations)) source target downgrade?
+                   grant-id violations))
      :default
      (let [source (join input-classifications)
            target (or (canonical output-classification) :restricted)
