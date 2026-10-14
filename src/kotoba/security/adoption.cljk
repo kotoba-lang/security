@@ -101,15 +101,43 @@
   (tree-seq #(or (coll? %) (instance? ReaderConditional %))
             read-children form))
 
+(def ^:private eof-sentinel #?(:clj (Object.) :cljs (js-obj)))
+
 (defn- ns-form [file]
   (with-open [reader (PushbackReader. (io/reader file))]
     (binding [*default-data-reader-fn* (fn [_tag value] value)]
       (loop []
-        (let [form (read {:read-cond :preserve :eof nil} reader)]
+        (let [form (read {:read-cond :preserve :eof eof-sentinel} reader)]
           (cond
-            (nil? form) nil
+            (identical? eof-sentinel form) nil
             (and (seq? form) (= 'ns (first form))) form
             :else (recur)))))))
+
+(defn- require-libspecs [form]
+  (for [clause (drop 2 form)
+        :when (and (seq? clause)
+                   (#{:require :require-macros} (first clause)))
+        libspec (rest clause)]
+    libspec))
+
+(defn- required-namespaces
+  ([libspec] (required-namespaces nil libspec))
+  ([prefix libspec]
+   (cond
+     (symbol? libspec)
+     [(if prefix (symbol (str prefix "." libspec)) libspec)]
+
+     (vector? libspec)
+     (let [head (first libspec)
+           namespace (when (symbol? head)
+                       (if prefix (symbol (str prefix "." head)) head))
+           children (filter vector? (rest libspec))]
+       (when namespace
+         (if (seq children)
+           (mapcat #(required-namespaces namespace %) children)
+           [namespace])))
+
+     :else [])))
 
 (defn- source-forms [file]
   (with-open [reader (PushbackReader. (io/reader file))]
@@ -159,7 +187,7 @@
                                     :operations invalid-bindings}))))
 
 (defn source-security-inventory
-  "Discover the union of CLJ and CLJS control-import edges under ROOT/src."
+  "Discover actual CLJ, CLJS, and Kototama require edges under ROOT/src."
   [root]
   (reduce
    (fn [inventory [namespace controls]]
@@ -171,8 +199,10 @@
                      (io/file-seq (io/file root "src")))
          :let [form (ns-form file)
                namespace (second form)
-               controls (into #{} (filter security-symbol?)
-                              (all-nodes (drop 2 form)))]
+               controls (into #{}
+                              (comp (mapcat required-namespaces)
+                                    (filter security-symbol?))
+                              (require-libspecs form))]
          :when (seq controls)]
      [namespace controls])))
 

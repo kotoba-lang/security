@@ -101,22 +101,73 @@
   (tree-seq #(or (coll? %) (instance? ReaderConditional %))
             read-children form))
 
+(def ^:private eof-sentinel (Object.))
+
 (defn- ns-form [file]
   (with-open [reader (PushbackReader. (io/reader file))]
     (binding [*default-data-reader-fn* (fn [_tag value] value)]
       (loop []
-        (let [form (read {:read-cond :preserve :eof nil} reader)]
+        (let [form (read {:read-cond :preserve :eof eof-sentinel} reader)]
           (cond
-            (nil? form) nil
+            (identical? eof-sentinel form) nil
             (and (seq? form) (= 'ns (first form))) form
             :else (recur)))))))
 
+(defn- require-libspecs [form]
+  (for [clause (drop 2 form)
+        :when (and (seq? clause)
+                   (#{:require :require-macros} (first clause)))
+        libspec (rest clause)]
+    libspec))
+
+(defn- required-namespaces
+  ([libspec] (required-namespaces nil libspec))
+  ([prefix libspec]
+   (cond
+     (symbol? libspec)
+     [(if prefix (symbol (str prefix "." libspec)) libspec)]
+
+     (vector? libspec)
+     (let [head (first libspec)
+           namespace (when (symbol? head)
+                       (if prefix (symbol (str prefix "." head)) head))
+           children (filter vector? (rest libspec))]
+       (when namespace
+         (if (seq children)
+           (mapcat #(required-namespaces namespace %) children)
+           [namespace])))
+
+     :else [])))
+
+(defn- reader-aliases [form]
+  (mapcat (fn aliases-in [libspec]
+            (when (vector? libspec)
+              (concat
+               (for [[key value] (partition 2 1 libspec)
+                     :when (and (#{:as :as-alias} key) (symbol? value))]
+                 value)
+               (mapcat aliases-in (filter vector? libspec)))))
+          (require-libspecs form)))
+
 (defn- source-forms [file]
-  (with-open [reader (PushbackReader. (io/reader file))]
-    (binding [*default-data-reader-fn* (fn [_tag value] value)]
-      (loop [forms []]
-        (let [form (read {:read-cond :preserve :eof nil} reader)]
-          (if (nil? form) forms (recur (conj forms form))))))))
+  (let [form (ns-form file)
+        aliases (distinct (reader-aliases form))
+        source-ns (create-ns (gensym "security.adoption.reader."))
+        alias-nss (mapv (fn [_] (create-ns (gensym "security.adoption.alias."))) aliases)]
+    (try
+      (binding [*ns* source-ns
+                *default-data-reader-fn* (fn [_tag value] value)]
+        (doseq [[alias-name alias-ns] (map vector aliases alias-nss)]
+          (clojure.core/alias alias-name (ns-name alias-ns)))
+        (with-open [reader (PushbackReader. (io/reader file))]
+          (loop [forms []]
+            (let [form (read {:read-cond :preserve :eof eof-sentinel} reader)]
+              (if (identical? eof-sentinel form)
+                forms
+                (recur (conj forms form)))))))
+      (finally
+        (doseq [namespace (cons source-ns alias-nss)]
+          (remove-ns (ns-name namespace)))))))
 
 (defn source-sensitive-inventory
   "Discover high-confidence sensitive def/defn operations under ROOT/src."
@@ -159,7 +210,7 @@
                                     :operations invalid-bindings}))))
 
 (defn source-security-inventory
-  "Discover the union of CLJ and CLJS control-import edges under ROOT/src."
+  "Discover actual CLJ, CLJS, and Kototama require edges under ROOT/src."
   [root]
   (reduce
    (fn [inventory [namespace controls]]
@@ -171,8 +222,10 @@
                      (file-seq (io/file root "src")))
          :let [form (ns-form file)
                namespace (second form)
-               controls (into #{} (filter security-symbol?)
-                              (all-nodes (drop 2 form)))]
+               controls (into #{}
+                              (comp (mapcat required-namespaces)
+                                    (filter security-symbol?))
+                              (require-libspecs form))]
          :when (seq controls)]
      [namespace controls])))
 
