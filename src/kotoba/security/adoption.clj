@@ -69,25 +69,6 @@
       (not (every? #(active-exception? today %) exceptions))
       (conj :invalid-or-expired-exception))))
 
-(defn- namespace-dependencies [namespace]
-  (let [loaded (the-ns namespace)]
-    (set (concat (map (comp ns-name val) (ns-aliases loaded))
-                 (keep (fn [[_ referred-var]]
-                         (some-> referred-var meta :ns ns-name))
-                       (ns-refers loaded))))))
-
-(defn- dependency-edge-violations [entrypoints]
-  (into []
-        (comp
-         (mapcat (fn [[entrypoint required-controls]]
-                   (let [dependencies (namespace-dependencies entrypoint)]
-                     (for [control required-controls
-                           :when (not (contains? dependencies control))]
-                       {:problem :missing-control-dependency-edge
-                        :entrypoint entrypoint
-                        :control control})))))
-        entrypoints))
-
 (defn- security-symbol? [value]
   (and (symbol? value)
        (str/starts-with? (str value) "kotoba.security.")))
