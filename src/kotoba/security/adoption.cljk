@@ -114,12 +114,20 @@
             :else (recur)))))))
 
 (defn- require-libspecs [form]
-  (for [clause (drop 2 form)
-        :when (and (seq? clause)
-                   (#{:require :require-macros :use :use-macros}
-                    (first clause)))
-        libspec (rest clause)]
-    libspec))
+  (letfn [(libspecs [value]
+            (cond
+              (instance? ReaderConditional value)
+              (mapcat libspecs (.form ^ReaderConditional value))
+
+              (and (vector? value) (symbol? (first value))) [value]
+              (coll? value) (mapcat libspecs value)
+              :else []))]
+    (for [clause (all-nodes form)
+          :when (and (seq? clause)
+                     (#{:require :require-macros :use :use-macros}
+                      (first clause)))
+          libspec (mapcat libspecs (rest clause))]
+      libspec)))
 
 (defn- required-namespaces
   ([libspec] (required-namespaces nil libspec))
