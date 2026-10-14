@@ -116,7 +116,8 @@
 (defn- require-libspecs [form]
   (for [clause (drop 2 form)
         :when (and (seq? clause)
-                   (#{:require :require-macros} (first clause)))
+                   (#{:require :require-macros :use :use-macros}
+                    (first clause)))
         libspec (rest clause)]
     libspec))
 
