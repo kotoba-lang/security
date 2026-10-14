@@ -124,7 +124,7 @@
   (into #{}
         (for [file (filter (fn [candidate]
                             (and (io/file? candidate)
-                                 (re-find #"\.clj[cs]?$" (io/file-name candidate))))
+                                 (re-find #"\.clj[cks]?$" (io/file-name candidate))))
                           (io/file-seq (io/file root "src")))
               :let [forms (source-forms file)
                     namespace (some #(when (and (seq? %) (= 'ns (first %)))
@@ -167,7 +167,7 @@
    {}
    (for [file (filter (fn [candidate]
                        (and (io/file? candidate)
-                            (re-find #"\.clj[cs]?$" (io/file-name candidate))))
+                            (re-find #"\.clj[cks]?$" (io/file-name candidate))))
                      (io/file-seq (io/file root "src")))
          :let [form (ns-form file)
                namespace (second form)
