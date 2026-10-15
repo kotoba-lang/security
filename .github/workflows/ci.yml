@@ -74,18 +74,14 @@ jobs:
       - name: Hybrid KEM vector recomputation
         run: clojure -M:vectors:vectors-test
 
-  # This repo defines the adoption contract every consumer's
-  # `security-adoption.edn` is checked against, so a change to that contract can
-  # be green here and leave every consumer failing.
+  # Kototama is a representative consumer for this inventory: its runtime
+  # sources are `.cljk`, so this exercises the JVM verifier's source-only path
+  # without loading Kototama namespaces into the JVM.
   #
-  # That is not hypothetical. adoption v3 (#61, 2026-07-20) added the
-  # sensitive-operation inventory. No consumer migrated. kotoba-lang/kotoba went
-  # red the moment its pin moved past that date, and kotoba-lang/kotoba-lang was
-  # green only because its pin predated it -- a landmine, not a state.
-  #
-  # Verified before this job was written: running kotoba-lang's adoption check
-  # against this checkout denies its pre-migration (v2) config and passes its
-  # migrated one. So this job would have failed on #61, which is the point.
+  # The job checks Kototama's checked-in adoption config, dependency pin,
+  # control edges, and sensitive-operation inventory against this checkout of
+  # security. The local-root override selects this verifier source; the
+  # verifier reads the consumer's on-disk `deps.edn` and `security-adoption.edn`.
   consumer-adoption:
     runs-on: ubuntu-latest
     steps:
@@ -93,7 +89,7 @@ jobs:
         with:
           path: security
       - name: Check out a consumer
-        run: git clone --depth 1 https://github.com/kotoba-lang/kotoba-lang kotoba-lang
+        run: git clone --depth 1 https://github.com/kotoba-lang/kototama kototama
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -101,8 +97,8 @@ jobs:
       - uses: DeLaGuardo/setup-clojure@13.4
         with:
           cli: latest
-      - name: kotoba-lang adoption against this checkout
-        working-directory: kotoba-lang
+      - name: Kototama source adoption against this checkout
+        working-directory: kototama
         run: |
           clojure -Sdeps "{:aliases {:dep {:override-deps {io.github.kotoba-lang/security {:local/root \"../security\"}}}}}" \
             -M:dep -m kotoba.security.adoption
