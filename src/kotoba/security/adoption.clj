@@ -87,6 +87,7 @@
 (defn- ns-form [file]
   (with-open [reader (PushbackReader. (io/reader file))]
     (binding [*read-eval* false
+                *data-readers* {}
               *default-data-reader-fn* (fn [_tag value] value)]
       (loop []
         (let [form (read {:read-cond :preserve :eof eof-sentinel} reader)]
@@ -97,6 +98,20 @@
 
 (defn- prefix-libname [prefix libname]
   (if prefix (symbol (str prefix "." libname)) libname))
+
+(defn- ns-require-clauses [form]
+  (letfn [(clauses [value]
+            (cond
+              (instance? ReaderConditional value)
+              (mapcat clauses (rest (.form ^ReaderConditional value)))
+
+              (and (seq? value)
+                   (#{:require :require-macros :use :use-macros}
+                    (first value)))
+              [value]
+
+              :else []))]
+    (mapcat clauses (rest form))))
 
 (defn- require-libspecs [form]
   (letfn [(libspecs
@@ -123,13 +138,9 @@
                (mapcat #(libspecs prefix %) value)
 
                :else [])))]
-    (for [clause (all-nodes form)
-          :when (and (seq? clause)
-                     (#{:require :require-macros :use :use-macros}
-                      (first clause)))
+    (for [clause (ns-require-clauses form)
           libspec (mapcat libspecs (rest clause))]
       libspec)))
-
 (defn- required-namespaces
   ([libspec] (required-namespaces nil libspec))
   ([prefix libspec]
@@ -141,14 +152,15 @@
      (let [head (first libspec)
            namespace (when (symbol? head)
                        (if prefix (symbol (str prefix "." head)) head))
-           children (filter vector? (rest libspec))]
+           children (filter vector? (rest libspec))
+           prefix-list? (and (seq children)
+                             (= (count children) (count (rest libspec))))]
        (when namespace
-         (if (seq children)
+         (if prefix-list?
            (mapcat #(required-namespaces namespace %) children)
            [namespace])))
 
      :else [])))
-
 (defn- reader-aliases [form]
   (mapcat (fn aliases-in [libspec]
             (when (vector? libspec)
@@ -167,6 +179,7 @@
     (try
       (binding [*ns* source-ns
                 *read-eval* false
+                *data-readers* {}
                 *default-data-reader-fn* (fn [_tag value] value)]
         (doseq [[alias-name alias-ns] (map vector aliases alias-nss)]
           (clojure.core/alias alias-name (ns-name alias-ns)))
