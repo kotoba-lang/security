@@ -86,7 +86,8 @@
 
 (defn- ns-form [file]
   (with-open [reader (PushbackReader. (io/reader file))]
-    (binding [*default-data-reader-fn* (fn [_tag value] value)]
+    (binding [*read-eval* false
+              *default-data-reader-fn* (fn [_tag value] value)]
       (loop []
         (let [form (read {:read-cond :preserve :eof eof-sentinel} reader)]
           (cond
@@ -94,15 +95,34 @@
             (and (seq? form) (= 'ns (first form))) form
             :else (recur)))))))
 
-(defn- require-libspecs [form]
-  (letfn [(libspecs [value]
-            (cond
-              (instance? ReaderConditional value)
-              (mapcat libspecs (.form ^ReaderConditional value))
+(defn- prefix-libname [prefix libname]
+  (if prefix (symbol (str prefix "." libname)) libname))
 
-              (and (vector? value) (symbol? (first value))) [value]
-              (coll? value) (mapcat libspecs value)
-              :else []))]
+(defn- require-libspecs [form]
+  (letfn [(libspecs
+            ([value] (libspecs nil value))
+            ([prefix value]
+             (cond
+               (instance? ReaderConditional value)
+               (mapcat #(libspecs prefix %)
+                       (.form ^ReaderConditional value))
+
+               (symbol? value)
+               [(prefix-libname prefix value)]
+
+               (and (vector? value) (symbol? (first value)))
+               [(if prefix
+                  (into [(prefix-libname prefix (first value))] (rest value))
+                  value)]
+
+               (and (seq? value) (symbol? (first value)))
+               (let [next-prefix (prefix-libname prefix (first value))]
+                 (mapcat #(libspecs next-prefix %) (rest value)))
+
+               (coll? value)
+               (mapcat #(libspecs prefix %) value)
+
+               :else [])))]
     (for [clause (all-nodes form)
           :when (and (seq? clause)
                      (#{:require :require-macros :use :use-macros}
@@ -146,6 +166,7 @@
         alias-nss (mapv (fn [_] (create-ns (gensym "security.adoption.alias."))) aliases)]
     (try
       (binding [*ns* source-ns
+                *read-eval* false
                 *default-data-reader-fn* (fn [_tag value] value)]
         (doseq [[alias-name alias-ns] (map vector aliases alias-nss)]
           (clojure.core/alias alias-name (ns-name alias-ns)))
