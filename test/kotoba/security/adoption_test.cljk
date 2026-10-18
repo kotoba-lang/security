@@ -24,8 +24,13 @@
 (deftest verifier-proves-a-real-dependency-edge
   (with-redefs [clojure.core/slurp
                 (fn [path]
-                  (pr-str (if (.endsWith path "deps.edn")
-                            valid-deps valid-config)))
+                  ;; *print-namespace-maps* is true under clojure.main and makes
+                  ;; pr-str emit #:ns{..} dispatch notation -- not EDN, and the
+                  ;; hardened reader refuses it. Bind it off so the fake files
+                  ;; are the EDN the verifier's contract says they are.
+                  (binding [*print-namespace-maps* false]
+                    (pr-str (if (.endsWith path "deps.edn")
+                              valid-deps valid-config))))
                 adoption/source-security-inventory
                 (constantly {'kotoba.security.adoption-test
                              #{'kotoba.security.adoption}})
@@ -56,6 +61,15 @@
                        'kotoba.security.crypto-policy}
           'demo.tagged #{'kotoba.security.redaction}}
          (adoption/source-security-inventory "test-fixtures/multifeature"))))
+
+(deftest inventory-scans-every-clj-family-extension
+  ;; The 2026-09-11 rename left every source path ending in .cljk; a scanner
+  ;; that only knows .clj/.cljs/.cljc inventories an empty tree and the
+  ;; consumer's declared entrypoints all read as :stale-security-entrypoints.
+  (is (every? adoption/source-file?
+              ["a.clj" "a.cljs" "a.cljc" "a.cljk" "a.clj.cljk"]))
+  (is (not-any? adoption/source-file?
+                ["a.kotoba" "a.txt" "a.edn" "a.cljs.bak" "clj"])))
 
 (deftest sensitive-operations-cannot-hide-outside-protected-entrypoints
   (let [operation 'kotoba.security.adoption-test/authorize-secret]

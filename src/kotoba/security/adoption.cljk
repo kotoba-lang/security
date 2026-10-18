@@ -1,6 +1,6 @@
 (ns kotoba.security.adoption
   "Fail-closed verifier for organization-wide use of the shared controls."
-  {:kotoba/export [-main full-sha-pattern inventory-violations security-coordinate security-url sensitive-name-pattern sensitive-operation-violations source-security-inventory source-sensitive-inventory verify! violations]}
+  {:kotoba/export [-main full-sha-pattern inventory-violations security-coordinate security-url sensitive-name-pattern sensitive-operation-violations source-file? source-security-inventory source-sensitive-inventory verify! violations]}
   (:require [kotoba.lang.edn :as edn]
             [kotoba.io :as io]
             [kotoba.lang.coll :as set]
@@ -14,6 +14,15 @@
 (def full-sha-pattern #"[0-9a-f]{40}")
 (def sensitive-name-pattern
   #"(?i)(encrypt|decrypt|authorize|authenticate|credential|private-key|secret|revoke|rotate-key|restore-backup|verify-signature|sign-artifact)")
+
+(defn source-file?
+  "True when FILE-NAME is a Clojure-family source file: .clj, .cljs, .cljc or
+  .cljk. The 2026-09-11 rename (adr-2609111500) turned every .clj/.cljs/.cljc
+  path in the tree into .cljk, and a scan that only knows the pre-rename
+  extensions inventories an empty tree while looking like it ran. All four
+  spellings match so the inventory survives either naming."
+  [file-name]
+  (boolean (re-find #"\.clj[csk]?$" (str file-name))))
 
 (defn- non-empty-string? [value]
   (and (string? value) (not (str/blank? value))))
@@ -124,7 +133,7 @@
   (into #{}
         (for [file (filter (fn [candidate]
                             (and (io/file? candidate)
-                                 (re-find #"\.clj[cs]?$" (io/file-name candidate))))
+                                 (source-file? (io/file-name candidate))))
                           (io/file-seq (io/file root "src")))
               :let [forms (source-forms file)
                     namespace (some #(when (and (seq? %) (= 'ns (first %)))
@@ -167,7 +176,7 @@
    {}
    (for [file (filter (fn [candidate]
                        (and (io/file? candidate)
-                            (re-find #"\.clj[cs]?$" (io/file-name candidate))))
+                            (source-file? (io/file-name candidate))))
                      (io/file-seq (io/file root "src")))
          :let [form (ns-form file)
                namespace (second form)
