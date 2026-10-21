@@ -45,7 +45,7 @@
   path for as long as both vocabularies existed, and nothing reported it.
   Callers that care whether they were understood ask here."
   [labels]
-  (into #{} (remove #(contains? ranks %)) labels))
+  (into #{} (remove (fn [x] (contains? ranks x))) labels))
 
 (defn join
   "The output of a computation inherits the highest input classification.
@@ -53,7 +53,7 @@
   always canonical, so it can be compared with a grant's `:from`."
   [labels]
   (->> labels
-       (map #(or (canonical %) :restricted))
+       (map (fn [x] (or (canonical x) :restricted)))
        (apply max-key ranks :public)))
 
 (defn evaluate-egress
